@@ -1,0 +1,2 @@
+_G.MainScript = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Impossible%20Squid%20Game%20Glass%20Bridge%202%20OB"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/LP10%20HUB%20KeySystem%20OB"))()
