@@ -1,4 +1,4 @@
--- [[ LP10 HUB | UNIVERSAL KEY SYSTEM GATE ]]
+-- [[ LP10 HUB | UNIVERSAL KEY SYSTEM - FIXED EXECUTION ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -10,13 +10,11 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
--- [ 1. GUI SETUP ]
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate"
-ScreenGui.IgnoreGuiInset = true
 
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 0, 0, 0) -- البداية من الصفر للأنميشن
+Main.Size = UDim2.new(0, 0, 0, 0)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -30,7 +28,6 @@ Stroke.Color = Color3.fromRGB(33, 150, 243)
 Stroke.Thickness = 2
 Stroke.Transparency = 1
 
--- [ INTRO LOGO ]
 local IntroLogo = Instance.new("TextLabel", Main)
 IntroLogo.Size = UDim2.new(1, 0, 1, 0)
 IntroLogo.BackgroundTransparency = 1
@@ -40,7 +37,6 @@ IntroLogo.Font = Enum.Font.GothamBold
 IntroLogo.TextSize = 25
 IntroLogo.TextTransparency = 1
 
--- [ 2. UI ELEMENTS ]
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.Text = "🔑 LP10 AUTH"; Title.TextColor3 = Color3.fromRGB(33, 150, 243); Title.Font = Enum.Font.GothamBold; Title.TextSize = 20; Title.TextTransparency = 1
 
@@ -53,24 +49,9 @@ GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.
 local SubmitBtn = Instance.new("TextButton", Main)
 SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Color3.fromRGB(33, 150, 243); SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; Instance.new("UICorner", SubmitBtn)
 
--- [[ DRAGGING LOGIC ]]
-local dragging, dragStart, startPos
-Main.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true; dragStart = input.Position; startPos = Main.Position
-    end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
-
--- [[ ANIMATION SEQUENCE ]]
-local function RunIntro()
-    TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 200, 0, 80)}):Play()
+-- [[ ANIMATION ]]
+task.spawn(function()
+    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
     TweenService:Create(Stroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
     task.wait(0.5)
     TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
@@ -84,9 +65,9 @@ local function RunIntro()
     TweenService:Create(KeyInput, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(GetBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(SubmitBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
-end
+end)
 
--- [[ BUTTON ACTIONS ]]
+-- [[ LOGIC ]]
 GetBtn.MouseButton1Click:Connect(function()
     setclipboard(Config.KeyLink)
     GetBtn.Text = "Copied!"
@@ -100,29 +81,33 @@ SubmitBtn.MouseButton1Click:Connect(function()
         local TargetURL = _G.MainScript
         
         if TargetURL and TargetURL ~= "" then
-            -- أنميشن الخروج
-            TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-            task.wait(0.5)
+            -- 1. غبر الـ UI أولا بـ Animation
+            local close = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+            close:Play()
             
-            -- كنهدمو الـ UI قبل الـ loadstring باش ما يوقعش بلوك
-            ScreenGui:Destroy()
-            
-            -- هادا هو السر باش يخدم أي سكريبت تحطو
-            task.spawn(function()
-                local success, code = pcall(game.HttpGet, game, TargetURL)
-                if success then
-                    loadstring(code)()
-                else
-                    warn("LP10 Error: Could not load the script from the URL.")
-                end
+            close.Completed:Connect(function()
+                -- 2. دير Destroy للـ UI
+                ScreenGui:Destroy()
+                
+                -- 3. تـنفيذ السكربت فـ Thread جديد (هنا فين كان المشكل)
+                task.spawn(function()
+                    local success, code = pcall(game.HttpGet, game, TargetURL)
+                    if success then
+                        local func, err = loadstring(code)
+                        if func then
+                            func() -- كـيخدم السكربت هنا
+                        else
+                            warn("LP10 Error: Script has errors: " .. tostring(err))
+                        end
+                    else
+                        warn("LP10 Error: Failed to fetch script.")
+                    end
+                end)
             end)
         else
-            SubmitBtn.Text = "Error: No Script"
+            SubmitBtn.Text = "No Script URL!"
         end
     else
         KeyInput.Text = ""; KeyInput.PlaceholderText = "WRONG KEY!"; task.wait(1); KeyInput.PlaceholderText = "Enter Key..."
     end
 end)
-
--- تشغيل
-RunIntro()
