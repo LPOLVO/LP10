@@ -1,4 +1,5 @@
--- [[ LP10 HUB | ULTIMATE KEY SYSTEM (FULL BLUR + PARTICLES + INTRO) ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM ]]
+-- ALL FEATURES: INTRO + PARTICLES + NOTIFICATIONS + FULL BLUR
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -13,24 +14,55 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 
--- تنظيف كولشي
+-- تنظيف النسخ القديمة
 if CoreGui:FindFirstChild("LP10_AuthGate_Pro") then CoreGui:FindFirstChild("LP10_AuthGate_Pro"):Destroy() end
 if Lighting:FindFirstChild("LP10_SuperBlur") then Lighting:FindFirstChild("LP10_SuperBlur"):Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate_Pro"
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true -- هادي هي اللي كتخلي الـ Blur والـ Overlay يغطيو الشاشة كاملة 100%
 
--- [[ 1. SUPER BLUR & DARK OVERLAY ]]
+-- [[ 1. FULL SCREEN BLUR & DARK OVERLAY ]]
 local Blur = Instance.new("BlurEffect", Lighting)
 Blur.Name = "LP10_SuperBlur"
 Blur.Size = 0
 
 local Overlay = Instance.new("Frame", ScreenGui)
-Overlay.Size = UDim2.new(1, 0, 1, 0)
+Overlay.Name = "DarkOverlay"
+Overlay.Size = UDim2.new(1.2, 0, 1.2, 0) -- كبّرناه كثر باش نضمنوا مكاينش فراغ
+Overlay.Position = UDim2.new(0.5, 0, 0.5, 0)
+Overlay.AnchorPoint = Vector2.new(0.5, 0.5)
 Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Overlay.BackgroundTransparency = 1
 Overlay.ZIndex = 0
+
+-----------------------------------------------------------------------
+-- [ NOTIFICATION SYSTEM ]
+-----------------------------------------------------------------------
+local function SendLP10Notify(title, text, isError)
+    local NotifyFrame = Instance.new("Frame", ScreenGui)
+    NotifyFrame.Size = UDim2.new(0, 250, 0, 65)
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -80)
+    NotifyFrame.BackgroundColor3 = Config.BgColor
+    NotifyFrame.ZIndex = 100
+    Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", NotifyFrame)
+    Stroke.Thickness = 2
+    Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
+
+    local T = Instance.new("TextLabel", NotifyFrame)
+    T.Text = "💎 " .. title; T.Size = UDim2.new(1, -10, 0, 25); T.Position = UDim2.new(0, 10, 0, 5); T.BackgroundTransparency = 1; T.TextColor3 = Stroke.Color; T.Font = Enum.Font.GothamBold; T.TextSize = 14; T.TextXAlignment = Enum.TextXAlignment.Left
+    local D = Instance.new("TextLabel", NotifyFrame)
+    D.Text = text; D.Size = UDim2.new(1, -10, 0, 30); D.Position = UDim2.new(0, 10, 0, 30); D.BackgroundTransparency = 1; D.TextColor3 = Color3.new(1, 1, 1); D.Font = Enum.Font.Gotham; D.TextSize = 11; D.TextXAlignment = Enum.TextXAlignment.Left; D.TextWrapped = true
+
+    NotifyFrame:TweenPosition(UDim2.new(1, -260, 1, -80), "Out", "Back", 0.5, true)
+    task.delay(4, function()
+        if NotifyFrame then
+            NotifyFrame:TweenPosition(UDim2.new(1, 10, 1, -80), "In", "Back", 0.5, true, function() NotifyFrame:Destroy() end)
+        end
+    end)
+end
 
 -----------------------------------------------------------------------
 -- [ PARTICLES SYSTEM ]
@@ -45,14 +77,11 @@ local function SpawnParticle(parent)
         p.BorderSizePixel = 0
         p.ZIndex = 2
         Instance.new("UICorner", p).CornerRadius = UDim.new(1, 0)
-        
         local tween = TweenService:Create(p, TweenInfo.new(math.random(2, 4)), {
             Position = UDim2.new(p.Position.X.Scale, math.random(-30, 30), -0.1, 0),
             BackgroundTransparency = 1
         })
-        tween:Play()
-        tween.Completed:Wait()
-        p:Destroy()
+        tween:Play(); tween.Completed:Wait(); p:Destroy()
     end)
 end
 
@@ -70,18 +99,14 @@ Main.ZIndex = 1
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Config.AccentColor
-MainStroke.Thickness = 2
-MainStroke.Transparency = 1
+MainStroke.Color = Config.AccentColor; MainStroke.Thickness = 2; MainStroke.Transparency = 1
 
 local ParticleArea = Instance.new("Frame", Main)
 ParticleArea.Size = UDim2.new(1, 0, 1, 0); ParticleArea.BackgroundTransparency = 1; ParticleArea.ZIndex = 1
 
--- [[ INTRO ELEMENTS ]]
 local IntroLogo = Instance.new("TextLabel", Main)
-IntroLogo.Size = UDim2.new(1, 0, 1, 0); IntroLogo.BackgroundTransparency = 1; IntroLogo.Text = "LP10 HUB"; IntroLogo.TextColor3 = Config.AccentColor; IntroLogo.Font = Enum.Font.FredokaOne; IntroLogo.TextSize = 35; IntroLogo.TextTransparency = 1; IntroLogo.ZIndex = 10
+IntroLogo.Size = UDim2.new(1, 0, 1, 0); IntroLogo.BackgroundTransparency = 1; IntroLogo.Text = "LP10 HUB"; IntroLogo.TextColor3 = Config.AccentColor; IntroLogo.Font = Enum.Font.FredokaOne; IntroLogo.TextSize = 30; IntroLogo.TextTransparency = 1; IntroLogo.ZIndex = 10
 
--- [[ MAIN UI ELEMENTS ]]
 local Title = Instance.new("TextLabel", Main)
 Title.Text = "🔑 LP10 AUTH"; Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.TextColor3 = Config.AccentColor; Title.Font = Enum.Font.GothamBold; Title.TextSize = 20; Title.TextTransparency = 1; Title.ZIndex = 5
 
@@ -95,84 +120,68 @@ local GetBtn = Instance.new("TextButton", Main)
 GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
 
 -----------------------------------------------------------------------
--- [ THE MASTER ANIMATION ]
+-- [ MASTER ANIMATION ]
 -----------------------------------------------------------------------
 task.spawn(function()
-    -- 1. Full Screen Blur & Overlay
-    TweenService:Create(Blur, TweenInfo.new(1), {Size = 50}):Play() -- Super Blur 50
-    TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.3}):Play() -- Darker
+    TweenService:Create(Blur, TweenInfo.new(1), {Size = 56}):Play() -- هاد Size 56 كيضمن Full Blur
+    TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
     
-    -- 2. Initial Small Pop (Intro)
-    TweenService:Create(Main, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 220, 0, 80)}):Play()
-    TweenService:Create(MainStroke, TweenInfo.new(0.6), {Transparency = 0.5}):Play()
-    task.wait(0.4)
-    
-    -- 3. Show LP10 HUB Intro
-    TweenService:Create(IntroLogo, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-    task.wait(1.5)
-    TweenService:Create(IntroLogo, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-    task.wait(0.3)
-    
-    -- 4. Expand to Full Menu
-    TweenService:Create(Main, TweenInfo.new(0.8, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
+    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
+    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
+    task.wait(0.5)
+    TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
+    task.wait(1.2)
+    TweenService:Create(IntroLogo, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    task.wait(0.2)
+    TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
     TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0}):Play()
-    task.wait(0.3)
-    
-    -- 5. Fade in Content
+    task.wait(0.4)
     local tInfo = TweenInfo.new(0.4)
     TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play()
     TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     
-    -- Start Particles
-    while Main.Parent do
-        SpawnParticle(ParticleArea)
-        task.wait(0.5)
+    while Main.Parent do SpawnParticle(ParticleArea); task.wait(0.45) end
+end)
+
+-- [ DRAG ]
+local dragging, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = Main.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- [ CLEANUP FUNCTION ]
+-- [ LOGIC ]
 local function FinalCleanup()
-    TweenService:Create(Blur, TweenInfo.new(0.8), {Size = 0}):Play()
-    TweenService:Create(Overlay, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
-    local close = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1})
-    close:Play()
-    close.Completed:Wait()
-    Blur:Destroy()
-    ScreenGui:Destroy()
+    TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 0}):Play()
+    TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    task.wait(0.5); Blur:Destroy(); ScreenGui:Destroy()
 end
 
--- [ BUTTON LOGIC ]
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
         SubmitBtn.Text = "VERIFIED ✅"
-        Title.Text = "🚀 INITIALIZING..."
-        KeyInput.Visible = false; GetBtn.Visible = false; SubmitBtn.Visible = false
-        
-        local BarBg = Instance.new("Frame", Main); BarBg.Size = UDim2.new(0.85, 0, 0, 6); BarBg.Position = UDim2.new(0.075, 0, 0.55, 0); BarBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30); Instance.new("UICorner", BarBg)
-        local BarFill = Instance.new("Frame", BarBg); BarFill.Size = UDim2.new(0, 0, 1, 0); BarFill.BackgroundColor3 = Config.AccentColor; Instance.new("UICorner", BarFill)
-        
-        local loadT = TweenService:Create(BarFill, TweenInfo.new(1.8, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)})
-        loadT:Play()
-        loadT.Completed:Wait()
-        
+        SendLP10Notify("SUCCESS", "Key accepted! Welcome Hamza.", false)
+        task.wait(1)
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
-        if success then
-            FinalCleanup()
-            loadstring(content)()
-        end
+        if success then FinalCleanup(); loadstring(content)() end
     else
-        -- Shake Effect on Error
+        SendLP10Notify("ERROR", "Wrong Key!", true)
         local orig = Main.Position
-        for i = 1, 6 do
-            Main.Position = orig + UDim2.new(0, (i%2==0 and 5 or -5), 0, 0)
-            task.wait(0.02)
-        end
+        for i = 1, 6 do Main.Position = orig + UDim2.new(0, (i%2==0 and 5 or -5), 0, 0); task.wait(0.02) end
         Main.Position = orig
     end
 end)
 
 GetBtn.MouseButton1Click:Connect(function()
-    setclipboard(Config.KeyLink)
+    setclipboard(Config.KeyLink); SendLP10Notify("COPIED", "Link copied!", false)
 end)
