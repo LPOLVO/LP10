@@ -1,4 +1,4 @@
--- [[ LP10 HUB | UNIVERSAL KEY SYSTEM - FIXED EXECUTION ]]
+-- [[ LP10 HUB | UNIVERSAL KEY SYSTEM GATE ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -12,6 +12,7 @@ local TweenService = game:GetService("TweenService")
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate"
+ScreenGui.ResetOnSpawn = false
 
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, 0, 0, 0)
@@ -67,6 +68,19 @@ task.spawn(function()
     TweenService:Create(SubmitBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
 end)
 
+-- [[ DRAGGING ]]
+local dragging, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = Main.Position end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+
 -- [[ LOGIC ]]
 GetBtn.MouseButton1Click:Connect(function()
     setclipboard(Config.KeyLink)
@@ -81,31 +95,28 @@ SubmitBtn.MouseButton1Click:Connect(function()
         local TargetURL = _G.MainScript
         
         if TargetURL and TargetURL ~= "" then
-            -- 1. غبر الـ UI أولا بـ Animation
-            local close = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
-            close:Play()
+            -- 1. أنميشن الخروج
+            local out = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+            out:Play()
             
-            close.Completed:Connect(function()
-                -- 2. دير Destroy للـ UI
-                ScreenGui:Destroy()
+            out.Completed:Connect(function()
+                -- 2. إخفاء الـ UI فوراً
+                ScreenGui.Enabled = false
                 
-                -- 3. تـنفيذ السكربت فـ Thread جديد (هنا فين كان المشكل)
-                task.spawn(function()
-                    local success, code = pcall(game.HttpGet, game, TargetURL)
+                -- 3. تـنفيذ السكربت الرئيسي بـ طـريقة مـضمونة (Deferred)
+                task.defer(function()
+                    local success, content = pcall(game.HttpGet, game, TargetURL)
                     if success then
-                        local func, err = loadstring(code)
-                        if func then
-                            func() -- كـيخدم السكربت هنا
-                        else
-                            warn("LP10 Error: Script has errors: " .. tostring(err))
-                        end
+                        -- مسح الكي سيستم نهائياً قبل التشغيل
+                        ScreenGui:Destroy()
+                        loadstring(content)()
                     else
-                        warn("LP10 Error: Failed to fetch script.")
+                        warn("LP10 Error: Could not fetch script.")
                     end
                 end)
             end)
         else
-            SubmitBtn.Text = "No Script URL!"
+            SubmitBtn.Text = "Error: No URL!"
         end
     else
         KeyInput.Text = ""; KeyInput.PlaceholderText = "WRONG KEY!"; task.wait(1); KeyInput.PlaceholderText = "Enter Key..."
