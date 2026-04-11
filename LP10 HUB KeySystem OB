@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + PERFECT NOTIFICATIONS ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + NOTIFICATION FIX ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -29,35 +29,42 @@ local Overlay = Instance.new("Frame", ScreenGui)
 Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0.5, 0); Overlay.AnchorPoint = Vector2.new(0.5, 0.5); Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 0
 
 -----------------------------------------------------------------------
--- [ NOTIFICATION SYSTEM - FIXED ]
+-- [ NOTIFICATION SYSTEM - FINAL FIX ]
 -----------------------------------------------------------------------
 local function SendLP10Notify(title, text, isError)
-    local NotifyFrame = Instance.new("Frame", ScreenGui)
+    local NotifyFrame = Instance.new("Frame")
     NotifyFrame.Name = "LP10_Notify"
+    NotifyFrame.Parent = ScreenGui -- Parent explicit
     NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
-    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -100) -- Starting off-screen
     NotifyFrame.BackgroundColor3 = Config.BgColor
-    NotifyFrame.ZIndex = 105 -- طالع باش يبان فوق كولشي
+    NotifyFrame.BorderSizePixel = 0
+    NotifyFrame.ZIndex = 200
     
     local UICorner = Instance.new("UICorner", NotifyFrame)
     UICorner.CornerRadius = UDim.new(0, 10)
     
     local Stroke = Instance.new("UIStroke", NotifyFrame)
     Stroke.Thickness = 2
+    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
 
-    local TitleLabel = Instance.new("TextLabel", NotifyFrame)
-    TitleLabel.Text = " 💎 " .. title:upper()
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Parent = NotifyFrame
+    TitleLabel.Name = "Title"
+    TitleLabel.Text = "  💎 " .. title:upper()
     TitleLabel.Size = UDim2.new(1, -10, 0, 30)
-    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+    TitleLabel.Position = UDim2.new(0, 0, 0, 5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.TextColor3 = Stroke.Color
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextSize = 14
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.ZIndex = 106
+    TitleLabel.ZIndex = 201
 
-    local DescLabel = Instance.new("TextLabel", NotifyFrame)
+    local DescLabel = Instance.new("TextLabel")
+    DescLabel.Parent = NotifyFrame
+    DescLabel.Name = "Description"
     DescLabel.Text = text
     DescLabel.Size = UDim2.new(1, -20, 0, 30)
     DescLabel.Position = UDim2.new(0, 15, 0, 32)
@@ -67,7 +74,7 @@ local function SendLP10Notify(title, text, isError)
     DescLabel.TextSize = 12
     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
     DescLabel.TextWrapped = true
-    DescLabel.ZIndex = 106
+    DescLabel.ZIndex = 201
 
     -- Animation In
     NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
@@ -151,7 +158,7 @@ end
 -- Logic
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SendLP10Notify("Success", "Key accepted! Welcome back Hamza.", false)
+        SendLP10Notify("Success", "Welcome back Hamza!", false)
         StartLoading()
         
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
@@ -172,7 +179,7 @@ end)
 
 GetBtn.MouseButton1Click:Connect(function() 
     setclipboard(Config.KeyLink)
-    SendLP10Notify("Clipboard", "Linkvertise URL copied successfully!", false)
+    SendLP10Notify("Clipboard", "Linkvertise URL copied!", false)
 end)
 
 -- Dragging
