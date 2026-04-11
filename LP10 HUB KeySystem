@@ -1,105 +1,68 @@
--- [[ LP10 HUB | STANDALONE KEY SYSTEM ]]
+-- [[ LP10 HUB | UNIVERSAL KEY SYSTEM GATE ]]
 -- BY @LPOLVO (HAMZA)
+
+local Config = {
+    CorrectKey = "4fzx6ecbu1f6", -- تبدل الكود غير من هنا وكيتبدل عند كولشي
+    KeyLink = "https://linkvertise.com/1418391/507cpxkNrsxX?o=sharing"
+}
 
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
--- [ 1. CONFIGURATION ]
-local Config = {
-    CorrectKey = "4fzx6ecbu1f6",
-    KeyLink = "https://linkvertise.com/1418391/507cpxkNrsxX?o=sharing",
-    -- هاد الرابط هو اللي غتبدل فيه السكريبت اللي بغيتي تفتح مور الكود
-    MainScriptRaw = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/script.lua"
-}
-
--- [ 2. GUI SETUP ]
+-- [ GUI SETUP ]
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "LP10_AuthGate"
-
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, 320, 0, 220)
 Main.Position = UDim2.new(0.5, -160, 0.5, -110)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Main.Active = true -- ضروري للتحريك
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
-
+Main.Active = true
+Instance.new("UICorner", Main)
 local Stroke = Instance.new("UIStroke", Main)
 Stroke.Color = Color3.fromRGB(33, 150, 243)
 Stroke.Thickness = 2
 
--- [[ SMOOTH DRAGGING - تحريك ناضي ]]
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
+-- [[ DRAGGING LOGIC ]]
+local dragging, dragStart, startPos
 Main.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = Main.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
+        dragging = true; dragStart = input.Position; startPos = Main.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
     end
 end)
-
-Main.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- [ 3. UI ELEMENTS ]
+-- [ ELEMENTS ]
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.Text = "🔑 LP10 AUTH"; Title.TextColor3 = Color3.fromRGB(33, 150, 243); Title.Font = Enum.Font.GothamBold; Title.TextSize = 20
 
 local KeyInput = Instance.new("TextBox", Main)
-KeyInput.Size = UDim2.new(0.8, 0, 0, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.new(1, 1, 1); KeyInput.Font = Enum.Font.Gotham; Instance.new("UICorner", KeyInput)
-
-local GetBtn = Instance.new("TextButton", Main)
-GetBtn.Size = UDim2.new(0.38, 0, 0, 40); GetBtn.Position = UDim2.new(0.1, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); GetBtn.Text = "Get Key"; GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.Font = Enum.Font.GothamBold; Instance.new("UICorner", GetBtn)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", KeyInput)
 
 local SubmitBtn = Instance.new("TextButton", Main)
-SubmitBtn.Size = UDim2.new(0.38, 0, 0, 40); SubmitBtn.Position = UDim2.new(0.52, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Color3.fromRGB(33, 150, 243); SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.Font = Enum.Font.GothamBold; Instance.new("UICorner", SubmitBtn)
+SubmitBtn.Size = UDim2.new(0.8, 0, 0, 40); SubmitBtn.Position = UDim2.new(0.1, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Color3.fromRGB(33, 150, 243); SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", SubmitBtn)
 
--- [ 4. LOGIC ]
-GetBtn.MouseButton1Click:Connect(function()
-    setclipboard(Config.KeyLink)
-    GetBtn.Text = "Copied!"
-    task.wait(1)
-    GetBtn.Text = "Get Key"
-end)
-
+-- [[ THE MAGIC LOGIC ]]
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SubmitBtn.Text = "Success!"
+        SubmitBtn.Text = "Verifying..."
         task.wait(0.5)
-        ScreenGui:Destroy()
         
-        -- هنا كايتم استدعاء السكريبت الرئيسي اللي محطوط فـ Config
-        local success, err = pcall(function()
-            loadstring(game:HttpGet(Config.MainScriptRaw))()
-        end)
+        -- هنا كايشوف السكربت اللي صيفطتي ليه فـ الـ Loader
+        local TargetURL = _G.MainScript
         
-        if not success then
-            warn("LP10 Error: Could not load main script.")
+        if TargetURL then
+            ScreenGui:Destroy()
+            loadstring(game:HttpGet(TargetURL))()
+        else
+            SubmitBtn.Text = "Error: No Script Found"
+            warn("LP10 Error: You forgot to set _G.MainScript")
         end
     else
-        KeyInput.Text = ""
-        KeyInput.PlaceholderText = "INVALID KEY!"
-        task.wait(1)
-        KeyInput.PlaceholderText = "Enter Key..."
+        KeyInput.Text = ""; KeyInput.PlaceholderText = "WRONG KEY!"; task.wait(1); KeyInput.PlaceholderText = "Enter Key..."
     end
 end)
