@@ -1,4 +1,4 @@
--- [[ LP10 HUB | UNIVERSAL KEY SYSTEM GATE ]]
+-- [[ LP10 HUB | UNIVERSAL KEY SYSTEM GATE - FINAL FIXED ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -12,7 +12,6 @@ local TweenService = game:GetService("TweenService")
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate"
-ScreenGui.ResetOnSpawn = false
 
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, 0, 0, 0)
@@ -50,6 +49,19 @@ GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.
 local SubmitBtn = Instance.new("TextButton", Main)
 SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Color3.fromRGB(33, 150, 243); SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; Instance.new("UICorner", SubmitBtn)
 
+-- [[ DRAGGING ]]
+local dragging, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = Main.Position end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+
 -- [[ ANIMATION ]]
 task.spawn(function()
     TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
@@ -68,20 +80,7 @@ task.spawn(function()
     TweenService:Create(SubmitBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
 end)
 
--- [[ DRAGGING ]]
-local dragging, dragStart, startPos
-Main.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = Main.Position end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-
--- [[ LOGIC ]]
+-- [[ BUTTONS ]]
 GetBtn.MouseButton1Click:Connect(function()
     setclipboard(Config.KeyLink)
     GetBtn.Text = "Copied!"
@@ -91,32 +90,34 @@ end)
 
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SubmitBtn.Text = "Verifying..."
+        SubmitBtn.Text = "Loading Hub..."
         local TargetURL = _G.MainScript
         
-        if TargetURL and TargetURL ~= "" then
-            -- 1. أنميشن الخروج
-            local out = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
-            out:Play()
+        if TargetURL then
+            -- 1. كـنجيبوا الكود هو اللول و هوما فوسط الـ UI
+            local success, content = pcall(function() return game:HttpGet(TargetURL) end)
             
-            out.Completed:Connect(function()
-                -- 2. إخفاء الـ UI فوراً
-                ScreenGui.Enabled = false
+            if success and content then
+                -- 2. أنميشن الخروج
+                local close = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+                close:Play()
                 
-                -- 3. تـنفيذ السكربت الرئيسي بـ طـريقة مـضمونة (Deferred)
-                task.defer(function()
-                    local success, content = pcall(game.HttpGet, game, TargetURL)
-                    if success then
-                        -- مسح الكي سيستم نهائياً قبل التشغيل
-                        ScreenGui:Destroy()
-                        loadstring(content)()
+                close.Completed:Connect(function()
+                    ScreenGui:Destroy()
+                    -- 3. تـنفيذ الكود اللي ديجا تيليشارجيناه
+                    local func, err = loadstring(content)
+                    if func then
+                        task.spawn(func) -- هادي هي الطريقة المضمونة باش يخدم
                     else
-                        warn("LP10 Error: Could not fetch script.")
+                        warn("LP10 Error in Main Script: " .. tostring(err))
                     end
                 end)
-            end)
+            else
+                SubmitBtn.Text = "HTTP Error!"
+                warn("LP10 Error: Could not fetch script from URL.")
+            end
         else
-            SubmitBtn.Text = "Error: No URL!"
+            SubmitBtn.Text = "No URL Found"
         end
     else
         KeyInput.Text = ""; KeyInput.PlaceholderText = "WRONG KEY!"; task.wait(1); KeyInput.PlaceholderText = "Enter Key..."
