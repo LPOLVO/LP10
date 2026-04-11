@@ -1,0 +1,2 @@
+_G.MainScript = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Free%20Gamepasses%20OB"
+loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/LP10%20HUB%20KeySystem%20OB"))()
