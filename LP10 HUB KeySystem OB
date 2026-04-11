@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + LOADING BAR ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + PERFECT NOTIFICATIONS ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -29,18 +29,62 @@ local Overlay = Instance.new("Frame", ScreenGui)
 Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0.5, 0); Overlay.AnchorPoint = Vector2.new(0.5, 0.5); Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 0
 
 -----------------------------------------------------------------------
--- [ NOTIFICATION & PARTICLES ]
+-- [ NOTIFICATION SYSTEM - FIXED ]
 -----------------------------------------------------------------------
 local function SendLP10Notify(title, text, isError)
     local NotifyFrame = Instance.new("Frame", ScreenGui)
-    NotifyFrame.Size = UDim2.new(0, 250, 0, 65); NotifyFrame.Position = UDim2.new(1, 10, 1, -80); NotifyFrame.BackgroundColor3 = Config.BgColor; NotifyFrame.ZIndex = 100; Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 10)
-    local Stroke = Instance.new("UIStroke", NotifyFrame); Stroke.Thickness = 2; Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
-    local T = Instance.new("TextLabel", NotifyFrame); T.Text = "💎 " .. title; T.Size = UDim2.new(1, -10, 0, 25); T.Position = UDim2.new(0, 10, 0, 5); T.BackgroundTransparency = 1; T.TextColor3 = Stroke.Color; T.Font = Enum.Font.GothamBold; T.TextSize = 14; T.TextXAlignment = Enum.TextXAlignment.Left
-    local D = Instance.new("TextLabel", NotifyFrame); D.Text = text; D.Size = UDim2.new(1, -10, 0, 30); D.Position = UDim2.new(0, 10, 0, 30); D.BackgroundTransparency = 1; D.TextColor3 = Color3.new(1, 1, 1); D.Font = Enum.Font.Gotham; D.TextSize = 11; D.TextXAlignment = Enum.TextXAlignment.Left; D.TextWrapped = true
-    NotifyFrame:TweenPosition(UDim2.new(1, -260, 1, -80), "Out", "Back", 0.5, true)
-    task.delay(4, function() if NotifyFrame then NotifyFrame:TweenPosition(UDim2.new(1, 10, 1, -80), "In", "Back", 0.5, true, function() NotifyFrame:Destroy() end) end end)
+    NotifyFrame.Name = "LP10_Notify"
+    NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
+    NotifyFrame.BackgroundColor3 = Config.BgColor
+    NotifyFrame.ZIndex = 105 -- طالع باش يبان فوق كولشي
+    
+    local UICorner = Instance.new("UICorner", NotifyFrame)
+    UICorner.CornerRadius = UDim.new(0, 10)
+    
+    local Stroke = Instance.new("UIStroke", NotifyFrame)
+    Stroke.Thickness = 2
+    Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
+
+    local TitleLabel = Instance.new("TextLabel", NotifyFrame)
+    TitleLabel.Text = " 💎 " .. title:upper()
+    TitleLabel.Size = UDim2.new(1, -10, 0, 30)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.TextColor3 = Stroke.Color
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 14
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.ZIndex = 106
+
+    local DescLabel = Instance.new("TextLabel", NotifyFrame)
+    DescLabel.Text = text
+    DescLabel.Size = UDim2.new(1, -20, 0, 30)
+    DescLabel.Position = UDim2.new(0, 15, 0, 32)
+    DescLabel.BackgroundTransparency = 1
+    DescLabel.TextColor3 = Color3.new(1, 1, 1)
+    DescLabel.Font = Enum.Font.GothamMedium
+    DescLabel.TextSize = 12
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DescLabel.TextWrapped = true
+    DescLabel.ZIndex = 106
+
+    -- Animation In
+    NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
+
+    task.delay(4, function()
+        if NotifyFrame then
+            local tween = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
+            tween:Play()
+            tween.Completed:Wait()
+            NotifyFrame:Destroy()
+        end
+    end)
 end
 
+-----------------------------------------------------------------------
+-- [ PARTICLES SYSTEM ]
+-----------------------------------------------------------------------
 local function SpawnParticle(parent)
     task.spawn(function()
         local p = Instance.new("Frame", parent); p.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5)); p.Position = UDim2.new(math.random(), 0, 1, 5); p.BackgroundColor3 = Config.AccentColor; p.BorderSizePixel = 0; p.ZIndex = 2; Instance.new("UICorner", p).CornerRadius = UDim.new(1, 0)
@@ -63,7 +107,7 @@ local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Ente
 local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
 local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
 
--- Start Animation
+-- Intro Animation
 task.spawn(function()
     TweenService:Create(Blur, TweenInfo.new(1), {Size = 56}):Play()
     TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
@@ -107,7 +151,7 @@ end
 -- Logic
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SendLP10Notify("SUCCESS", "Key accepted! Welcome Hamza.", false)
+        SendLP10Notify("Success", "Key accepted! Welcome back Hamza.", false)
         StartLoading()
         
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
@@ -118,14 +162,18 @@ SubmitBtn.MouseButton1Click:Connect(function()
             task.wait(0.5); ScreenGui:Destroy(); loadstring(content)()
         end
     else
-        SendLP10Notify("ERROR", "Wrong Key!", true)
+        SendLP10Notify("Auth Error", "The key you entered is incorrect.", true)
+        KeyInput.Text = ""
         local orig = Main.Position
         for i = 1, 6 do Main.Position = orig + UDim2.new(0, (i%2==0 and 5 or -5), 0, 0); task.wait(0.02) end
         Main.Position = orig
     end
 end)
 
-GetBtn.MouseButton1Click:Connect(function() setclipboard(Config.KeyLink); SendLP10Notify("COPIED", "Link copied!", false) end)
+GetBtn.MouseButton1Click:Connect(function() 
+    setclipboard(Config.KeyLink)
+    SendLP10Notify("Clipboard", "Linkvertise URL copied successfully!", false)
+end)
 
 -- Dragging
 local dragging, dragStart, startPos
