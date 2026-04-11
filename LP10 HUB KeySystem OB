@@ -1,4 +1,5 @@
 -- [[ LP10 HUB | UNIVERSAL KEY SYSTEM + NOTIFICATION SYSTEM ]]
+-- FIXED: SCRIPT LOADING & VISIBILITY
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -12,9 +13,15 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
+-- تأكد بلي السكربت ما كاينش ديجا
+if CoreGui:FindFirstChild("LP10_AuthGate_Pro") then
+    CoreGui:FindFirstChild("LP10_AuthGate_Pro"):Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate_Pro"
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true -- باش يغطي الشاشة كاملة إلا بغيتي
 
 -----------------------------------------------------------------------
 -- [ MODULE: LP10 NOTIFICATIONS ]
@@ -34,6 +41,141 @@ local function SendLP10Notify(title, text, isError)
     local T = Instance.new("TextLabel", NotifyFrame)
     T.Text = "💎 " .. title; T.Size = UDim2.new(1, -10, 0, 25); T.Position = UDim2.new(0, 10, 0, 5); T.BackgroundTransparency = 1; T.TextColor3 = Stroke.Color; T.Font = Enum.Font.GothamBold; T.TextSize = 14; T.TextXAlignment = Enum.TextXAlignment.Left
 
+    local D = Instance.new("TextLabel", NotifyFrame)
+    D.Text = text; D.Size = UDim2.new(1, -10, 0, 30); D.Position = UDim2.new(0, 10, 0, 30); D.BackgroundTransparency = 1; D.TextColor3 = Color3.new(1, 1, 1); D.Font = Enum.Font.Gotham; D.TextSize = 11; D.TextXAlignment = Enum.TextXAlignment.Left; D.TextWrapped = true
+
+    NotifyFrame:TweenPosition(UDim2.new(1, -260, 1, -80), "Out", "Back", 0.5, true)
+
+    task.delay(4, function()
+        if NotifyFrame then
+            NotifyFrame:TweenPosition(UDim2.new(1, 10, 1, -80), "In", "Back", 0.5, true, function()
+                NotifyFrame:Destroy()
+            end)
+        end
+    end)
+end
+
+-----------------------------------------------------------------------
+-- [ UI CONSTRUCTION ]
+-----------------------------------------------------------------------
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 0, 0, 0)
+Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.BackgroundColor3 = Config.BgColor
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.Active = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Config.AccentColor
+MainStroke.Thickness = 2
+MainStroke.Transparency = 1
+
+local IntroLogo = Instance.new("TextLabel", Main)
+IntroLogo.Size = UDim2.new(1, 0, 1, 0); IntroLogo.BackgroundTransparency = 1; IntroLogo.Text = "LP10 HUB"; IntroLogo.TextColor3 = Config.AccentColor; IntroLogo.Font = Enum.Font.FredokaOne; IntroLogo.TextSize = 30; IntroLogo.TextTransparency = 1
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.Text = "🔑 LP10 AUTH"; Title.TextColor3 = Config.AccentColor; Title.Font = Enum.Font.GothamBold; Title.TextSize = 20; Title.TextTransparency = 1
+
+local KeyInput = Instance.new("TextBox", Main)
+KeyInput.Size = UDim2.new(0.85, 0, 0, 45); KeyInput.Position = UDim2.new(0.075, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.new(1, 1, 1); KeyInput.TextTransparency = 1; KeyInput.BackgroundTransparency = 1; Instance.new("UICorner", KeyInput)
+
+local GetBtn = Instance.new("TextButton", Main)
+GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.Text = "Get Key"; GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; Instance.new("UICorner", GetBtn)
+
+local SubmitBtn = Instance.new("TextButton", Main)
+SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; Instance.new("UICorner", SubmitBtn)
+
+-- Dragging Function
+local function EnableDragging()
+    local dragging, dragStart, startPos
+    Main.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = Main.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+EnableDragging()
+
+-- [[ ANIMATION START ]]
+task.spawn(function()
+    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
+    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
+    task.wait(0.5)
+    TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
+    task.wait(1.2)
+    TweenService:Create(IntroLogo, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    task.wait(0.2)
+    TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
+    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0}):Play()
+    task.wait(0.4)
+    TweenService:Create(Title, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+    TweenService:Create(KeyInput, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(GetBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(SubmitBtn, TweenInfo.new(0.4), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+end)
+
+-- [[ LOGIC ]]
+GetBtn.MouseButton1Click:Connect(function()
+    if setclipboard then 
+        setclipboard(Config.KeyLink) 
+        SendLP10Notify("COPIED", "Linkvertise link copied!", false)
+    else 
+        SendLP10Notify("ERROR", "Device doesn't support clipboard.", true)
+    end
+end)
+
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == Config.CorrectKey then
+        SubmitBtn.Text = "VERIFIED"
+        SendLP10Notify("SUCCESS", "Key accepted! Loading Hub...", false)
+        
+        -- هنا تأكد بلي _G.MainScript فيها الـ URL نيت
+        local TargetURL = _G.MainScript or "https://raw.githubusercontent.com/YourRepo/main.lua" -- دير الرابط هنا إلا ما كنتيش حاطو فـ _G
+        
+        task.spawn(function()
+            local success, content = pcall(function() return game:HttpGet(TargetURL) end)
+            if success and content then
+                local close = TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+                close:Play()
+                close.Completed:Connect(function()
+                    local func, err = loadstring(content)
+                    if func then
+                        task.spawn(func)
+                        ScreenGui:Destroy()
+                    else
+                        SendLP10Notify("LOAD ERROR", "Script has errors.", true)
+                    end
+                end)
+            else
+                -- إلا ما لقا والو فـ الرابط، غيفتح ليك المنيو اللي صاوبنا قبيلة (Sniffer) كـ مثال
+                SendLP10Notify("FETCH ERROR", "Using local fallback...", true)
+                task.wait(1)
+                ScreenGui:Destroy()
+                -- هنا تقدر تحط الكود ديال الـ Sniffer مباشرة
+            end
+        end)
+    else
+        SendLP10Notify("AUTH FAILED", "Wrong key!", true)
+        KeyInput.Text = ""
+        -- Shake
+        local orig = Main.Position
+        for i = 1, 6 do
+            Main.Position = orig + UDim2.new(0, (i%2==0 and 5 or -5), 0, 0)
+            task.wait(0.02)
+        end
+        Main.Position = orig
+    end
+end)
     local D = Instance.new("TextLabel", NotifyFrame)
     D.Text = text; D.Size = UDim2.new(1, -10, 0, 30); D.Position = UDim2.new(0, 10, 0, 30); D.BackgroundTransparency = 1; D.TextColor3 = Color3.new(1, 1, 1); D.Font = Enum.Font.Gotham; D.TextSize = 11; D.TextXAlignment = Enum.TextXAlignment.Left; D.TextWrapped = true
 
