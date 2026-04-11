@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + NOTIFICATION FIX ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + DYNAMIC USERNAME ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -12,6 +12,8 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 -- Cleanup
 if CoreGui:FindFirstChild("LP10_AuthGate_Pro") then CoreGui:FindFirstChild("LP10_AuthGate_Pro"):Destroy() end
@@ -29,14 +31,14 @@ local Overlay = Instance.new("Frame", ScreenGui)
 Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0.5, 0); Overlay.AnchorPoint = Vector2.new(0.5, 0.5); Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 0
 
 -----------------------------------------------------------------------
--- [ NOTIFICATION SYSTEM - FINAL FIX ]
+-- [ NOTIFICATION SYSTEM ]
 -----------------------------------------------------------------------
 local function SendLP10Notify(title, text, isError)
     local NotifyFrame = Instance.new("Frame")
     NotifyFrame.Name = "LP10_Notify"
-    NotifyFrame.Parent = ScreenGui -- Parent explicit
+    NotifyFrame.Parent = ScreenGui
     NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
-    NotifyFrame.Position = UDim2.new(1, 10, 1, -100) -- Starting off-screen
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
     NotifyFrame.BackgroundColor3 = Config.BgColor
     NotifyFrame.BorderSizePixel = 0
     NotifyFrame.ZIndex = 200
@@ -51,7 +53,6 @@ local function SendLP10Notify(title, text, isError)
 
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Parent = NotifyFrame
-    TitleLabel.Name = "Title"
     TitleLabel.Text = "  💎 " .. title:upper()
     TitleLabel.Size = UDim2.new(1, -10, 0, 30)
     TitleLabel.Position = UDim2.new(0, 0, 0, 5)
@@ -64,7 +65,6 @@ local function SendLP10Notify(title, text, isError)
 
     local DescLabel = Instance.new("TextLabel")
     DescLabel.Parent = NotifyFrame
-    DescLabel.Name = "Description"
     DescLabel.Text = text
     DescLabel.Size = UDim2.new(1, -20, 0, 30)
     DescLabel.Position = UDim2.new(0, 15, 0, 32)
@@ -76,7 +76,6 @@ local function SendLP10Notify(title, text, isError)
     DescLabel.TextWrapped = true
     DescLabel.ZIndex = 201
 
-    -- Animation In
     NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
 
     task.delay(4, function()
@@ -131,7 +130,7 @@ task.spawn(function()
 end)
 
 -----------------------------------------------------------------------
--- [ THE LOADING SYSTEM ]
+-- [ LOADING SYSTEM ]
 -----------------------------------------------------------------------
 local function StartLoading()
     Title.Text = "🚀 INITIALIZING..."
@@ -158,7 +157,8 @@ end
 -- Logic
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SendLP10Notify("Success", "Welcome back Hamza!", false)
+        -- هنا التغيير: كيقرأ السمية ديال اللاعب أوتوماتيكيا
+        SendLP10Notify("Success", "Welcome back, " .. LocalPlayer.Name .. "!", false)
         StartLoading()
         
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
