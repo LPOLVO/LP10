@@ -1,0 +1,82 @@
+-- [[ LP10 HUB | UNIVERSAL KEY SYSTEM ]]
+-- BY @LPOLVO (HAMZA)
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+-- [ 1. CONFIGURATION ]
+local Config = {
+    CorrectKey = "4fzx6ecbu1f6",
+    KeyLink = "https://linkvertise.com/1418391/507cpxkNrsxX?o=sharing",
+    -- هاد الرابط لتحت هو اللي غتبدل فيه الـ Raw Link ديال السكربت الرئيسي ديالك
+    MainScriptRaw = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/script.lua"
+}
+
+-- [ 2. GUI ]
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "LP10_KeyAuth"
+
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 320, 0, 220)
+Main.Position = UDim2.new(0.5, -160, 0.5, -110)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(33, 150, 243)
+Stroke.Thickness = 2
+
+-- Dragging
+local dragging, dragInput, dragStart, startPos
+Main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true; dragStart = input.Position; startPos = Main.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+Main.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.Text = "🔑 LP10 AUTH"; Title.TextColor3 = Color3.fromRGB(33, 150, 243); Title.Font = Enum.Font.GothamBold; Title.TextSize = 20
+
+local KeyInput = Instance.new("TextBox", Main)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 45); KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Text = ""; KeyInput.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", KeyInput)
+
+local GetBtn = Instance.new("TextButton", Main)
+GetBtn.Size = UDim2.new(0.38, 0, 0, 40); GetBtn.Position = UDim2.new(0.1, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); GetBtn.Text = "Get Key"; GetBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", GetBtn)
+
+local SubmitBtn = Instance.new("TextButton", Main)
+SubmitBtn.Size = UDim2.new(0.38, 0, 0, 40); SubmitBtn.Position = UDim2.new(0.52, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Color3.fromRGB(33, 150, 243); SubmitBtn.Text = "Submit"; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", SubmitBtn)
+
+-- [ 3. LOGIC ]
+GetBtn.MouseButton1Click:Connect(function()
+    setclipboard(Config.KeyLink)
+    GetBtn.Text = "Copied!"
+    wait(1)
+    GetBtn.Text = "Get Key"
+end)
+
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == Config.CorrectKey then
+        SubmitBtn.Text = "Loading..."
+        ScreenGui:Destroy()
+        -- هاد السطر هو اللي كيجبد السكربت الرئيسي ديالك ويخدمو
+        local success, err = pcall(function()
+            loadstring(game:HttpGet(Config.MainScriptRaw))()
+        end)
+        if not success then
+            warn("Failed to load main script: " .. tostring(err))
+        end
+    else
+        KeyInput.Text = ""
+        KeyInput.PlaceholderText = "INVALID KEY!"
+        wait(1)
+        KeyInput.PlaceholderText = "Enter Key..."
+    end
+end)
