@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + FIXED CLOSE BUTTON ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + DRAGGABLE TOGGLE ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -34,170 +34,109 @@ Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0
 -- [ NOTIFICATION SYSTEM ]
 -----------------------------------------------------------------------
 local function SendLP10Notify(title, text, isError)
-    local NotifyFrame = Instance.new("Frame")
-    NotifyFrame.Name = "LP10_Notify"
-    NotifyFrame.Parent = ScreenGui
-    NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
-    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
-    NotifyFrame.BackgroundColor3 = Config.BgColor
-    NotifyFrame.BorderSizePixel = 0
-    NotifyFrame.ZIndex = 200
-    
-    local UICorner = Instance.new("UICorner", NotifyFrame)
-    UICorner.CornerRadius = UDim.new(0, 10)
-    
-    local Stroke = Instance.new("UIStroke", NotifyFrame)
-    Stroke.Thickness = 2
-    Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
-
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = NotifyFrame
-    TitleLabel.Text = "  💎 " .. title:upper()
-    TitleLabel.Size = UDim2.new(1, -10, 0, 30)
-    TitleLabel.Position = UDim2.new(0, 0, 0, 5)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.TextColor3 = Stroke.Color
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 14
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.ZIndex = 201
-
-    local DescLabel = Instance.new("TextLabel")
-    DescLabel.Parent = NotifyFrame
-    DescLabel.Text = text
-    DescLabel.Size = UDim2.new(1, -20, 0, 30)
-    DescLabel.Position = UDim2.new(0, 15, 0, 32)
-    DescLabel.BackgroundTransparency = 1
-    DescLabel.TextColor3 = Color3.new(1, 1, 1)
-    DescLabel.Font = Enum.Font.GothamMedium
-    DescLabel.TextSize = 12
-    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
-    DescLabel.TextWrapped = true
-    DescLabel.ZIndex = 201
-
+    local NotifyFrame = Instance.new("Frame", ScreenGui)
+    NotifyFrame.Size = UDim2.new(0, 260, 0, 70); NotifyFrame.Position = UDim2.new(1, 10, 1, -100); NotifyFrame.BackgroundColor3 = Config.BgColor; NotifyFrame.BorderSizePixel = 0; NotifyFrame.ZIndex = 200; Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", NotifyFrame); Stroke.Thickness = 2; Stroke.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
+    local T = Instance.new("TextLabel", NotifyFrame); T.Text = "  💎 " .. title:upper(); T.Size = UDim2.new(1, -10, 0, 30); T.Position = UDim2.new(0, 0, 0, 5); T.BackgroundTransparency = 1; T.TextColor3 = Stroke.Color; T.Font = Enum.Font.GothamBold; T.TextSize = 14; T.TextXAlignment = Enum.TextXAlignment.Left
+    local D = Instance.new("TextLabel", NotifyFrame); D.Text = text; D.Size = UDim2.new(1, -20, 0, 30); D.Position = UDim2.new(0, 15, 0, 32); D.BackgroundTransparency = 1; D.TextColor3 = Color3.new(1, 1, 1); D.Font = Enum.Font.GothamMedium; D.TextSize = 12; D.TextXAlignment = Enum.TextXAlignment.Left; D.TextWrapped = true
     NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
-
-    task.delay(4, function()
-        if NotifyFrame then
-            local tween = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
-            tween:Play()
-            tween.Completed:Wait()
-            NotifyFrame:Destroy()
-        end
-    end)
+    task.delay(4, function() if NotifyFrame then NotifyFrame:Destroy() end end)
 end
 
 -----------------------------------------------------------------------
 -- [ UI CONSTRUCTION ]
 -----------------------------------------------------------------------
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 0, 0, 0); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.BackgroundColor3 = Config.BgColor; Main.ClipsDescendants = true; Main.Active = true; Main.ZIndex = 1; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+Main.Size = UDim2.new(0, 0, 0, 0); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.BackgroundColor3 = Config.BgColor; Main.ClipsDescendants = true; Main.Active = true; Main.ZIndex = 5; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 local MainStroke = Instance.new("UIStroke", Main); MainStroke.Color = Config.AccentColor; MainStroke.Thickness = 2; MainStroke.Transparency = 1
-local ParticleArea = Instance.new("Frame", Main); ParticleArea.Size = UDim2.new(1, 0, 1, 0); ParticleArea.BackgroundTransparency = 1; ParticleArea.ZIndex = 1
 
 local IntroLogo = Instance.new("TextLabel", Main); IntroLogo.Size = UDim2.new(1, 0, 1, 0); IntroLogo.BackgroundTransparency = 1; IntroLogo.Text = "LP10 HUB"; IntroLogo.TextColor3 = Config.AccentColor; IntroLogo.Font = Enum.Font.FredokaOne; IntroLogo.TextSize = 30; IntroLogo.TextTransparency = 1; IntroLogo.ZIndex = 10
-local Title = Instance.new("TextLabel", Main); Title.Text = "🔑 LP10 AUTH"; Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.TextColor3 = Config.AccentColor; Title.Font = Enum.Font.GothamBold; Title.TextSize = 20; Title.TextTransparency = 1; Title.ZIndex = 5
-local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Size = UDim2.new(0.85, 0, 0, 45); KeyInput.Position = UDim2.new(0.075, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.TextColor3 = Color3.new(1, 1, 1); KeyInput.TextTransparency = 1; KeyInput.BackgroundTransparency = 1; KeyInput.ZIndex = 5; Instance.new("UICorner", KeyInput)
-local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
-local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
+local Title = Instance.new("TextLabel", Main); Title.Text = "🔑 LP10 AUTH"; Title.Size = UDim2.new(1, 0, 0, 50); Title.BackgroundTransparency = 1; Title.TextColor3 = Config.AccentColor; Title.Font = Enum.Font.GothamBold; Title.TextSize = 20; Title.TextTransparency = 1; Title.ZIndex = 6
+local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Size = UDim2.new(0.85, 0, 0, 45); KeyInput.Position = UDim2.new(0.075, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.TextColor3 = Color3.new(1, 1, 1); KeyInput.TextTransparency = 1; KeyInput.BackgroundTransparency = 1; KeyInput.ZIndex = 6; Instance.new("UICorner", KeyInput)
+local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 6; Instance.new("UICorner", SubmitBtn)
+local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 6; Instance.new("UICorner", GetBtn)
 
--- Close Button (X) Fix
-local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Name = "CloseBtn"
-CloseBtn.Text = "X" -- درتها X عادية باش تبان فكاع الأجهزة
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 10)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-CloseBtn.TextSize = 18
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextTransparency = 1
-CloseBtn.ZIndex = 10
+local CloseBtn = Instance.new("TextButton", Main); CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0, 10); CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.TextSize = 18; CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextTransparency = 1; CloseBtn.ZIndex = 10
+
+-- [ TOGGLE BUTTON K.S ]
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name = "KSToggle"
+ToggleBtn.Text = "K.S"
+ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -22)
+ToggleBtn.BackgroundColor3 = Config.AccentColor
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true -- ساهلة ماهلة
+ToggleBtn.ZIndex = 100
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 10)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn); ToggleStroke.Color = Color3.new(1,1,1); ToggleStroke.Thickness = 2; ToggleStroke.Transparency = 0.8
 
 -----------------------------------------------------------------------
--- [ FUNCTIONS ]
+-- [ LOGIC ]
 -----------------------------------------------------------------------
-local function ShutdownUI()
-    TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 0}):Play()
-    TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
-    task.wait(0.5)
-    ScreenGui:Destroy()
+
+local function ToggleUI()
+    Main.Visible = not Main.Visible
+    Blur.Enabled = Main.Visible
+    Overlay.Visible = Main.Visible
 end
 
 local function StartLoading()
-    Title.Text = "🚀 INITIALIZING..."
-    KeyInput.Visible = false; GetBtn.Visible = false; SubmitBtn.Visible = false; CloseBtn.Visible = false
-    
+    Title.Text = "🚀 INITIALIZING..."; KeyInput.Visible = false; GetBtn.Visible = false; SubmitBtn.Visible = false; CloseBtn.Visible = false
     local BarBg = Instance.new("Frame", Main); BarBg.Size = UDim2.new(0.8, 0, 0, 8); BarBg.Position = UDim2.new(0.1, 0, 0.5, 0); BarBg.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Instance.new("UICorner", BarBg)
     local BarFill = Instance.new("Frame", BarBg); BarFill.Size = UDim2.new(0, 0, 1, 0); BarFill.BackgroundColor3 = Config.AccentColor; Instance.new("UICorner", BarFill)
-    local Percentage = Instance.new("TextLabel", Main); Percentage.Size = UDim2.new(1, 0, 0, 20); Percentage.Position = UDim2.new(0, 0, 0.6, 0); Percentage.BackgroundTransparency = 1; Percentage.TextColor3 = Color3.new(1, 1, 1); Percentage.Font = Enum.Font.Gotham; Percentage.TextSize = 14; Percentage.Text = "0%"
-
-    local states = {"Loading Assets...", "Checking Database...", "Verifying Encryption...", "Preparing Hub..."}
-    
-    for i = 1, 100 do
-        local alpha = i/100
-        TweenService:Create(BarFill, TweenInfo.new(0.05), {Size = UDim2.new(alpha, 0, 1, 0)}):Play()
-        Percentage.Text = i .. "%"
-        if i % 25 == 0 then Title.Text = "🚀 " .. states[i/25] end
-        task.wait(math.random(0.01, 0.05))
-    end
-    
-    Title.Text = "✅ DONE!"
+    for i = 1, 100 do BarFill.Size = UDim2.new(i/100, 0, 1, 0); task.wait(0.02) end
     task.wait(0.5)
 end
 
------------------------------------------------------------------------
--- [ LOGIC & ANIMATION ]
------------------------------------------------------------------------
-
--- Intro Animation
+-- Intro
 task.spawn(function()
     TweenService:Create(Blur, TweenInfo.new(1), {Size = 56}):Play()
     TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
-    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
-    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
-    task.wait(0.5); TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
-    task.wait(1.2); TweenService:Create(IntroLogo, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-    task.wait(0.2); TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
+    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 320, 0, 210)}):Play()
     TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0}):Play()
-    task.wait(0.4); local tInfo = TweenInfo.new(0.4)
-    TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play(); TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
-    TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play(); TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    local tInfo = TweenInfo.new(0.4)
+    TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play()
+    TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(CloseBtn, tInfo, {TextTransparency = 0.5}):Play()
 end)
 
--- Buttons Logic
-CloseBtn.MouseEnter:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100), TextTransparency = 0}):Play() end)
-CloseBtn.MouseLeave:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.new(1, 1, 1), TextTransparency = 0.5}):Play() end)
-CloseBtn.MouseButton1Click:Connect(ShutdownUI)
+ToggleBtn.MouseButton1Click:Connect(ToggleUI)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy(); Blur:Destroy() end)
 
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        SendLP10Notify("Success", "Welcome back, " .. LocalPlayer.Name .. "!", false)
+        SendLP10Notify("Success", "Welcome back!", false)
         StartLoading()
-        
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
-        if success then 
-            ShutdownUI()
-            loadstring(content)()
-        end
+        if success then ScreenGui:Destroy(); Blur:Destroy(); loadstring(content)() end
     else
-        SendLP10Notify("Auth Error", "The key you entered is incorrect.", true)
-        KeyInput.Text = ""
-        local orig = Main.Position
-        for i = 1, 6 do Main.Position = orig + UDim2.new(0, (i%2==0 and 5 or -5), 0, 0); task.wait(0.02) end
-        Main.Position = orig
+        SendLP10Notify("Error", "Incorrect Key!", true)
     end
 end)
 
-GetBtn.MouseButton1Click:Connect(function() 
-    setclipboard(Config.KeyLink)
-    SendLP10Notify("Clipboard", "Linkvertise URL copied!", false)
-end)
+GetBtn.MouseButton1Click:Connect(function() setclipboard(Config.KeyLink); SendLP10Notify("Clipboard", "Link copied!", false) end)
 
--- Dragging
-local dragging, dragStart, startPos
-Main.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = Main.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
-UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+-- Dragging Function for Main UI
+local function MakeDraggable(frame)
+    local dragging, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+MakeDraggable(Main)
