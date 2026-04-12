@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + PARTICLES + DRAGGABLE TOGGLE ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + FIXED NOTIFICATIONS ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -69,6 +69,60 @@ task.spawn(function()
 end)
 
 -----------------------------------------------------------------------
+-- [ NOTIFICATION SYSTEM - FIXED ]
+-----------------------------------------------------------------------
+local function SendLP10Notify(title, text, isError)
+    local NotifyFrame = Instance.new("Frame", ScreenGui)
+    NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
+    NotifyFrame.BackgroundColor3 = Config.BgColor
+    NotifyFrame.BorderSizePixel = 0
+    NotifyFrame.ZIndex = 200
+    
+    local Corner = Instance.new("UICorner", NotifyFrame)
+    Corner.CornerRadius = UDim.new(0, 10)
+    
+    local S = Instance.new("UIStroke", NotifyFrame)
+    S.Thickness = 2
+    S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    S.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
+    
+    local TL = Instance.new("TextLabel", NotifyFrame) -- تحديد الـ Parent دابا
+    TL.Text = "  💎 " .. title:upper()
+    TL.Size = UDim2.new(1, -10, 0, 30)
+    TL.Position = UDim2.new(0, 0, 0, 5)
+    TL.BackgroundTransparency = 1
+    TL.TextColor3 = S.Color
+    TL.Font = Enum.Font.GothamBold
+    TL.TextSize = 14
+    TL.TextXAlignment = Enum.TextXAlignment.Left
+    TL.ZIndex = 201
+    
+    local DL = Instance.new("TextLabel", NotifyFrame) -- تحديد الـ Parent دابا
+    DL.Text = text
+    DL.Size = UDim2.new(1, -20, 0, 30)
+    DL.Position = UDim2.new(0, 15, 0, 32)
+    DL.BackgroundTransparency = 1
+    DL.TextColor3 = Color3.new(1, 1, 1)
+    DL.Font = Enum.Font.GothamMedium
+    DL.TextSize = 12
+    DL.TextXAlignment = Enum.TextXAlignment.Left
+    DL.TextWrapped = true
+    DL.ZIndex = 201
+
+    NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
+    
+    task.delay(4, function()
+        if NotifyFrame then
+            local t = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
+            t:Play()
+            t.Completed:Wait()
+            NotifyFrame:Destroy()
+        end
+    end)
+end
+
+-----------------------------------------------------------------------
 -- [ TOGGLE BUTTON K.S ]
 -----------------------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
@@ -94,28 +148,11 @@ local Title = Instance.new("TextLabel", Main); Title.Text = "🔑 LP10 AUTH"; Ti
 local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Enter Key..."; KeyInput.Size = UDim2.new(0.85, 0, 0, 45); KeyInput.Position = UDim2.new(0.075, 0, 0.35, 0); KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25); KeyInput.TextColor3 = Color3.new(1, 1, 1); KeyInput.TextTransparency = 1; KeyInput.BackgroundTransparency = 1; KeyInput.ZIndex = 5; Instance.new("UICorner", KeyInput)
 local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
 local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
-
 local CloseBtn = Instance.new("TextButton", Main); CloseBtn.Name = "CloseBtn"; CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0, 10); CloseBtn.BackgroundTransparency = 1; CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.TextSize = 18; CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextTransparency = 1; CloseBtn.ZIndex = 10
 
 -----------------------------------------------------------------------
 -- [ FUNCTIONS ]
 -----------------------------------------------------------------------
-local function SendLP10Notify(title, text, isError)
-    local NotifyFrame = Instance.new("Frame", ScreenGui)
-    NotifyFrame.Size = UDim2.new(0, 260, 0, 70); NotifyFrame.Position = UDim2.new(1, 10, 1, -100); NotifyFrame.BackgroundColor3 = Config.BgColor; NotifyFrame.BorderSizePixel = 0; NotifyFrame.ZIndex = 200
-    Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 10)
-    local S = Instance.new("UIStroke", NotifyFrame); S.Thickness = 2; S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; S.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
-    
-    local TL = Instance.new("TextLabel", NotifyFrame); TL.Text = "  💎 " .. title:upper(); TL.Size = UDim2.new(1, -10, 0, 30); TL.Position = UDim2.new(0, 0, 0, 5); TL.BackgroundTransparency = 1; TL.TextColor3 = S.Color; TL.Font = Enum.Font.GothamBold; TL.TextSize = 14; TL.TextXAlignment = Enum.TextXAlignment.Left
-    local DL = Instance.new("TextLabel", NotifyFrame); DL.Text = text; DL.Size = UDim2.new(1, -20, 0, 30); DL.Position = UDim2.new(0, 15, 0, 32); DL.BackgroundTransparency = 1; DL.TextColor3 = Color3.new(1, 1, 1); DL.Font = Enum.Font.GothamMedium; DL.TextSize = 12; DL.TextXAlignment = Enum.TextXAlignment.Left; DL.TextWrapped = true
-
-    NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
-    task.delay(4, function()
-        local t = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
-        t:Play(); t.Completed:Wait(); NotifyFrame:Destroy()
-    end)
-end
-
 local function ShutdownUI()
     TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 0}):Play()
     TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
