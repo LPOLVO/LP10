@@ -157,7 +157,7 @@ end
 -- Logic
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        -- هنا التغيير: كيقرأ السمية ديال اللاعب أوتوماتيكيا
+        -- هنا التعديل: استبدال "Hamza" باسم اللاعب الحقيقي
         SendLP10Notify("Success", "Welcome back, " .. LocalPlayer.Name .. "!", false)
         StartLoading()
         
