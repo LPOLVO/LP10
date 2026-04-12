@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + DYNAMIC USERNAME ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + CLOSE BUTTON ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -89,17 +89,6 @@ local function SendLP10Notify(title, text, isError)
 end
 
 -----------------------------------------------------------------------
--- [ PARTICLES SYSTEM ]
------------------------------------------------------------------------
-local function SpawnParticle(parent)
-    task.spawn(function()
-        local p = Instance.new("Frame", parent); p.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5)); p.Position = UDim2.new(math.random(), 0, 1, 5); p.BackgroundColor3 = Config.AccentColor; p.BorderSizePixel = 0; p.ZIndex = 2; Instance.new("UICorner", p).CornerRadius = UDim.new(1, 0)
-        TweenService:Create(p, TweenInfo.new(math.random(2, 4)), {Position = UDim2.new(p.Position.X.Scale, math.random(-30, 30), -0.1, 0), BackgroundTransparency = 1}):Play()
-        task.wait(4); p:Destroy()
-    end)
-end
-
------------------------------------------------------------------------
 -- [ UI CONSTRUCTION ]
 -----------------------------------------------------------------------
 local Main = Instance.new("Frame", ScreenGui)
@@ -113,28 +102,33 @@ local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Ente
 local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
 local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
 
--- Intro Animation
-task.spawn(function()
-    TweenService:Create(Blur, TweenInfo.new(1), {Size = 56}):Play()
-    TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
-    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
-    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
-    task.wait(0.5); TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
-    task.wait(1.2); TweenService:Create(IntroLogo, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-    task.wait(0.2); TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
-    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0}):Play()
-    task.wait(0.4); local tInfo = TweenInfo.new(0.4)
-    TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play(); TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
-    TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play(); TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
-    while Main.Parent do SpawnParticle(ParticleArea); task.wait(0.45) end
-end)
+-- زر الخروج (X)
+local CloseBtn = Instance.new("TextButton", Main)
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Text = "✕"
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 10)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.TextSize = 18
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextTransparency = 1
+CloseBtn.ZIndex = 10
 
 -----------------------------------------------------------------------
--- [ LOADING SYSTEM ]
+-- [ FUNCTIONS ]
 -----------------------------------------------------------------------
+local function ShutdownUI()
+    TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 0}):Play()
+    TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
+    task.wait(0.5)
+    ScreenGui:Destroy()
+end
+
 local function StartLoading()
     Title.Text = "🚀 INITIALIZING..."
-    KeyInput.Visible = false; GetBtn.Visible = false; SubmitBtn.Visible = false
+    KeyInput.Visible = false; GetBtn.Visible = false; SubmitBtn.Visible = false; CloseBtn.Visible = false
     
     local BarBg = Instance.new("Frame", Main); BarBg.Size = UDim2.new(0.8, 0, 0, 8); BarBg.Position = UDim2.new(0.1, 0, 0.5, 0); BarBg.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Instance.new("UICorner", BarBg)
     local BarFill = Instance.new("Frame", BarBg); BarFill.Size = UDim2.new(0, 0, 1, 0); BarFill.BackgroundColor3 = Config.AccentColor; Instance.new("UICorner", BarFill)
@@ -154,19 +148,40 @@ local function StartLoading()
     task.wait(0.5)
 end
 
--- Logic
+-----------------------------------------------------------------------
+-- [ LOGIC & ANIMATION ]
+-----------------------------------------------------------------------
+
+-- Intro Animation
+task.spawn(function()
+    TweenService:Create(Blur, TweenInfo.new(1), {Size = 56}):Play()
+    TweenService:Create(Overlay, TweenInfo.new(1), {BackgroundTransparency = 0.4}):Play()
+    TweenService:Create(Main, TweenInfo.new(0.7), {Size = UDim2.new(0, 200, 0, 80)}):Play()
+    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0.5}):Play()
+    task.wait(0.5); TweenService:Create(IntroLogo, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
+    task.wait(1.2); TweenService:Create(IntroLogo, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    task.wait(0.2); TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 210)}):Play()
+    TweenService:Create(MainStroke, TweenInfo.new(0.7), {Transparency = 0}):Play()
+    task.wait(0.4); local tInfo = TweenInfo.new(0.4)
+    TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play(); TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play(); TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+    TweenService:Create(CloseBtn, tInfo, {TextTransparency = 0.5}):Play()
+end)
+
+-- Buttons Logic
+CloseBtn.MouseEnter:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100), TextTransparency = 0}):Play() end)
+CloseBtn.MouseLeave:Connect(function() TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.new(1, 1, 1), TextTransparency = 0.5}):Play() end)
+CloseBtn.MouseButton1Click:Connect(ShutdownUI)
+
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
-        -- هنا التعديل: استبدال "Hamza" باسم اللاعب الحقيقي
         SendLP10Notify("Success", "Welcome back, " .. LocalPlayer.Name .. "!", false)
         StartLoading()
         
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
         if success then 
-            TweenService:Create(Blur, TweenInfo.new(0.5), {Size = 0}):Play()
-            TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(Main, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(0,0,0,0), BackgroundTransparency = 1}):Play()
-            task.wait(0.5); ScreenGui:Destroy(); loadstring(content)()
+            ShutdownUI()
+            loadstring(content)()
         end
     else
         SendLP10Notify("Auth Error", "The key you entered is incorrect.", true)
