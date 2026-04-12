@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + CLOSE BUTTON ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + FIXED CLOSE BUTTON ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -102,10 +102,10 @@ local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Ente
 local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
 local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
 
--- زر الخروج (X)
+-- Close Button (X) Fix
 local CloseBtn = Instance.new("TextButton", Main)
 CloseBtn.Name = "CloseBtn"
-CloseBtn.Text = "✕"
+CloseBtn.Text = "X" -- درتها X عادية باش تبان فكاع الأجهزة
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0, 10)
 CloseBtn.BackgroundTransparency = 1
