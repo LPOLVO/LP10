@@ -1,4 +1,4 @@
--- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + FIXED CLOSE BUTTON ]]
+-- [[ LP10 HUB | THE ULTIMATE KEY SYSTEM + DRAGGABLE TOGGLE ]]
 -- BY @LPOLVO (HAMZA)
 
 local Config = {
@@ -29,6 +29,39 @@ Blur.Size = 0
 
 local Overlay = Instance.new("Frame", ScreenGui)
 Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0.5, 0); Overlay.AnchorPoint = Vector2.new(0.5, 0.5); Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 0
+
+-----------------------------------------------------------------------
+-- [ TOGGLE BUTTON K.S ]
+-----------------------------------------------------------------------
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name = "KSToggle"
+ToggleBtn.Text = "K.S"
+ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -22)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Background K7lla
+ToggleBtn.TextColor3 = Config.AccentColor
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.ZIndex = 100
+ToggleBtn.Visible = false -- كيبان مورا الـ Intro
+
+local TCorner = Instance.new("UICorner", ToggleBtn); TCorner.CornerRadius = UDim.new(0, 10)
+local TStroke = Instance.new("UIStroke", ToggleBtn); TStroke.Color = Config.AccentColor; TStroke.Thickness = 2
+
+-- Dragging Function for Toggle Button
+local dragToggle, dragStartT, startPosT
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true; dragStartT = input.Position; startPosT = ToggleBtn.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragToggle = false end end)
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStartT
+        ToggleBtn.Position = UDim2.new(startPosT.X.Scale, startPosT.X.Offset + delta.X, startPosT.Y.Scale, startPosT.Y.Offset + delta.Y)
+    end
+end)
 
 -----------------------------------------------------------------------
 -- [ NOTIFICATION SYSTEM ]
@@ -102,10 +135,10 @@ local KeyInput = Instance.new("TextBox", Main); KeyInput.PlaceholderText = "Ente
 local SubmitBtn = Instance.new("TextButton", Main); SubmitBtn.Text = "Submit"; SubmitBtn.Size = UDim2.new(0.4, 0, 0, 38); SubmitBtn.Position = UDim2.new(0.525, 0, 0.65, 0); SubmitBtn.BackgroundColor3 = Config.AccentColor; SubmitBtn.TextColor3 = Color3.new(1, 1, 1); SubmitBtn.TextTransparency = 1; SubmitBtn.BackgroundTransparency = 1; SubmitBtn.ZIndex = 5; Instance.new("UICorner", SubmitBtn)
 local GetBtn = Instance.new("TextButton", Main); GetBtn.Text = "Get Key"; GetBtn.Size = UDim2.new(0.4, 0, 0, 38); GetBtn.Position = UDim2.new(0.075, 0, 0.65, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); GetBtn.TextTransparency = 1; GetBtn.BackgroundTransparency = 1; GetBtn.ZIndex = 5; Instance.new("UICorner", GetBtn)
 
--- Close Button (X) Fix
+-- Close Button (X)
 local CloseBtn = Instance.new("TextButton", Main)
 CloseBtn.Name = "CloseBtn"
-CloseBtn.Text = "X" 
+CloseBtn.Text = "X"
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0, 10)
 CloseBtn.BackgroundTransparency = 1
@@ -114,21 +147,6 @@ CloseBtn.TextSize = 18
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextTransparency = 1
 CloseBtn.ZIndex = 10
-
--- [[ NEW: TOGGLE BUTTON K.S ]]
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Name = "KSToggle"
-ToggleBtn.Text = "K.S"
-ToggleBtn.Size = UDim2.new(0, 45, 0, 45)
-ToggleBtn.Position = UDim2.new(0, 10, 0.5, -22)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Background K7lla
-ToggleBtn.TextColor3 = Config.AccentColor
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.TextSize = 14
-ToggleBtn.ZIndex = 100
-ToggleBtn.Visible = false -- كيبان مورا الـ Intro
-local TCorner = Instance.new("UICorner", ToggleBtn); TCorner.CornerRadius = UDim.new(0, 10)
-local TStroke = Instance.new("UIStroke", ToggleBtn); TStroke.Color = Config.AccentColor; TStroke.Thickness = 2
 
 -----------------------------------------------------------------------
 -- [ FUNCTIONS ]
@@ -163,23 +181,6 @@ local function StartLoading()
     task.wait(0.5)
 end
 
--- Drag Function for anything
-local function EnableDrag(obj)
-    local dragging, dragStart, startPos
-    obj.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = obj.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
-
 -----------------------------------------------------------------------
 -- [ LOGIC & ANIMATION ]
 -----------------------------------------------------------------------
@@ -198,7 +199,7 @@ task.spawn(function()
     TweenService:Create(Title, tInfo, {TextTransparency = 0}):Play(); TweenService:Create(KeyInput, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(GetBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play(); TweenService:Create(SubmitBtn, tInfo, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
     TweenService:Create(CloseBtn, tInfo, {TextTransparency = 0.5}):Play()
-    ToggleBtn.Visible = true -- دابا عاد كيبان الزر
+    ToggleBtn.Visible = true -- الزر كيبان هنا
 end)
 
 -- Buttons Logic
@@ -216,6 +217,7 @@ SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == Config.CorrectKey then
         SendLP10Notify("Success", "Welcome back, " .. LocalPlayer.Name .. "!", false)
         StartLoading()
+        
         local success, content = pcall(function() return game:HttpGet(_G.MainScript) end)
         if success then 
             ShutdownUI()
@@ -235,6 +237,7 @@ GetBtn.MouseButton1Click:Connect(function()
     SendLP10Notify("Clipboard", "Linkvertise URL copied!", false)
 end)
 
--- Activate Dragging
-EnableDrag(Main)
-EnableDrag(ToggleBtn)
+-- Dragging for Main
+local dragging, dragStart, startPos
+Main.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = Main.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
+UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
