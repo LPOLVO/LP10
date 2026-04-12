@@ -22,6 +22,7 @@ if Lighting:FindFirstChild("LP10_SuperBlur") then Lighting:FindFirstChild("LP10_
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "LP10_AuthGate_Pro"
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 999 -- باش يكون الـ UI فوق كلشي
 
 local Blur = Instance.new("BlurEffect", Lighting)
 Blur.Name = "LP10_SuperBlur"
@@ -29,6 +30,60 @@ Blur.Size = 0
 
 local Overlay = Instance.new("Frame", ScreenGui)
 Overlay.Size = UDim2.new(1.2, 0, 1.2, 0); Overlay.Position = UDim2.new(0.5, 0, 0.5, 0); Overlay.AnchorPoint = Vector2.new(0.5, 0.5); Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); Overlay.BackgroundTransparency = 1; Overlay.ZIndex = 0
+
+-----------------------------------------------------------------------
+-- [ NOTIFICATION SYSTEM - FULLY FIXED ]
+-----------------------------------------------------------------------
+local function SendLP10Notify(title, text, isError)
+    local NotifyFrame = Instance.new("Frame", ScreenGui)
+    NotifyFrame.Size = UDim2.new(0, 260, 0, 75)
+    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
+    NotifyFrame.BackgroundColor3 = Config.BgColor
+    NotifyFrame.BorderSizePixel = 0
+    NotifyFrame.ZIndex = 1000 -- ZIndex طالع بزاف باش ما يتغطاش
+    
+    local Corner = Instance.new("UICorner", NotifyFrame)
+    Corner.CornerRadius = UDim.new(0, 10)
+    
+    local S = Instance.new("UIStroke", NotifyFrame)
+    S.Thickness = 2
+    S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    S.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
+    
+    local TL = Instance.new("TextLabel", NotifyFrame)
+    TL.Text = "  💎 " .. title:upper()
+    TL.Size = UDim2.new(1, -10, 0, 30)
+    TL.Position = UDim2.new(0, 0, 0, 5)
+    TL.BackgroundTransparency = 1
+    TL.TextColor3 = S.Color
+    TL.Font = Enum.Font.GothamBold
+    TL.TextSize = 14
+    TL.TextXAlignment = Enum.TextXAlignment.Left
+    TL.ZIndex = 1001
+    
+    local DL = Instance.new("TextLabel", NotifyFrame)
+    DL.Text = text
+    DL.Size = UDim2.new(1, -20, 0, 35)
+    DL.Position = UDim2.new(0, 15, 0, 32)
+    DL.BackgroundTransparency = 1
+    DL.TextColor3 = Color3.new(1, 1, 1)
+    DL.Font = Enum.Font.GothamMedium
+    DL.TextSize = 12
+    DL.TextXAlignment = Enum.TextXAlignment.Left
+    DL.TextWrapped = true
+    DL.ZIndex = 1001
+
+    NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
+    
+    task.delay(4, function()
+        if NotifyFrame then
+            local t = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
+            t:Play()
+            t.Completed:Wait()
+            NotifyFrame:Destroy()
+        end
+    end)
+end
 
 -----------------------------------------------------------------------
 -- [ UI CONSTRUCTION ]
@@ -67,60 +122,6 @@ task.spawn(function()
         if Main.Visible then CreateParticle() end
     end
 end)
-
------------------------------------------------------------------------
--- [ NOTIFICATION SYSTEM - FIXED ]
------------------------------------------------------------------------
-local function SendLP10Notify(title, text, isError)
-    local NotifyFrame = Instance.new("Frame", ScreenGui)
-    NotifyFrame.Size = UDim2.new(0, 260, 0, 70)
-    NotifyFrame.Position = UDim2.new(1, 10, 1, -100)
-    NotifyFrame.BackgroundColor3 = Config.BgColor
-    NotifyFrame.BorderSizePixel = 0
-    NotifyFrame.ZIndex = 200
-    
-    local Corner = Instance.new("UICorner", NotifyFrame)
-    Corner.CornerRadius = UDim.new(0, 10)
-    
-    local S = Instance.new("UIStroke", NotifyFrame)
-    S.Thickness = 2
-    S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    S.Color = isError and Color3.fromRGB(255, 60, 60) or Config.AccentColor
-    
-    local TL = Instance.new("TextLabel", NotifyFrame) -- تحديد الـ Parent دابا
-    TL.Text = "  💎 " .. title:upper()
-    TL.Size = UDim2.new(1, -10, 0, 30)
-    TL.Position = UDim2.new(0, 0, 0, 5)
-    TL.BackgroundTransparency = 1
-    TL.TextColor3 = S.Color
-    TL.Font = Enum.Font.GothamBold
-    TL.TextSize = 14
-    TL.TextXAlignment = Enum.TextXAlignment.Left
-    TL.ZIndex = 201
-    
-    local DL = Instance.new("TextLabel", NotifyFrame) -- تحديد الـ Parent دابا
-    DL.Text = text
-    DL.Size = UDim2.new(1, -20, 0, 30)
-    DL.Position = UDim2.new(0, 15, 0, 32)
-    DL.BackgroundTransparency = 1
-    DL.TextColor3 = Color3.new(1, 1, 1)
-    DL.Font = Enum.Font.GothamMedium
-    DL.TextSize = 12
-    DL.TextXAlignment = Enum.TextXAlignment.Left
-    DL.TextWrapped = true
-    DL.ZIndex = 201
-
-    NotifyFrame:TweenPosition(UDim2.new(1, -280, 1, -100), "Out", "Back", 0.5, true)
-    
-    task.delay(4, function()
-        if NotifyFrame then
-            local t = TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -100)})
-            t:Play()
-            t.Completed:Wait()
-            NotifyFrame:Destroy()
-        end
-    end)
-end
 
 -----------------------------------------------------------------------
 -- [ TOGGLE BUTTON K.S ]
