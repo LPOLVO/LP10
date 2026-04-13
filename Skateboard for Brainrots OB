@@ -1,0 +1,248 @@
+-- [[ LP10 HUB | BRAINROT EDITION - FULL RESIZABLE ]]
+-- FEATURES: DRAGGABLE, RESIZABLE, AUTO-FARM, BOOSTS
+-- BY GEMINI FOR @LPOLVO (HAMZA)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+-- [ 1. CONFIGURATION ]
+local Config = {
+    HubName = "LP10 HUB",
+    AccentColor = Color3.fromRGB(33, 150, 243), -- Royal Blue
+    BgColor = Color3.fromRGB(15, 15, 15),
+    MinSize = Vector2.new(250, 250),
+    MaxSize = Vector2.new(600, 500)
+}
+
+-- [ 2. SERVICES & BRAINROT DATA ]
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local brainrotsFolder = workspace:WaitForChild("Required"):WaitForChild("Brainrots")
+
+local highTierData = {
+    ["Noo My Hotspot"] = "Secret", ["Dragon Cannelloni"] = "Secret", ["1x1x1"] = "Secret", ["Swag Soda"] = "Secret",
+    ["Strawberry Elephant"] = "Celestial", ["Rainbow 67"] = "Celestial", ["Meowl"] = "Celestial", ["Nuclearo Dinossauro"] = "Celestial",
+    ["Hydra Cannelloni"] = "Divine", ["Esok Sekolah"] = "Divine", ["Chillin Chili"] = "Divine",
+}
+
+local SAFE_ZONE_CFRAME = CFrame.new(-792.91, 14.50, -356.53)
+local farmRunning = false
+local currentConnection = nil
+local buyBoostEnabled = false
+local buySpeedEnabled = false
+local autoSecret, autoCelestial, autoDivine = false, false, false
+
+-- [ 3. LOGIC FUNCTIONS ]
+local function triggerBrainrot(brainrotModel)
+    if not brainrotModel or not brainrotModel:FindFirstChild("HumanoidRootPart") then return end
+    local hitbox = brainrotModel:FindFirstChild("Hitbox")
+    local prompt = hitbox and hitbox:FindFirstChild("BrainrotPrompt")
+    rootPart.CFrame = brainrotModel.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)
+    task.wait(0.6)
+    if prompt and prompt:IsA("ProximityPrompt") then fireproximityprompt(prompt) end
+    task.wait(1.2)
+    rootPart.CFrame = SAFE_ZONE_CFRAME
+end
+
+local function updateAutoFarm()
+    local activeRarities = {}
+    if autoSecret then table.insert(activeRarities, "Secret") end
+    if autoCelestial then table.insert(activeRarities, "Celestial") end
+    if autoDivine then table.insert(activeRarities, "Divine") end
+
+    if #activeRarities > 0 then
+        if farmRunning then return end
+        farmRunning = true
+        currentConnection = brainrotsFolder.DescendantAdded:Connect(function(descendant)
+            if descendant:IsA("UIStroke") and descendant.Name == "UIStroke" and descendant.Parent and descendant.Parent.Name == "BrainrotName" then
+                local displayName = descendant.Parent.Text
+                if highTierData[displayName] and table.find(activeRarities, highTierData[displayName]) then
+                    local model = descendant:FindFirstAncestorWhichIsA("Model")
+                    if model then triggerBrainrot(model) end
+                end
+            end
+        end)
+    else
+        farmRunning = false
+        if currentConnection then currentConnection:Disconnect(); currentConnection = nil end
+    end
+end
+
+-- [ 4. UI CONSTRUCTION ]
+if CoreGui:FindFirstChild("LP10_Final_Edition") then CoreGui.LP10_Final_Edition:Destroy() end
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "LP10_Final_Edition"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- FIXED Dragging Function
+local function EnableDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not _G.IsResizing then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- Main Frame
+local Main = Instance.new("Frame", ScreenGui)
+Main.Name = "MainFrame"
+Main.BackgroundColor3 = Config.BgColor
+Main.Position = UDim2.new(0.5, -125, 0.5, -150)
+Main.Size = UDim2.new(0, 250, 0, 300)
+Main.Visible = false
+Main.Active = true
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Config.AccentColor
+MainStroke.Thickness = 2
+
+-- Header
+local Header = Instance.new("TextLabel", Main)
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.BackgroundTransparency = 1
+Header.Font = Enum.Font.GothamBold
+Header.Text = "💎 " .. Config.HubName
+Header.TextColor3 = Config.AccentColor
+Header.TextSize = 18
+
+-- Scrolling Container (Responsive with Resize)
+local Container = Instance.new("ScrollingFrame", Main)
+Container.Size = UDim2.new(1, -10, 1, -60)
+Container.Position = UDim2.new(0, 5, 0, 50)
+Container.BackgroundTransparency = 1
+Container.CanvasSize = UDim2.new(0, 0, 0, 0)
+Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Container.ScrollBarThickness = 3
+Container.ScrollBarImageColor3 = Config.AccentColor
+
+local Layout = Instance.new("UIListLayout", Container)
+Layout.Padding = UDim.new(0, 8)
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Toggle Button Creator
+local function AddToggle(text, callback)
+    local btn = Instance.new("TextButton", Container)
+    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.Text = text .. ": OFF"
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 14
+    Instance.new("UICorner", btn)
+    local Stroke = Instance.new("UIStroke", btn)
+    Stroke.Color = Color3.fromRGB(45, 45, 45)
+    
+    local active = false
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        btn.Text = text .. (active and ": ON" or ": OFF")
+        btn.BackgroundColor3 = active and Config.AccentColor or Color3.fromRGB(25, 25, 25)
+        Stroke.Color = active and Color3.new(1,1,1) or Color3.fromRGB(45, 45, 45)
+        callback(active)
+    end)
+end
+
+-- [ 5. POPULATING HUB ]
+AddToggle("Buy Boost", function(v) 
+    buyBoostEnabled = v 
+    task.spawn(function()
+        while buyBoostEnabled do ReplicatedStorage.Remotes.BuyBoost:InvokeServer(); task.wait(0.5) end
+    end)
+end)
+
+AddToggle("Buy Speed +5", function(v) 
+    buySpeedEnabled = v 
+    task.spawn(function()
+        while buySpeedEnabled do ReplicatedStorage.Remotes.BuySpeed:InvokeServer(5); task.wait(0.5) end
+    end)
+end)
+
+AddToggle("Auto Secret", function(v) autoSecret = v; updateAutoFarm() end)
+AddToggle("Auto Celestial", function(v) autoCelestial = v; updateAutoFarm() end)
+AddToggle("Auto Divine", function(v) autoDivine = v; updateAutoFarm() end)
+
+-- [ 6. FLOATING TOGGLE BUTTON ]
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name = "LP_Toggle"
+ToggleBtn.BackgroundColor3 = Config.BgColor
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+ToggleBtn.Text = "LP"
+ToggleBtn.Font = Enum.Font.FredokaOne
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+ToggleBtn.TextSize = 25
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 15)
+local TStroke = Instance.new("UIStroke", ToggleBtn)
+TStroke.Color = Config.AccentColor
+TStroke.Thickness = 2
+
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
+
+local isOpen = false
+local currentSize = Main.Size
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    if isOpen then
+        Main.Visible = true
+        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
+    else
+        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+            if not isOpen then Main.Visible = false end
+        end)
+    end
+end)
+
+-- [ 7. RESIZE SYSTEM ]
+local ResizeHandle = Instance.new("TextButton", Main)
+ResizeHandle.Name = "ResizeHandle"
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundTransparency = 1
+ResizeHandle.Text = "◢"
+ResizeHandle.TextColor3 = Config.AccentColor
+ResizeHandle.TextSize = 15
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        _G.IsResizing = true
+        local startSize = Main.Size
+        local dragStart = input.Position
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(move)
+            if move.UserInputType == Enum.UserInputType.MouseMovement or move.UserInputType == Enum.UserInputType.Touch then
+                local delta = move.Position - dragStart
+                Main.Size = UDim2.new(0, math.clamp(startSize.X.Offset + delta.X, Config.MinSize.X, Config.MaxSize.X), 0, math.clamp(startSize.Y.Offset + delta.Y, Config.MinSize.Y, Config.MaxSize.Y))
+                currentSize = Main.Size
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(up)
+            if up.UserInputType == Enum.UserInputType.MouseButton1 or up.UserInputType == Enum.UserInputType.Touch then
+                _G.IsResizing = false
+                conn:Disconnect()
+            end
+        end)
+    end
+end)
+
+print("LP10 HUB: Full Resizable Brainrot Edition Loaded!")
