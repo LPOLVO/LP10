@@ -1,0 +1,246 @@
+-- [[ LP10 HUB | DEAD RAILS EDITION ]]
+-- COLOR: ROYAL BLUE
+-- FEATURES: DRAGGABLE, RESIZABLE, AUTOFARM INTEGRATED
+-- BY GEMINI FOR @LPOLVO (HAMZA)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+
+-- [ 1. CONFIGURATION ]
+local Config = {
+    HubName = "LP10 HUB",
+    AccentColor = Color3.fromRGB(33, 150, 243), -- Royal Blue
+    BgColor = Color3.fromRGB(15, 15, 15),
+    MinSize = Vector2.new(250, 200),
+    MaxSize = Vector2.new(600, 450)
+}
+
+-- [ 2. AUTOFARM VARIABLES ]
+local LocalPlayer = Players.LocalPlayer
+local scriptActive = true
+local farming = false
+local totalCollected = 0
+local Actionable = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Universe"):WaitForChild("Network"):WaitForChild("RemoteEvent"):WaitForChild("Actionable")
+local idMin = 1300
+local idMax = 9000
+
+-- [ 3. UTILITY FUNCTIONS ]
+local function getSack()
+    local c = LocalPlayer.Character
+    return c and c:FindFirstChild("Sack")
+end
+
+local function getSackCount()
+    local sack = getSack()
+    if not sack then return 0 end
+    local bb = sack:FindFirstChildWhichIsA("BillboardGui")
+    if not bb then return 0 end
+    local tl = bb:FindFirstChildWhichIsA("TextLabel")
+    if not tl then return 0 end
+    local num = tl.Text:match("^(%d+)")
+    return tonumber(num) or 0
+end
+
+local function waitSackIncrease(before, timeout)
+    local t = tick()
+    while tick() - t < timeout do
+        if not farming then return false end
+        if getSackCount() > before then return true end
+        task.wait(0.02)
+    end
+    return false
+end
+
+local function waitSackDecrease(before, timeout)
+    local t = tick()
+    while tick() - t < timeout do
+        if not farming then return false end
+        if getSackCount() < before then return true end
+        task.wait(0.02)
+    end
+    return false
+end
+
+-- [ 4. UI CONSTRUCTION ]
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LP10_Final_Edition"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Floating Toggle Button
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "LP_Toggle"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Config.BgColor
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.Text = ""
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 15)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleStroke.Color = Config.AccentColor
+ToggleStroke.Thickness = 2
+
+local LP_Label = Instance.new("TextLabel", ToggleBtn)
+LP_Label.Size = UDim2.new(1, 0, 1, 0)
+LP_Label.BackgroundTransparency = 1
+LP_Label.Text = "LP"
+LP_Label.Font = Enum.Font.FredokaOne
+LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+LP_Label.TextScaled = true
+local UIGradient = Instance.new("UIGradient", LP_Label)
+UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))})
+
+-- Main Frame
+local Main = Instance.new("Frame")
+Main.Name = "MainFrame"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Config.BgColor
+Main.Position = UDim2.new(0.5, -125, 0.5, -90)
+Main.Size = UDim2.new(0, 250, 0, 180)
+Main.Visible = false
+Main.Active = true
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Config.AccentColor
+MainStroke.Thickness = 2
+
+local Header = Instance.new("TextLabel", Main)
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.BackgroundTransparency = 1
+Header.Font = Enum.Font.GothamBold
+Header.Text = "💎 " .. Config.HubName
+Header.TextColor3 = Config.AccentColor
+Header.TextSize = 18
+
+-- Content Container
+local Content = Instance.new("Frame", Main)
+Content.Size = UDim2.new(1, -20, 1, -60)
+Content.Position = UDim2.new(0, 10, 0, 50)
+Content.BackgroundTransparency = 1
+
+local farmBtn = Instance.new("TextButton", Content)
+farmBtn.Size = UDim2.new(1, 0, 0, 40)
+farmBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+farmBtn.Text = "Start AutoFarm"
+farmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmBtn.Font = Enum.Font.Code
+farmBtn.TextSize = 14
+local btnCorner = Instance.new("UICorner", farmBtn)
+local btnStroke = Instance.new("UIStroke", farmBtn)
+btnStroke.Color = Config.AccentColor
+
+-- [ 5. LOGIC & EVENTS ]
+local function EnableDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            if not _G.IsResizing then
+                dragging = true
+                dragStart = input.Position
+                startPos = frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
+            end
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- Resize Logic
+local ResizeHandle = Instance.new("TextButton", Main)
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundTransparency = 1
+ResizeHandle.Text = "◢"
+ResizeHandle.TextColor3 = Config.AccentColor
+local currentSize = Main.Size
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        _G.IsResizing = true
+        local dragStart = input.Position
+        local startSize = Main.Size
+        local connection
+        connection = UserInputService.InputChanged:Connect(function(input)
+            local delta = input.Position - dragStart
+            Main.Size = UDim2.new(0, math.clamp(startSize.X.Offset + delta.X, Config.MinSize.X, Config.MaxSize.X), 0, math.clamp(startSize.Y.Offset + delta.Y, Config.MinSize.Y, Config.MaxSize.Y))
+            currentSize = Main.Size
+        end)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                _G.IsResizing = false
+                connection:Disconnect()
+            end
+        end)
+    end
+end)
+
+-- AutoFarm Click Event
+farmBtn.MouseButton1Click:Connect(function()
+    if farming then
+        farming = false
+        farmBtn.Text = "Start AutoFarm"
+        farmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        farming = true
+        totalCollected = 0
+        farmBtn.Text = "Stop AutoFarm (Running...)"
+        farmBtn.TextColor3 = Config.AccentColor
+        
+        task.spawn(function()
+            while scriptActive and farming do
+                local countBefore = getSackCount()
+                for id = idMin, idMax do
+                    if not scriptActive or not farming then break end
+                    pcall(function() Actionable:FireServer(id) end)
+                    local picked = waitSackIncrease(countBefore, 0.08)
+                    if picked then
+                        totalCollected = totalCollected + 1
+                        countBefore = getSackCount()
+                        waitSackDecrease(countBefore, 1.5)
+                        countBefore = getSackCount()
+                    end
+                    task.wait(0.02)
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+end)
+
+-- Toggle Menu
+local isOpen = false
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    Main.Visible = isOpen
+    if isOpen then
+        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
+    else
+        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    farming = false
+    farmBtn.Text = "Start AutoFarm"
+end)
+
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
+
+print("LP10 HUB: Dead Rails AutoFarm Loaded!")
