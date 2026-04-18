@@ -1,0 +1,229 @@
+-- [[ LP10 HUB | CLEAN ROYAL BLUE + RESIZABLE ]]
+-- COLOR: ROYAL BLUE
+-- FEATURES: DRAGGABLE, RESIZABLE, CLEAN UI
+-- BY GEMINI FOR @LPOLVO (HAMZA)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+-- [ 1. CONFIGURATION ]
+local Config = {
+    HubName = "LP10 HUB",
+    AccentColor = Color3.fromRGB(33, 150, 243), -- Royal Blue
+    BgColor = Color3.fromRGB(15, 15, 15),
+    MinSize = Vector2.new(200, 150),
+    MaxSize = Vector2.new(600, 450)
+}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LP10_Final_Edition"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- [ 2. DRAGGING FUNCTION ]
+local function EnableDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            if not _G.IsResizing then
+                dragging = true
+                dragStart = input.Position
+                startPos = frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
+            end
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- [ 3. FLOATING TOGGLE BUTTON ]
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "LP_Toggle"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Config.BgColor
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.Text = ""
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 15)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleStroke.Color = Config.AccentColor
+ToggleStroke.Thickness = 2
+
+local LP_Label = Instance.new("TextLabel", ToggleBtn)
+LP_Label.Size = UDim2.new(1, 0, 1, 0)
+LP_Label.BackgroundTransparency = 1
+LP_Label.Text = "LP"
+LP_Label.Font = Enum.Font.FredokaOne
+LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+LP_Label.TextScaled = true
+local UIGradient = Instance.new("UIGradient", LP_Label)
+UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))})
+Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 10)
+
+-- [ 4. MAIN FRAME ]
+local Main = Instance.new("Frame")
+Main.Name = "MainFrame"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Config.BgColor
+Main.Position = UDim2.new(0.5, -125, 0.5, -90)
+Main.Size = UDim2.new(0, 250, 0, 280)
+Main.Visible = false
+Main.Active = true
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Config.AccentColor
+MainStroke.Thickness = 2
+
+local Header = Instance.new("TextLabel", Main)
+Header.Size = UDim2.new(1, 0, 0, 45)
+Header.BackgroundTransparency = 1
+Header.Font = Enum.Font.GothamBold
+Header.Text = "💎 " .. Config.HubName
+Header.TextColor3 = Config.AccentColor
+Header.TextSize = 18
+
+-- [ 5. RESIZE SYSTEM ]
+local ResizeHandle = Instance.new("TextButton", Main)
+ResizeHandle.Name = "ResizeHandle"
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundTransparency = 1
+ResizeHandle.Text = "◢"
+ResizeHandle.TextColor3 = Config.AccentColor
+ResizeHandle.TextSize = 15
+
+local currentSize = Main.Size
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        _G.IsResizing = true
+        local dragStart = input.Position
+        local startSize = Main.Size
+        local connection
+        connection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                local delta = input.Position - dragStart
+                local newX = math.clamp(startSize.X.Offset + delta.X, Config.MinSize.X, Config.MaxSize.X)
+                local newY = math.clamp(startSize.Y.Offset + delta.Y, Config.MinSize.Y, Config.MaxSize.Y)
+                Main.Size = UDim2.new(0, newX, 0, newY)
+                currentSize = Main.Size
+            end
+        end)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                _G.IsResizing = false
+                connection:Disconnect()
+            end
+        end)
+    end
+end)
+
+-- [ 6. BUTTONS CONTAINER ]
+local ButtonsContainer = Instance.new("ScrollingFrame", Main)
+ButtonsContainer.Name = "ButtonsContainer"
+ButtonsContainer.BackgroundTransparency = 1
+ButtonsContainer.Position = UDim2.new(0, 10, 0, 55)
+ButtonsContainer.Size = UDim2.new(1, -20, 1, -65)
+ButtonsContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+ButtonsContainer.ScrollBarThickness = 4
+ButtonsContainer.ScrollBarImageColor3 = Config.AccentColor
+ButtonsContainer.BorderSizePixel = 0
+
+local UIListLayout = Instance.new("UIListLayout", ButtonsContainer)
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function CreateButton(text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = ButtonsContainer
+    btn.Size = UDim2.new(1, 0, 0, 45)
+    btn.BackgroundColor3 = Config.BgColor
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 14
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Config.AccentColor
+    stroke.Thickness = 1.5
+    
+    btn.MouseButton1Click:Connect(callback)
+    
+    -- Hover effect
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Config.AccentColor
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Config.BgColor
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    
+    return btn
+end
+
+-- Update canvas size when buttons change
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ButtonsContainer.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+end)
+
+-- [ 7. CREATE BUTTONS ]
+
+-- Button 1: INF MONEY
+CreateButton("💰 INF MONEY", function()
+    local success, err = pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Event"):WaitForChild("Eco"):WaitForChild("[C-S]FlightReward"):FireServer(math.huge)
+    end)
+    if success then
+        print("INF MONEY: Executed successfully!")
+    else
+        warn("INF MONEY Error: " .. tostring(err))
+    end
+end)
+
+-- Button 2: INF REBIRTH
+CreateButton("🔄 INF REBIRTH", function()
+    local success, err = pcall(function()
+        for i = 1, 1000 do
+            game:GetService("ReplicatedStorage"):WaitForChild("Remote"):WaitForChild("Event"):WaitForChild("Rebirth"):WaitForChild("[C-S]RebirthRequest"):FireServer()
+        end
+    end)
+    if success then
+        print("INF REBIRTH: Executed 1000 rebirths!")
+    else
+        warn("INF REBIRTH Error: " .. tostring(err))
+    end
+end)
+
+-- [ 8. INITIALIZE ]
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
+
+local isOpen = false
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    if isOpen then
+        Main.Visible = true
+        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
+    else
+        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+            if not isOpen then Main.Visible = false end
+        end)
+    end
+end)
+
+print("LP10 HUB: Clean Royal Resizable Edition Loaded with INF MONEY & INF REBIRTH!")
