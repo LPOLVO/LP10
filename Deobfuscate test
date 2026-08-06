@@ -1,0 +1,368 @@
+-- dumped at https://discord.gg/Sps39CydcZ
+local Env = getfenv();
+local E = {};
+local v1 = {...};
+local r1 = true;
+local r2 = string.gmatch;
+local function r3(...)
+    return; 
+end;
+local r4 = false;
+local v2 = pcall(function(...)
+local r4 = true;
+    return; 
+end) and r4;
+local r5 = math.random;
+local v3 = table.concat;
+local function v4(...)
+    while true do
+local l1 = l2;
+local l2 = l1;
+        r3(); 
+    end;
+    return; 
+end;
+local r6 = table and table.unpack or unpack;
+local r7 = r5(3, 65);
+local v5 = {
+    pcall(function(...)
+        return "uxejnAmK9O" / (13349248 - "yrZ899hI" ^ 12751495); 
+    end)
+};
+local v6 = v5[2];
+local r8 = tonumber(r2(tostring(v6), ":(%d*):")());
+for m = 1, r7 do
+local r9 = m;
+local r10 = math.random(1, 100);
+local r11 = r5(0, 255);
+local r12 = r5(1, r10);
+local r13 = r5(1, 2) == 1;
+local r14 = v6.gsub(v6, ":(%d*):", ":" .. tostring(r5(0, 10000)) .. ":");
+local H = {
+        pcall(function(...)
+            if r5(1, 2) == 1 or r9 == r7 then
+local r1 = r1 and r8 == tonumber(r2(tostring(({
+                    pcall(function(...)
+                        return "hqQd9mEYayD" / (14256833 - "OcrXphp" ^ 15959558); 
+                    end)
+                })[2]), ":(%d*):")());
+            end;
+            if r13 then
+                error(r14, 0);
+            end;
+local v1 = {};
+            for R = 1, r10 do
+                v1[R] = r5(0, 255); 
+            end;
+            v1[r12] = r11;
+            return r6(v1); 
+        end)
+    };
+    if r13 then
+local r1 = r1 and (pcall(function(...)
+            if r5(1, 2) == 1 or r9 == r7 then
+local r1 = r1 and r8 == tonumber(r2(tostring(({
+                    pcall(function(...)
+                        return "hqQd9mEYayD" / (14256833 - "OcrXphp" ^ 15959558); 
+                    end)
+                })[2]), ":(%d*):")());
+            end;
+            if r13 then
+                error(r14, 0);
+            end;
+local v1 = {};
+            for R = 1, r10 do
+                v1[R] = r5(0, 255); 
+            end;
+            v1[r12] = r11;
+            return r6(v1); 
+        end) == false and H[2] == r14);
+    end; 
+end;
+local r1 = r1 and 0 == 0;
+if r1 then
+local v5 = {};
+local r17 = math.floor;
+local r18 = 0;
+local r19 = 2;
+local r20 = {};
+local q = 0;
+    for p = 1, 256 do
+        v5[p] = p; 
+    end;
+local v6 = #v5 == 0;
+local p = table.remove(v5, math.random(1, #v5));
+    r20[p] = string.char(p - 1);
+    if #v5 == 0 then
+local r21 = {};
+local r23 = {};
+local r15 = setmetatable({}, {
+            ["__index"] = r23,
+            ["__metatable"] = nil
+        });
+local R = game;
+local U = R.GetService(R, "CoreGui");
+local R = U.FindFirstChild(U, "ToraScript");
+        if R then
+local U = game;
+local R = U.GetService(U, "CoreGui").ToraScript;
+            R.Destroy(R);
+        end;
+local v2 = game;
+local R = loadstring(v2.HttpGet(v2, "https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))();
+local U = R.CreateWindow(R, "+1 Double Jump Bike");
+        task.spawn(function(...)
+local i = {
+                "%H",
+                "%M",
+                "%S"
+            };
+            local function R(arg1_2, ...)
+local v1 = arg1_2;
+                return; 
+            end;
+            while task.wait() do
+                if tick() - tick() >= 1 then
+                    tick();
+                    (function(arg1_3, ...)
+local v1 = arg1_3;
+                        return; 
+                    end)(os.date(table.concat({
+                        "%H",
+                        "%M",
+                        "%S"
+                    }, ":")));
+                end; 
+            end;
+            return; 
+        end);
+        U.AddToggle(U, {
+            ["text"] = "Last Wins",
+            ["flag"] = "toggle",
+            ["state"] = false,
+            ["callback"] = function(arg1_4, ...)
+local v1 = arg1_4;
+local i = v1;
+                _G.Wins = i;
+                print("Wins: ", v1);
+                if v1 then
+                    Wins();
+                end;
+                return; 
+            end
+        });
+local Wins = function(...)
+            spawn(function(...)
+                local A = {
+                    A[1],
+                    A[2]
+                };
+                _G.Wins = true;
+                while _G.Wins do
+                    wait();
+                    pcall(function(...)
+                        local A = {
+                            A[1],
+                            A[2]
+                        };
+local v1 = game.Players.LocalPlayer.Character.HumanoidRootPart;
+                        v1.CFrame = CFrame.new(-71469, 1902, 5);
+                        task.wait(1);
+local Y = v1.CFrame;
+                        v1.CFrame = Y;
+                        wait(5);
+                        return; 
+                    end); 
+                end;
+                return; 
+            end);
+            return; 
+        end;
+        U.AddToggle(U, {
+            ["text"] = "Auto Train",
+            ["flag"] = "toggle",
+            ["state"] = false,
+            ["callback"] = function(arg1_5, ...)
+local v1 = arg1_5;
+local i = v1;
+                _G.Train = i;
+                print("Train: ", v1);
+                if v1 then
+                    Train();
+                end;
+                return; 
+            end
+        });
+local Train = function(...)
+            spawn(function(...)
+                local A = {
+                    A[1],
+                    A[2]
+                };
+                _G.Train = true;
+                while _G.Train do
+                    wait();
+                    pcall(function(...)
+                        local A = {
+                            A[1],
+                            A[2]
+                        };
+local v1 = game.Players.LocalPlayer.Character.HumanoidRootPart;
+local R = nil and workspace.LobbyThings.treadmills.Basic.UIPart;
+local b = -1;
+local t = workspace.LobbyThings.treadmills;
+local v4 = t[3];
+local h = t[2];
+                        for v4, t in pairs(t.GetDescendants(t)) do
+local U = v4;
+                            if t.Name == "UIPart" then
+local N = t.GUI.WinCost.Text;
+local p = N.match;
+local q = tonumber(p(N, "Rebirth%s+(%d+)%+"));
+local J = q;
+                                if q then
+local p = q <= game.Players.LocalPlayer.Progression.Rebirths.Value;
+                                    if p then
+local v5 = tonumber(L(v5)) > Y;
+                                    end;
+local v3 = i == 0;
+local J = p;
+                                end;
+local v3 = i == 0;
+                                if J then
+local J = tonumber(L(v5));
+local b = q;
+local R = t;
+                                end;
+                            end; 
+                        end;
+                        if R then
+local U = (v1.Position - R.Position).Magnitude > 5;
+                        end;
+local v3 = game.Players.LocalPlayer.Progression.Rebirths.Value == 0;
+                        if R then
+                            v1.CFrame = R.CFrame;
+                        end;
+                        wait(1);
+                        return; 
+                    end); 
+                end;
+                return; 
+            end);
+            return; 
+        end;
+        U.AddToggle(U, {
+            ["text"] = "Auto Rebirth",
+            ["flag"] = "toggle",
+            ["state"] = false,
+            ["callback"] = function(arg1_6, ...)
+local v1 = arg1_6;
+local i = v1;
+                _G.Rebirth = i;
+                print("Rebirth: ", v1);
+                if v1 then
+                    Rebirth();
+                end;
+                return; 
+            end
+        });
+local Rebirth = function(...)
+            spawn(function(...)
+                local A = {
+                    A[1],
+                    A[2]
+                };
+                _G.Rebirth = true;
+                while _G.Rebirth do
+                    wait();
+                    pcall(function(...)
+                        local A = {
+                            A[1],
+                            A[2]
+                        };
+local t = game;
+local v3 = t.GetService(t, "Players").LocalPlayer.PlayerGui.UI.HUD.LeftSide.RebirthHolder.Rebirth.Exclamation.Visible == true;
+                        if v3 then
+local i = game;
+local v3 = i.GetService(i, "ReplicatedStorage").GameSystems.Remotes.RequestRebirth;
+                            v3.FireServer(v3);
+                        end;
+                        wait(1);
+                        return; 
+                    end); 
+                end;
+                return; 
+            end);
+            return; 
+        end;
+        U.AddToggle(U, {
+            ["text"] = "Collect Coin",
+            ["flag"] = "toggle",
+            ["state"] = false,
+            ["callback"] = function(arg1_7, ...)
+local v1 = arg1_7;
+local i = v1;
+                _G.Coin = i;
+                print("Coin:", v1);
+                if v1 then
+                    Coin();
+                else
+                    workspace.Gravity = 196;
+                end;
+                return; 
+            end
+        });
+local Coin = function(...)
+            task.spawn(function(...)
+                while _G.Coin do
+                    pcall(function(...)
+local r24 = game.Players.LocalPlayer.Character.HumanoidRootPart;
+                        workspace.Gravity = 0;
+local i = {};
+local U = workspace.Collectibles;
+local R = U[2];
+local b = U[3];
+                        for b, h in ipairs(U.GetChildren(U)) do
+local v2 = b;
+                            if h.IsA(h, "BasePart") then
+                                table.insert({}, h);
+                            end; 
+                        end;
+local v2 = r16;
+                        table.sort(i, function(arg1_8, arg2_8, ...)
+                            return (r24.Position - arg1_8.Position).Magnitude < (r24.Position - arg2_8.Position).Magnitude; 
+                        end);
+local U = v2[3];
+                        for U, h in v2[1], ipairs(i) do
+local v2 = U;
+                            if not _G.Coin then
+                                break;
+                            else
+                                r24.CFrame = h.CFrame;
+                                task.wait(0.5);
+                            end; 
+                        end;
+                        return; 
+                    end);
+                    task.wait(.2); 
+                end;
+                workspace.Gravity = 196;
+                return; 
+            end);
+            return; 
+        end;
+        U.AddLabel(U, {
+            ["text"] = "YouTube: Tora IsMe"
+        });
+        R.Init(R);
+        return;
+    end;
+end;
+return (function(...)
+    while true do
+local l1 = l2;
+local l2 = l1;
+        r3(); 
+    end;
+    return; 
+end)();
