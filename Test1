@@ -691,24 +691,15 @@ tGrad.Color = ColorSequence.new({
 tGrad.Rotation = 135
 
 local tLabel = Instance.new("TextLabel", ToggleBtn)
-tLabel.Size = UDim2.new(1,0,0.5,0)
-tLabel.Position = UDim2.new(0,0,0.1,0)
+tLabel.Size = UDim2.new(1, 0, 1, 0)
+tLabel.Position = UDim2.new(0, 0, 0, 0)
 tLabel.BackgroundTransparency = 1
 tLabel.Text = "LP"
 tLabel.Font = Enum.Font.GothamBold
-tLabel.TextColor3 = Color3.fromRGB(255,255,255)
+tLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 tLabel.TextScaled = true
-tLabel.ZIndex = 101
-
-local tSub = Instance.new("TextLabel", ToggleBtn)
-tSub.Size = UDim2.new(1,0,0.3,0)
-tSub.Position = UDim2.new(0,0,0.62,0)
-tSub.BackgroundTransparency = 1
-tSub.Text = "GG"
-tSub.Font = Enum.Font.Gotham
-tSub.TextColor3 = ACCENT
-tSub.TextScaled = true
-tSub.ZIndex = 101
+tLabel.ZIndex = 99  -- below the button so it never blocks clicks
+tLabel.Active = false
 
 -- Drag the toggle button
 do
