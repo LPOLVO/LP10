@@ -671,54 +671,56 @@ local function notify(msg)
 end
 
 -- ── Floating Toggle Button ────────────────────────────────────────────
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
+local ToggleBtn = Instance.new("Frame", ScreenGui)
 ToggleBtn.Name             = "LP_Toggle"
 ToggleBtn.Size             = UDim2.new(0, 62, 0, 62)
 ToggleBtn.Position         = UDim2.new(0, 20, 0, 120)
 ToggleBtn.BackgroundColor3 = BG_DARK
-ToggleBtn.AutoButtonColor  = false
-ToggleBtn.Text             = ""
 ToggleBtn.ZIndex           = 100
+ToggleBtn.Active           = true
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 16)
 local tStroke = Instance.new("UIStroke", ToggleBtn)
 tStroke.Color = ACCENT; tStroke.Thickness = 2
 
 local tGrad = Instance.new("UIGradient", ToggleBtn)
 tGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(33,150,243)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10,60,160)),
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(33, 150, 243)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 60, 160)),
 })
 tGrad.Rotation = 135
 
 local tLabel = Instance.new("TextLabel", ToggleBtn)
-tLabel.Size = UDim2.new(1, 0, 1, 0)
-tLabel.Position = UDim2.new(0, 0, 0, 0)
+tLabel.Size               = UDim2.new(1, 0, 1, 0)
 tLabel.BackgroundTransparency = 1
-tLabel.Text = "LP"
-tLabel.Font = Enum.Font.GothamBold
-tLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-tLabel.TextScaled = true
-tLabel.ZIndex = 99  -- below the button so it never blocks clicks
-tLabel.Active = false
+tLabel.Text               = "LP"
+tLabel.Font               = Enum.Font.GothamBold
+tLabel.TextColor3         = Color3.fromRGB(255, 255, 255)
+tLabel.TextScaled         = true
+tLabel.ZIndex             = 101
+tLabel.Active             = false  -- never absorbs input
 
--- Drag the toggle button
-do
-    local dragging, dragStart, startPos
-    ToggleBtn.InputBegan:Connect(function(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = inp.Position; startPos = ToggleBtn.Position
-            inp.Changed:Connect(function()
-                if inp.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
+-- Drag logic only (tap/toggle wired after openGUI/closeGUI are defined below)
+local _toggleDragStart, _toggleStartPos, _toggleWasDrag
+ToggleBtn.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        _toggleWasDrag   = false
+        _toggleDragStart = inp.Position
+        _toggleStartPos  = ToggleBtn.Position
+    end
+end)
+ToggleBtn.InputChanged:Connect(function(inp)
+    if _toggleDragStart and (inp.UserInputType == Enum.UserInputType.MouseMovement
+    or inp.UserInputType == Enum.UserInputType.Touch) then
+        local delta = inp.Position - _toggleDragStart
+        if delta.Magnitude > 6 then
+            _toggleWasDrag = true
+            ToggleBtn.Position = UDim2.new(
+                _toggleStartPos.X.Scale, _toggleStartPos.X.Offset + delta.X,
+                _toggleStartPos.Y.Scale, _toggleStartPos.Y.Offset + delta.Y)
         end
-    end)
-    UserInputService.InputChanged:Connect(function(inp)
-        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
-            local delta = inp.Position - dragStart
-            ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
+    end
+end)
 
 -- ── Main Frame ────────────────────────────────────────────────────────
 local IsResizing = false
@@ -1545,8 +1547,15 @@ local function closeGUI()
     task.delay(0.22, function() if not isOpen then Main.Visible = false end end)
 end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    if isOpen then closeGUI() else openGUI() end
+-- Wire up the tap (InputEnded) now that openGUI/closeGUI are defined
+ToggleBtn.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        if not _toggleWasDrag then
+            if isOpen then closeGUI() else openGUI() end
+        end
+        _toggleDragStart = nil
+    end
 end)
 
 closeBtn.MouseButton1Click:Connect(function() closeGUI() end)
