@@ -1,10 +1,13 @@
--- ╔══════════════════════════════════════════════════════════════════════╗
--- ║  LP10 HUB — Greedy Growers                                         ║
--- ║  LP10 Pure-Instance Library (No ObsidianUltra)                     ║
--- ║  Xeno / Solara / Delta / Codex / Arceus X / Fluxus / Krnl Ready   ║
--- ╚══════════════════════════════════════════════════════════════════════╝
+-- ╔══════════════════════════════════════════════════════════════════╗
+-- ║  LP10 HUB  —  Greedy Growers                                   ║
+-- ║  Shell: LP10 Clean Royal Blue Library (pure Instance)          ║
+-- ║  Logic: Original GreedyGrowers (all Toggles/Options preserved) ║
+-- ║  Compatible: Xeno / Solara / Delta / Krnl / Arceus X / Fluxus  ║
+-- ╚══════════════════════════════════════════════════════════════════╝
 
--- ════════════ SERVICES ════════════
+-- ═══════════════════════════════════════
+--   SERVICES
+-- ═══════════════════════════════════════
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser       = game:GetService("VirtualUser")
@@ -13,201 +16,181 @@ local TweenService      = game:GetService("TweenService")
 local RunService        = game:GetService("RunService")
 local LocalPlayer       = Players.LocalPlayer
 
--- ════════════ EXECUTOR COMPAT ════════════
+-- ═══════════════════════════════════════
+--   EXECUTOR COMPAT
+-- ═══════════════════════════════════════
+if getgenv then
+    getgenv().gethui = function()
+        return LocalPlayer:WaitForChild("PlayerGui")
+    end
+end
+
 local function safeSetClipboard(text)
     if setclipboard then pcall(setclipboard, text)
     elseif toclipboard then pcall(toclipboard, text)
     elseif rbxSetClipboard then pcall(rbxSetClipboard, text) end
 end
 
-local _fireprox = fireproximityprompt or function(p)
+local _fireprox = (typeof(fireproximityprompt) == "function") and fireproximityprompt or function(p)
     pcall(function()
         local e = p.Parent and p.Parent:FindFirstChildOfClass("RemoteEvent")
         if e then e:FireServer() end
     end)
 end
 
-local execName = "Unknown"
-pcall(function()
-    if identifyexecutor then
-        local n, v = identifyexecutor()
-        execName = (type(n)=="string" and n~="" and n) or execName
-        if type(v)=="string" and v~="" then execName = execName.." "..v end
-    elseif getexecutorname then
-        execName = getexecutorname() or execName
-    end
-end)
+-- ═══════════════════════════════════════
+--   GAME MODULES
+-- ═══════════════════════════════════════
+local GAME_NAME = "Greedy Growers"
 
--- ════════════ GAME MODULES ════════════
-local Knit, SeedConfig, ExpandedRarities, RebirthConfig
-local FertilizerConfig, CustomEnum, Constants, WeatherConfig
-local FurnitureShopConfig, AbbreviateNumber
-local SeedConveyorService, PlayerPlotService, PlantRoundService
-local ToolService, SellStandService, SellFruitsService
-local FurnitureShopService, RebirthService, DataClient
+local Knit               = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"))
+local SeedConfig         = require(ReplicatedStorage.Shared.Info.SeedConfig)
+local ExpandedRarities   = require(ReplicatedStorage.Shared.Info.ExpandedRarities)
+local RebirthConfig      = require(ReplicatedStorage.Shared.Info.RebirthConfig)
+local FertilizerConfig   = require(ReplicatedStorage.Shared.Info.FertilizerConfig)
+local CustomEnum         = require(ReplicatedStorage.Shared.Info.CustomEnum)
+local Constants          = require(ReplicatedStorage.Shared.Info.Constants)
+local WeatherConfig      = require(ReplicatedStorage.Shared.Info.WeatherConfig)
+local FurnitureShopConfig= require(ReplicatedStorage.Shared.Info.FurnitureShopConfig)
+local AbbreviateNumber   = require(ReplicatedStorage.Shared.Utility.AbbreviateNumber)
 
-local modulesLoaded = false
-pcall(function()
-    Knit               = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"))
-    SeedConfig         = require(ReplicatedStorage.Shared.Info.SeedConfig)
-    ExpandedRarities   = require(ReplicatedStorage.Shared.Info.ExpandedRarities)
-    RebirthConfig      = require(ReplicatedStorage.Shared.Info.RebirthConfig)
-    FertilizerConfig   = require(ReplicatedStorage.Shared.Info.FertilizerConfig)
-    CustomEnum         = require(ReplicatedStorage.Shared.Info.CustomEnum)
-    Constants          = require(ReplicatedStorage.Shared.Info.Constants)
-    WeatherConfig      = require(ReplicatedStorage.Shared.Info.WeatherConfig)
-    FurnitureShopConfig= require(ReplicatedStorage.Shared.Info.FurnitureShopConfig)
-    AbbreviateNumber   = require(ReplicatedStorage.Shared.Utility.AbbreviateNumber)
+local SeedConveyorService  = Knit.GetService("SeedConveyorService")
+local PlayerPlotService    = Knit.GetService("PlayerPlotService")
+local PlantRoundService    = Knit.GetService("PlantRoundService")
+local ToolService          = Knit.GetService("ToolService")
+local SellStandService     = Knit.GetService("SellStandService")
+local SellFruitsService    = Knit.GetService("SellFruitsService")
+local FurnitureShopService = Knit.GetService("FurnitureShopService")
+local RebirthService       = Knit.GetService("RebirthService")
+local DataClient           = Knit.GetController("DataClient")
 
-    SeedConveyorService  = Knit.GetService("SeedConveyorService")
-    PlayerPlotService    = Knit.GetService("PlayerPlotService")
-    PlantRoundService    = Knit.GetService("PlantRoundService")
-    ToolService          = Knit.GetService("ToolService")
-    SellStandService     = Knit.GetService("SellStandService")
-    SellFruitsService    = Knit.GetService("SellFruitsService")
-    FurnitureShopService = Knit.GetService("FurnitureShopService")
-    RebirthService       = Knit.GetService("RebirthService")
-    DataClient           = Knit.GetController("DataClient")
-    modulesLoaded        = true
-end)
+-- ═══════════════════════════════════════
+--   SOCIALS
+-- ═══════════════════════════════════════
+local DISCORD_INVITE = "https://discord.gg/Uqrkdrpwxr"
+local RSCRIPTS_LINK  = "https://rscripts.net/@LPOLVO"
 
--- ════════════ CONFIG TABLES ════════════
-local DISCORD_INVITE  = "https://discord.gg/Uqrkdrpwxr"
-local RSCRIPTS_LINK   = "https://rscripts.net/@LPOLVO"
-
+-- ═══════════════════════════════════════
+--   CONFIG TABLES  (same as original)
+-- ═══════════════════════════════════════
 local RARITY_ORDER = {"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","CELESTIAL","SECRET","DIVINE"}
 local RARITY_INDEX, RARITY_NAMES, RARITY_NAME_TO_KEY = {}, {}, {}
-if ExpandedRarities then
-    for i, key in ipairs(RARITY_ORDER) do
-        RARITY_INDEX[key] = i
-        local name = ExpandedRarities[key] and ExpandedRarities[key].name or key
-        RARITY_NAMES[i] = name
-        RARITY_NAME_TO_KEY[name] = key
-    end
-else
-    for i, key in ipairs(RARITY_ORDER) do
-        RARITY_INDEX[key] = i
-        RARITY_NAMES[i] = key
-        RARITY_NAME_TO_KEY[key] = key
-    end
+for i, key in ipairs(RARITY_ORDER) do
+    RARITY_INDEX[key] = i
+    local name = ExpandedRarities[key] and ExpandedRarities[key].name or key
+    RARITY_NAMES[i] = name
+    RARITY_NAME_TO_KEY[name] = key
 end
 
 local SEED_NAMES, SEED_NAME_TO_KEY = {}, {}
-if SeedConfig then
-    for key in pairs(SeedConfig.Seeds) do
-        local seed = SeedConfig.GetSeed(key)
-        local cost = seed and seed.plantCost or 0
-        local priceText = cost > 0 and ("$"..AbbreviateNumber(cost)) or "Free"
-        local name = SeedConfig.SeedDisplayName(key).." ("..priceText..")"
-        SEED_NAMES[#SEED_NAMES+1] = name
-        SEED_NAME_TO_KEY[name] = key
-    end
-    table.sort(SEED_NAMES)
+for key in pairs(SeedConfig.Seeds) do
+    local seed = SeedConfig.GetSeed(key)
+    local cost = seed and seed.plantCost or 0
+    local priceText = cost > 0 and ("$"..AbbreviateNumber(cost)) or "Free"
+    local name = SeedConfig.SeedDisplayName(key).." ("..priceText..")"
+    SEED_NAMES[#SEED_NAMES+1] = name
+    SEED_NAME_TO_KEY[name] = key
 end
+table.sort(SEED_NAMES)
 
 local FURNITURE_NAMES, FURNITURE_NAME_TO_INFO = {}, {}
-if FurnitureShopConfig then
-    for _, category in ipairs(FurnitureShopConfig.Categories) do
-        for _, item in ipairs(category.items) do
-            local price = tonumber(item.price) or 0
-            local priceText = price > 0 and ("$"..AbbreviateNumber(price)) or "Free"
-            local name = ("[%s] %s (%s)"):format(category.name, item.id, priceText)
-            FURNITURE_NAMES[#FURNITURE_NAMES+1] = name
-            FURNITURE_NAME_TO_INFO[name] = {type=category.type, id=item.id, price=price}
-        end
+for _, category in ipairs(FurnitureShopConfig.Categories) do
+    for _, item in ipairs(category.items) do
+        local price = tonumber(item.price) or 0
+        local priceText = price > 0 and ("$"..AbbreviateNumber(price)) or "Free"
+        local name = ("[%s] %s (%s)"):format(category.name, item.id, priceText)
+        FURNITURE_NAMES[#FURNITURE_NAMES+1] = name
+        FURNITURE_NAME_TO_INFO[name] = {type=category.type, id=item.id, price=price}
     end
-    table.sort(FURNITURE_NAMES)
 end
+table.sort(FURNITURE_NAMES)
 
 local FERTILIZER_NAMES = {}
-if FertilizerConfig then
-    for _, key in ipairs(FertilizerConfig.Order) do
-        FERTILIZER_NAMES[#FERTILIZER_NAMES+1] = key
-    end
+for _, key in ipairs(FertilizerConfig.Order) do
+    FERTILIZER_NAMES[#FERTILIZER_NAMES+1] = key
 end
-if #FERTILIZER_NAMES == 0 then FERTILIZER_NAMES = {"None"} end
 
 local WEATHER_NAMES, WEATHER_NAME_TO_KEY = {}, {}
-if WeatherConfig then
-    for _, key in ipairs(WeatherConfig.Order) do
-        local weather = WeatherConfig.Weathers[key]
-        local name = weather and weather.displayName or key
-        WEATHER_NAMES[#WEATHER_NAMES+1] = name
-        WEATHER_NAME_TO_KEY[name] = key
-    end
+for _, key in ipairs(WeatherConfig.Order) do
+    local weather = WeatherConfig.Weathers[key]
+    local name = weather and weather.displayName or key
+    WEATHER_NAMES[#WEATHER_NAMES+1] = name
+    WEATHER_NAME_TO_KEY[name] = key
 end
 
--- ════════════ STATE ════════════
+-- ═══════════════════════════════════════
+--   TOGGLES & OPTIONS  (mirror originals)
+-- ═══════════════════════════════════════
+-- Each entry: {Value = default}  so existing logic (Toggles.X.Value) works unchanged
 local Toggles = {
-    AutoBuySeeds       = false,
-    BuyMutatedOnly     = false,
-    BuyNotify          = false,
-    AutoBuyFurniture   = false,
-    FurnitureNotify    = false,
-    AutoPlant          = false,
-    PlantDuringWeatherOnly = false,
-    AutoPlantTrees     = false,
-    PlantNotify        = false,
-    AutoHarvest        = false,
-    AutoCollectDead    = true,
-    HarvestNotify      = false,
-    AutoCollectFruit   = false,
-    HarvestTeleport    = false,
-    HarvestCollectAll  = false,
-    AutoSellFruits     = false,
-    AutoSellAll        = false,
-    SellDeadTreesOnly  = false,
-    SellTeleport       = false,
-    AutoRebirth        = false,
-    RebirthNotify      = true,
-    AntiAfk            = true,
+    AutoBuySeeds          = {Value = false},
+    BuyMutatedOnly        = {Value = false},
+    BuyNotify             = {Value = false},
+    AutoBuyFurniture      = {Value = false},
+    FurnitureNotify       = {Value = false},
+    AutoPlant             = {Value = false},
+    PlantDuringWeatherOnly= {Value = false},
+    AutoPlantTrees        = {Value = false},
+    PlantNotify           = {Value = false},
+    AutoHarvest           = {Value = false},
+    AutoCollectDead       = {Value = true},
+    HarvestNotify         = {Value = false},
+    AutoCollectFruit      = {Value = false},
+    HarvestTeleport       = {Value = false},
+    HarvestCollectAll     = {Value = false},
+    AutoSellFruits        = {Value = false},
+    AutoSellAll           = {Value = false},
+    SellDeadTreesOnly     = {Value = false},
+    SellTeleport          = {Value = false},
+    AutoRebirth           = {Value = false},
+    RebirthNotify         = {Value = true},
+    AntiAfk               = {Value = true},
 }
 
 local Options = {
-    BuyMode          = "Minimum Rarity",
-    BuyMinRarity     = RARITY_NAMES[1] or "COMMON",
-    BuyMaxCost       = 0,
-    BuyReserve       = 0,
-    BuyActionDelay   = 0.2,
-    BuyLoopDelay     = 0.5,
-    FurnitureReserve = 0,
-    FurnitureActionDelay = 0.2,
-    FurnitureLoopDelay   = 1,
-    PlantMode        = "Any Seed",
-    PlantFertilizer  = FERTILIZER_NAMES[1] or "None",
-    PlantLoopDelay   = 1,
-    HarvestMultiplier = 2,
-    HarvestActionDelay = 0.1,
-    HarvestLoopDelay  = 1,
-    SellMinFruits     = 1,
-    SellActionDelay   = 0.2,
-    SellLoopDelay     = 2,
-    RebirthMaxLevel   = (RebirthConfig and RebirthConfig.MaxLevel) or 100,
-    RebirthLoopDelay  = 5,
+    BuyMode              = {Value = "Minimum Rarity"},
+    BuyMinRarity         = {Value = RARITY_NAMES[1] or "COMMON"},
+    BuyMaxCost           = {Value = "0"},
+    BuyReserve           = {Value = "0"},
+    BuyActionDelay       = {Value = 0.2},
+    BuyLoopDelay         = {Value = 0.5},
+    FurnitureReserve     = {Value = "0"},
+    FurnitureActionDelay = {Value = 0.2},
+    FurnitureLoopDelay   = {Value = 1},
+    PlantMode            = {Value = "Any Seed"},
+    PlantFertilizer      = {Value = FERTILIZER_NAMES[1] or "None"},
+    PlantLoopDelay       = {Value = 1},
+    PlantWeathers        = {Value = {}},
+    HarvestMultiplier    = {Value = "2"},
+    HarvestActionDelay   = {Value = 0.1},
+    HarvestLoopDelay     = {Value = 1},
+    SellMinFruits        = {Value = 1},
+    SellActionDelay      = {Value = 0.2},
+    SellLoopDelay        = {Value = 2},
+    RebirthMaxLevel      = {Value = RebirthConfig.MaxLevel},
+    RebirthLoopDelay     = {Value = 5},
+    MenuKeybind          = {Value = "RightShift"},
 }
 
-local wantedSeeds     = {}
-local wantedFurniture = {}
+-- Notify stub (used by original logic)
+local Library = {
+    Unloaded = false,
+    Notify   = function(_, msg) end, -- will be replaced after GUI builds
+}
+
+local wantedSeeds      = {}
+local wantedFurniture  = {}
 local wantedPlantSeeds = {}
-local wantedWeathers  = {}
-if WeatherConfig then
-    for _, key in ipairs(WeatherConfig.Order) do wantedWeathers[key] = true end
-end
+local wantedWeathers   = {}
+for _, key in ipairs(WeatherConfig.Order) do wantedWeathers[key] = true end
 
-local Unloaded   = false
-local sessionStart = os.clock()
-local purchasedSpawns = {}
-local activeRound     = nil
-local harvestedRoundId = nil
-
--- ════════════ HELPER FUNCTIONS ════════════
-local function getData()
-    if not DataClient then return nil end
-    return DataClient.currentData
-end
+-- ═══════════════════════════════════════
+--   ORIGINAL LOGIC (100% unchanged)
+-- ═══════════════════════════════════════
+local function getData()        return DataClient.currentData end
 local function getCoins()
     local data = getData()
-    if not data or not data.Currency or not CustomEnum then return 0 end
+    if not data or not data.Currency then return 0 end
     return data.Currency[CustomEnum.CURRENCIES.COINS] or 0
 end
 local function hasInventorySpace()
@@ -216,7 +199,7 @@ local function hasInventorySpace()
     for _, slot in pairs(data.Inventory.Hotbar or {}) do
         if slot and slot.empty == true then return true end
     end
-    return #(data.Inventory.Storage or {}) < (Constants and Constants.STORAGE_MAX_SIZE or 999)
+    return #(data.Inventory.Storage or {}) < Constants.STORAGE_MAX_SIZE
 end
 local function getMyPlot()
     local field = workspace:FindFirstChild("BigField")
@@ -232,19 +215,20 @@ local function getRoot()
     return character and character:FindFirstChild("HumanoidRootPart")
 end
 
--- ════════════ SCRIPT LOGIC ════════════
+local purchasedSpawns = {}
+
 local function shouldBuySeed(seedType, rarity, mutation)
-    if Toggles.BuyMutatedOnly and (mutation == nil or mutation == "") then return false end
-    local seed = SeedConfig and SeedConfig.GetSeed(seedType)
+    if Toggles.BuyMutatedOnly.Value and (mutation == nil or mutation == "") then return false end
+    local seed = SeedConfig.GetSeed(seedType)
     local cost = seed and seed.plantCost or 0
-    local maxCost = tonumber(Options.BuyMaxCost) or 0
+    local maxCost = tonumber(Options.BuyMaxCost.Value) or 0
     if maxCost > 0 and cost > maxCost then return false end
-    local reserve = tonumber(Options.BuyReserve) or 0
+    local reserve = tonumber(Options.BuyReserve.Value) or 0
     if getCoins() - cost < reserve then return false end
-    local mode = Options.BuyMode
+    local mode = Options.BuyMode.Value
     if mode == "Buy All" then return true
     elseif mode == "Selected Seeds" then return wantedSeeds[seedType] == true end
-    local minKey = RARITY_NAME_TO_KEY[Options.BuyMinRarity]
+    local minKey = RARITY_NAME_TO_KEY[Options.BuyMinRarity.Value]
     local have = RARITY_INDEX[rarity]
     local want = RARITY_INDEX[minKey]
     if not have or not want then return false end
@@ -265,9 +249,10 @@ local function doBuySeeds()
                 local ok, success = SeedConveyorService:RequestPurchase(spawnId):await()
                 if ok and success then
                     purchasedSpawns[spawnId] = true
+                    if Toggles.BuyNotify.Value then Library:Notify(("Bought %s"):format(SeedConfig.SeedDisplayName(seedType))) end
                     if not hasInventorySpace() then return end
                 end
-                task.wait(Options.BuyActionDelay or 0.2)
+                task.wait(Options.BuyActionDelay.Value or 0.2)
             end
         end
     end
@@ -281,15 +266,19 @@ local function doBuySeeds()
 end
 
 local function doBuyFurniture()
-    local reserve = tonumber(Options.FurnitureReserve) or 0
+    local reserve = tonumber(Options.FurnitureReserve.Value) or 0
     for _, info in ipairs(wantedFurniture) do
-        if Unloaded or not Toggles.AutoBuyFurniture then return end
+        if Library.Unloaded or not Toggles.AutoBuyFurniture.Value then return end
         if getCoins() - info.price >= reserve then
-            FurnitureShopService:BuyFurniture(info.type, info.id):await()
-            task.wait(Options.FurnitureActionDelay or 0.2)
+            local ok, success = FurnitureShopService:BuyFurniture(info.type, info.id):await()
+            if ok and success and Toggles.FurnitureNotify.Value then Library:Notify(("Bought %s"):format(info.id)) end
+            task.wait(Options.FurnitureActionDelay.Value or 0.2)
         end
     end
 end
+
+local activeRound    = nil
+local harvestedRoundId = nil
 
 local function roundMultiplier(startTime)
     local elapsed = math.max(0, workspace:GetServerTimeNow() - startTime)
@@ -309,32 +298,47 @@ local function doRoundHarvest()
     local round = activeRound
     if not round then return end
     if round.crashed then
-        if Toggles.AutoCollectDead and harvestedRoundId ~= round.roundId then
+        if Toggles.AutoCollectDead.Value and harvestedRoundId ~= round.roundId then
             harvestedRoundId = round.roundId
             PlantRoundService:CollectDeadTree():await()
         end
         return
     end
-    if round.stopped or harvestedRoundId == round.roundId or not Toggles.AutoHarvest then return end
-    local target = tonumber(Options.HarvestMultiplier) or 2
+    if round.stopped or harvestedRoundId == round.roundId or not Toggles.AutoHarvest.Value then return end
+    local target = tonumber(Options.HarvestMultiplier.Value) or 2
     local multiplier = roundMultiplier(round.startTime)
     if multiplier < target then return end
     harvestedRoundId = round.roundId
-    PlantRoundService:StopPlant():await()
+    local ok = PlantRoundService:StopPlant():await()
+    if ok and Toggles.HarvestNotify.Value then Library:Notify(("Harvested at %.2fx"):format(multiplier)) end
+end
+
+local function getActiveWeatherKey()
+    local value = ReplicatedStorage:FindFirstChild("CurrentWeather")
+    return value and WeatherConfig.Normalize(value.Value)
+end
+
+local function getEquippedSeedTool()
+    local character = LocalPlayer.Character
+    if not character then return nil end
+    for _, tool in ipairs(character:GetChildren()) do
+        if tool:IsA("Tool") and tool:GetAttribute("IsSeed") then return tool end
+    end
+    return nil
 end
 
 local function findPlantableSlot()
     local data = getData()
     if not data or not data.Inventory then return nil end
-    local mode = Options.PlantMode
+    local mode = Options.PlantMode.Value
     local best, bestSlot, bestHotbar = nil, nil, nil
-    for _, container in ipairs({{data.Inventory.Hotbar, true}, {data.Inventory.Storage, false}}) do
+    for _, container in ipairs({{data.Inventory.Hotbar, true},{data.Inventory.Storage, false}}) do
         local items, isHotbar = container[1], container[2]
         for slot, item in pairs(items or {}) do
             if item and item.itemType == "Seed" and item.seedType then
                 local allowed = mode == "Any Seed" or wantedPlantSeeds[item.seedType] == true
                 if allowed then
-                    local seed = SeedConfig and SeedConfig.GetSeed(item.seedType)
+                    local seed = SeedConfig.GetSeed(item.seedType)
                     local cost = seed and seed.plantCost or 0
                     if mode == "Highest Value" then
                         if not best or cost > best then best, bestSlot, bestHotbar = cost, slot, isHotbar end
@@ -348,20 +352,10 @@ local function findPlantableSlot()
     return bestSlot, bestHotbar
 end
 
-local function getEquippedSeedTool()
-    local character = LocalPlayer.Character
-    if not character then return nil end
-    for _, tool in ipairs(character:GetChildren()) do
-        if tool:IsA("Tool") and tool:GetAttribute("IsSeed") then return tool end
-    end
-    return nil
-end
-
 local function doPlant()
     if activeRound and not activeRound.stopped and not activeRound.crashed then return end
-    if Toggles.PlantDuringWeatherOnly then
-        local value = ReplicatedStorage:FindFirstChild("CurrentWeather")
-        local weather = value and WeatherConfig and WeatherConfig.Normalize(value.Value)
+    if Toggles.PlantDuringWeatherOnly.Value then
+        local weather = getActiveWeatherKey()
         if not weather or not wantedWeathers[weather] then return end
     end
     local tool = getEquippedSeedTool()
@@ -375,11 +369,15 @@ local function doPlant()
     if not tool then return end
     local seedType = tool:GetAttribute("SeedType")
     if not seedType then return end
-    local fertilizer = Options.PlantFertilizer or "None"
+    local fertilizer = Options.PlantFertilizer.Value or "None"
     local data = getData()
     if (data and data.Rebirth or 0) < 1 then fertilizer = "None" end
     local ok, started = PlantRoundService:StartRound(seedType, fertilizer):await()
-    if ok and started then harvestedRoundId = nil; pcall(refreshRound) end
+    if ok and started then
+        harvestedRoundId = nil
+        pcall(refreshRound)
+        if Toggles.PlantNotify.Value then Library:Notify(("Planted %s"):format(SeedConfig.SeedDisplayName(seedType))) end
+    end
 end
 
 local function isTreeItem(item)
@@ -391,7 +389,7 @@ end
 local function findTreeSlot(dead)
     local data = getData()
     if not data or not data.Inventory then return nil end
-    for _, container in ipairs({{data.Inventory.Hotbar, true}, {data.Inventory.Storage, false}}) do
+    for _, container in ipairs({{data.Inventory.Hotbar, true},{data.Inventory.Storage, false}}) do
         local items, isHotbar = container[1], container[2]
         for slot, item in pairs(items or {}) do
             if isTreeItem(item) and (item.isDead == true) == dead then return slot, isHotbar end
@@ -431,17 +429,17 @@ local function getDirtParts()
 end
 
 local function randomDirtPoint(dirt)
-    return dirt.CFrame:PointToWorldSpace(Vector3.new(
+    local offset = Vector3.new(
         (math.random()-0.5)*dirt.Size.X*0.8,
         dirt.Size.Y/2,
-        (math.random()-0.5)*dirt.Size.Z*0.8
-    ))
+        (math.random()-0.5)*dirt.Size.Z*0.8)
+    return dirt.CFrame:PointToWorldSpace(offset)
 end
 
 local function doPlantTrees()
     local dirts = getDirtParts()
     if #dirts == 0 then return end
-    while not Unloaded and Toggles.AutoPlantTrees do
+    while not Library.Unloaded and Toggles.AutoPlantTrees.Value do
         local tool = equipTree(false)
         if not tool then return end
         local itemId = tool:GetAttribute("ItemId")
@@ -454,6 +452,7 @@ local function doPlantTrees()
             task.wait(0.1)
         end
         if not planted then return end
+        if Toggles.PlantNotify.Value then Library:Notify("Planted a grown tree") end
         task.wait(0.2)
     end
 end
@@ -475,7 +474,7 @@ end
 local function doHarvest()
     local plot = getMyPlot()
     if not plot then return end
-    if Toggles.HarvestCollectAll then
+    if Toggles.HarvestCollectAll.Value then
         pcall(function() PlayerPlotService:CollectAllFruits():await() end)
     end
     local root = getRoot()
@@ -484,19 +483,19 @@ local function doHarvest()
         if tree.Name:match("^PlotTree_") then
             local prompts = collectTreePrompts(tree)
             if #prompts > 0 then
-                if Toggles.HarvestTeleport and root then
+                if Toggles.HarvestTeleport.Value and root then
                     local base = tree:FindFirstChild("Base")
                     if base then root.CFrame = base.CFrame + Vector3.new(0,5,0); task.wait(0.1) end
                 end
                 for _, prompt in ipairs(prompts) do
-                    if Unloaded or not Toggles.AutoCollectFruit then break end
+                    if Library.Unloaded or not Toggles.AutoCollectFruit.Value then break end
                     pcall(_fireprox, prompt)
-                    task.wait(Options.HarvestActionDelay or 0.1)
+                    task.wait(Options.HarvestActionDelay.Value or 0.1)
                 end
             end
         end
     end
-    if Toggles.HarvestTeleport and root and returnCFrame then root.CFrame = returnCFrame end
+    if Toggles.HarvestTeleport.Value and root and returnCFrame then root.CFrame = returnCFrame end
 end
 
 local function countFruitTools()
@@ -518,15 +517,15 @@ local function doSellFruits()
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     if not humanoid or not backpack then return end
-    if countFruitTools() < (tonumber(Options.SellMinFruits) or 1) then return end
-    if Toggles.SellTeleport then
+    if countFruitTools() < (tonumber(Options.SellMinFruits.Value) or 1) then return end
+    if Toggles.SellTeleport.Value then
         local plot = getMyPlot()
         local stand = plot and plot:FindFirstChild("SellFruits")
         local root = getRoot()
         local pivot = stand and stand:GetPivot()
         if root and pivot then root.CFrame = pivot + Vector3.new(0,5,0); task.wait(0.2) end
     end
-    while not Unloaded and Toggles.AutoSellFruits do
+    while not Library.Unloaded and Toggles.AutoSellFruits.Value do
         local fruit
         for _, tool in ipairs(character:GetChildren()) do
             if tool:IsA("Tool") and tool:GetAttribute("IsFruit") then fruit = tool; break end
@@ -538,28 +537,26 @@ local function doSellFruits()
         end
         if not fruit then break end
         SellFruitsService:SellFruit():await()
-        task.wait(Options.SellActionDelay or 0.2)
+        task.wait(Options.SellActionDelay.Value or 0.2)
     end
 end
 
-local function doSellAll()
-    SellStandService:SellAll():await()
-end
+local function doSellAll()   SellStandService:SellAll():await() end
 
 local function doSellDeadTrees()
-    if Toggles.SellTeleport then
+    if Toggles.SellTeleport.Value then
         local field = workspace:FindFirstChild("BigField")
         local stand = field and field:FindFirstChild("SellStand")
         local root = getRoot()
         local pivot = stand and stand:GetPivot()
         if root and pivot then root.CFrame = pivot + Vector3.new(0,5,0); task.wait(0.2) end
     end
-    while not Unloaded and Toggles.SellDeadTreesOnly do
+    while not Library.Unloaded and Toggles.SellDeadTreesOnly.Value do
         local tool = equipTree(true)
         if not tool then return end
         local ok, sold = SellStandService:SellTree():await()
         if not ok or not sold then return end
-        task.wait(Options.SellActionDelay or 0.2)
+        task.wait(Options.SellActionDelay.Value or 0.2)
     end
 end
 
@@ -567,11 +564,11 @@ local function doRebirth()
     local data = getData()
     if not data then return end
     local current = data.Rebirth or 0
-    local maxLevel = tonumber(Options.RebirthMaxLevel) or (RebirthConfig and RebirthConfig.MaxLevel) or 100
-    if current >= maxLevel then return end
-    local nextRebirth = RebirthConfig and RebirthConfig.GetNext(current)
+    if current >= (tonumber(Options.RebirthMaxLevel.Value) or RebirthConfig.MaxLevel) then return end
+    local nextRebirth = RebirthConfig.GetNext(current)
     if not nextRebirth or getCoins() < nextRebirth.cost then return end
     RebirthService:DoRebirth():await()
+    if Toggles.RebirthNotify.Value then Library:Notify(("Rebirthed to %d"):format(current + 1)) end
 end
 
 -- Anti-AFK
@@ -592,1071 +589,951 @@ local function antiAfkTap()
 end
 local _afkBegan   = UserInputService.InputBegan:Connect(function() antiAfkLastInput = tick() end)
 local _afkChanged = UserInputService.InputChanged:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseMovement
-    or inp.UserInputType == Enum.UserInputType.Gamepad1 then
+    local t = inp.UserInputType
+    if t == Enum.UserInputType.MouseMovement or t == Enum.UserInputType.Gamepad1 then
         antiAfkLastInput = tick()
     end
 end)
 
--- ════════════════════════════════════════════
---         LP10 HUB PURE INSTANCE GUI
--- ════════════════════════════════════════════
-local ACCENT   = Color3.fromRGB(33, 150, 243)    -- Royal Blue
-local ACCENT2  = Color3.fromRGB(65, 105, 225)
-local BG_DARK  = Color3.fromRGB(10, 12, 20)
-local BG_MID   = Color3.fromRGB(16, 20, 36)
-local BG_CARD  = Color3.fromRGB(20, 26, 46)
-local TEXT_W   = Color3.fromRGB(230, 235, 255)
-local TEXT_DIM = Color3.fromRGB(130, 150, 190)
-local GREEN_C  = Color3.fromRGB(80, 220, 120)
-local RED_C    = Color3.fromRGB(220, 80, 80)
+-- ═══════════════════════════════════════════════════════════
+--   LP10 HUB LIBRARY  (your exact clean royal blue library)
+-- ═══════════════════════════════════════════════════════════
+local AccentColor = Color3.fromRGB(33, 150, 243)
+local BgColor     = Color3.fromRGB(15, 15, 15)
+local MinSize     = Vector2.new(260, 200)
+local MaxSize     = Vector2.new(700, 560)
 
--- Pick parent (PlayerGui fallback for Solara/Xeno)
+-- GUI parent
 local GuiParent
 pcall(function() GuiParent = game:GetService("CoreGui") end)
 if not GuiParent then GuiParent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name            = "LP10_GreedyGrowers"
-ScreenGui.ResetOnSpawn    = false
-ScreenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
-ScreenGui.IgnoreGuiInset  = true
-ScreenGui.DisplayOrder    = 999
+ScreenGui.Name           = "LP10_GreedyGrowers"
+ScreenGui.ResetOnSpawn   = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder   = 999
 pcall(function() ScreenGui.Parent = GuiParent end)
-if not ScreenGui.Parent then
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-end
+if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- ── Notification system ──────────────────────────────────────────────
-local NotifHolder = Instance.new("Frame", ScreenGui)
-NotifHolder.Name = "Notifs"
-NotifHolder.Size = UDim2.new(0, 280, 0, 400)
-NotifHolder.Position = UDim2.new(1, -295, 0.5, -200)
-NotifHolder.BackgroundTransparency = 1
-NotifHolder.ZIndex = 200
-local NotifList = Instance.new("UIListLayout", NotifHolder)
-NotifList.SortOrder = Enum.SortOrder.LayoutOrder
-NotifList.Padding = UDim.new(0, 6)
-NotifList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-NotifList.FillDirection = Enum.FillDirection.Vertical
-
-local function notify(msg)
-    local f = Instance.new("Frame", NotifHolder)
-    f.Size = UDim2.new(1, 0, 0, 44)
-    f.BackgroundColor3 = BG_CARD
-    f.BorderSizePixel = 0
-    f.ZIndex = 201
-    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", f)
-    stroke.Color = ACCENT; stroke.Thickness = 1
-    local lbl = Instance.new("TextLabel", f)
-    lbl.Size = UDim2.new(1, -12, 1, 0)
-    lbl.Position = UDim2.new(0, 12, 0, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 12
-    lbl.TextColor3 = TEXT_W
-    lbl.Text = msg
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.TextWrapped = true
-    lbl.ZIndex = 202
-    f.BackgroundTransparency = 1
-    TweenService:Create(f, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
-    task.delay(3, function()
-        TweenService:Create(f, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(lbl, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        task.wait(0.35)
-        f:Destroy()
+-- Dragging helper (exact pattern from your library)
+local _G_IsResizing = false
+local function EnableDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            if not _G_IsResizing then
+                dragging  = true
+                dragStart = input.Position
+                startPos  = frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
+            end
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
     end)
 end
 
--- ── Floating Toggle Button ────────────────────────────────────────────
-local ToggleBtn = Instance.new("Frame", ScreenGui)
+-- ── TOGGLE BUTTON  (draggable, LP text, shows/hides main window)
+local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name             = "LP_Toggle"
-ToggleBtn.Size             = UDim2.new(0, 62, 0, 62)
-ToggleBtn.Position         = UDim2.new(0, 20, 0, 120)
-ToggleBtn.BackgroundColor3 = BG_DARK
-ToggleBtn.ZIndex           = 100
-ToggleBtn.Active           = true
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 16)
-local tStroke = Instance.new("UIStroke", ToggleBtn)
-tStroke.Color = ACCENT; tStroke.Thickness = 2
+ToggleBtn.Parent           = ScreenGui
+ToggleBtn.BackgroundColor3 = BgColor
+ToggleBtn.Position         = UDim2.new(0.05, 0, 0.08, 0)
+ToggleBtn.Size             = UDim2.new(0, 60, 0, 60)
+ToggleBtn.AutoButtonColor  = false
+ToggleBtn.Text             = ""
+ToggleBtn.ZIndex           = 200
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 15)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleStroke.Color     = AccentColor
+ToggleStroke.Thickness = 2
 
-local tGrad = Instance.new("UIGradient", ToggleBtn)
-tGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(33, 150, 243)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 60, 160)),
+local LP_Label = Instance.new("TextLabel", ToggleBtn)
+LP_Label.Size                = UDim2.new(1, 0, 1, 0)
+LP_Label.BackgroundTransparency = 1
+LP_Label.Text                = "LP"
+LP_Label.Font                = Enum.Font.GothamBold
+LP_Label.TextColor3          = Color3.fromRGB(255, 255, 255)
+LP_Label.TextScaled          = true
+LP_Label.ZIndex              = 200
+-- UIGradient on the label for royal blue shine
+local LP_Grad = Instance.new("UIGradient", LP_Label)
+LP_Grad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, AccentColor),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 80, 200)),
 })
-tGrad.Rotation = 135
 
-local tLabel = Instance.new("TextLabel", ToggleBtn)
-tLabel.Size               = UDim2.new(1, 0, 1, 0)
-tLabel.BackgroundTransparency = 1
-tLabel.Text               = "LP"
-tLabel.Font               = Enum.Font.GothamBold
-tLabel.TextColor3         = Color3.fromRGB(255, 255, 255)
-tLabel.TextScaled         = true
-tLabel.ZIndex             = 101
-tLabel.Active             = false  -- never absorbs input
-
--- Drag logic only (tap/toggle wired after openGUI/closeGUI are defined below)
-local _toggleDragStart, _toggleStartPos, _toggleWasDrag
-ToggleBtn.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1
-    or inp.UserInputType == Enum.UserInputType.Touch then
-        _toggleWasDrag   = false
-        _toggleDragStart = inp.Position
-        _toggleStartPos  = ToggleBtn.Position
-    end
-end)
-ToggleBtn.InputChanged:Connect(function(inp)
-    if _toggleDragStart and (inp.UserInputType == Enum.UserInputType.MouseMovement
-    or inp.UserInputType == Enum.UserInputType.Touch) then
-        local delta = inp.Position - _toggleDragStart
-        if delta.Magnitude > 6 then
-            _toggleWasDrag = true
-            ToggleBtn.Position = UDim2.new(
-                _toggleStartPos.X.Scale, _toggleStartPos.X.Offset + delta.X,
-                _toggleStartPos.Y.Scale, _toggleStartPos.Y.Offset + delta.Y)
-        end
-    end
-end)
-
--- ── Main Frame ────────────────────────────────────────────────────────
-local IsResizing = false
-
-local Main = Instance.new("Frame", ScreenGui)
+-- ── MAIN FRAME
+local Main = Instance.new("Frame")
 Main.Name             = "MainFrame"
-Main.Size             = UDim2.new(0, 560, 0, 500)
-Main.Position         = UDim2.new(0.5, -280, 0.5, -250)
-Main.BackgroundColor3 = BG_DARK
-Main.BorderSizePixel  = 0
-Main.Visible          = false
+Main.Parent           = ScreenGui
+Main.BackgroundColor3 = BgColor
+Main.Position         = UDim2.new(0.5, -200, 0.5, -175)
+Main.Size             = UDim2.new(0, 400, 0, 350)
+Main.Visible          = true   -- VISIBLE IMMEDIATELY on execute
 Main.Active           = true
-Main.ClipsDescendants = false
+Main.ClipsDescendants = true
 Main.ZIndex           = 10
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
-local mainStroke = Instance.new("UIStroke", Main)
-mainStroke.Color = ACCENT; mainStroke.Thickness = 1.5
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color     = AccentColor
+MainStroke.Thickness = 2
 
--- drag main frame
-do
-    local dragging, dragStart, startPos
-    Main.InputBegan:Connect(function(inp)
-        if (inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch) and not IsResizing then
-            dragging = true; dragStart = inp.Position; startPos = Main.Position
-            inp.Changed:Connect(function()
-                if inp.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(inp)
-        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
-            local delta = inp.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
+-- Header bar
+local HeaderBar = Instance.new("Frame", Main)
+HeaderBar.Size             = UDim2.new(1, 0, 0, 38)
+HeaderBar.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
+HeaderBar.BorderSizePixel  = 0
+HeaderBar.ZIndex           = 11
+Instance.new("UICorner", HeaderBar).CornerRadius = UDim.new(0, 12)
+local HGrad = Instance.new("UIGradient", HeaderBar)
+HGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 50, 120)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 18)),
+})
+HGrad.Rotation = 90
 
--- resize handle
-local ResizeHandle = Instance.new("TextButton", Main)
-ResizeHandle.Size     = UDim2.new(0, 22, 0, 22)
-ResizeHandle.Position = UDim2.new(1, -22, 1, -22)
-ResizeHandle.BackgroundTransparency = 1
-ResizeHandle.Text     = "◢"
-ResizeHandle.TextColor3 = ACCENT
-ResizeHandle.TextSize   = 16
-ResizeHandle.Font       = Enum.Font.GothamBold
-ResizeHandle.ZIndex     = 50
+local HeaderLabel = Instance.new("TextLabel", HeaderBar)
+HeaderLabel.Size               = UDim2.new(1, -80, 1, 0)
+HeaderLabel.Position           = UDim2.new(0, 12, 0, 0)
+HeaderLabel.BackgroundTransparency = 1
+HeaderLabel.Font               = Enum.Font.GothamBold
+HeaderLabel.Text               = "💎 LP10 HUB  —  Greedy Growers"
+HeaderLabel.TextColor3         = AccentColor
+HeaderLabel.TextSize           = 14
+HeaderLabel.TextXAlignment     = Enum.TextXAlignment.Left
+HeaderLabel.ZIndex             = 12
 
+-- Close button
+local CloseBtn = Instance.new("TextButton", HeaderBar)
+CloseBtn.Size             = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position         = UDim2.new(1, -34, 0.5, -14)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Text             = "✕"
+CloseBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font             = Enum.Font.GothamBold
+CloseBtn.TextSize         = 13
+CloseBtn.ZIndex           = 13
+CloseBtn.AutoButtonColor  = true
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 7)
+
+-- Resize handle (exact from your library)
 local currentSize = Main.Size
-ResizeHandle.InputBegan:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-        IsResizing = true
-        local dragStart2 = inp.Position
+local ResizeHandle = Instance.new("TextButton", Main)
+ResizeHandle.Name                = "ResizeHandle"
+ResizeHandle.Size                = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position            = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundTransparency = 1
+ResizeHandle.Text                = "◢"
+ResizeHandle.TextColor3          = AccentColor
+ResizeHandle.TextSize            = 15
+ResizeHandle.ZIndex              = 50
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        _G_IsResizing = true
+        local dragStart = input.Position
         local startSize = Main.Size
         local conn
-        conn = UserInputService.InputChanged:Connect(function(inp2)
-            if inp2.UserInputType == Enum.UserInputType.MouseMovement or inp2.UserInputType == Enum.UserInputType.Touch then
-                local delta = inp2.Position - dragStart2
-                local nx = math.clamp(startSize.X.Offset + delta.X, 320, 900)
-                local ny = math.clamp(startSize.Y.Offset + delta.Y, 300, 800)
+        conn = UserInputService.InputChanged:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseMovement
+            or inp.UserInputType == Enum.UserInputType.Touch then
+                local delta = inp.Position - dragStart
+                local nx = math.clamp(startSize.X.Offset + delta.X, MinSize.X, MaxSize.X)
+                local ny = math.clamp(startSize.Y.Offset + delta.Y, MinSize.Y, MaxSize.Y)
                 Main.Size = UDim2.new(0, nx, 0, ny)
                 currentSize = Main.Size
             end
         end)
-        inp.Changed:Connect(function()
-            if inp.UserInputState == Enum.UserInputState.End then
-                IsResizing = false; conn:Disconnect()
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                _G_IsResizing = false
+                conn:Disconnect()
             end
         end)
     end
 end)
 
--- ── Header ────────────────────────────────────────────────────────────
-local Header = Instance.new("Frame", Main)
-Header.Size             = UDim2.new(1, 0, 0, 46)
-Header.BackgroundColor3 = BG_MID
-Header.BorderSizePixel  = 0
-Header.ZIndex           = 11
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 14)
-local hGrad = Instance.new("UIGradient", Header)
-hGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(20,40,90)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10,12,22)),
-})
-hGrad.Rotation = 90
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
 
-local headerTitle = Instance.new("TextLabel", Header)
-headerTitle.Size = UDim2.new(0.7, 0, 1, 0)
-headerTitle.Position = UDim2.new(0, 14, 0, 0)
-headerTitle.BackgroundTransparency = 1
-headerTitle.Font = Enum.Font.GothamBold
-headerTitle.TextSize = 16
-headerTitle.TextColor3 = Color3.fromRGB(255,255,255)
-headerTitle.Text = "💎 LP10 HUB  —  Greedy Growers"
-headerTitle.TextXAlignment = Enum.TextXAlignment.Left
-headerTitle.ZIndex = 12
-
-local closeBtn = Instance.new("TextButton", Header)
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -38, 0.5, -15)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 13
-closeBtn.ZIndex = 13
-closeBtn.AutoButtonColor = true
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
-
-local minimizeBtn = Instance.new("TextButton", Header)
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -72, 0.5, -15)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(220, 160, 30)
-minimizeBtn.Text = "—"
-minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 14
-minimizeBtn.ZIndex = 13
-minimizeBtn.AutoButtonColor = true
-Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
-
--- ── Tab Bar ───────────────────────────────────────────────────────────
+-- Tab bar
 local TabBar = Instance.new("Frame", Main)
-TabBar.Size             = UDim2.new(1, -20, 0, 36)
-TabBar.Position         = UDim2.new(0, 10, 0, 50)
-TabBar.BackgroundColor3 = BG_MID
+TabBar.Size             = UDim2.new(1, -16, 0, 30)
+TabBar.Position         = UDim2.new(0, 8, 0, 42)
+TabBar.BackgroundColor3 = Color3.fromRGB(10, 12, 24)
 TabBar.BorderSizePixel  = 0
 TabBar.ZIndex           = 11
-Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0, 8)
 local tabLayout = Instance.new("UIListLayout", TabBar)
 tabLayout.FillDirection = Enum.FillDirection.Horizontal
-tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-tabLayout.Padding = UDim.new(0, 4)
-Instance.new("UIPadding", TabBar):match(function() end) -- ignore
+tabLayout.SortOrder     = Enum.SortOrder.LayoutOrder
+tabLayout.Padding       = UDim.new(0, 3)
 local tabPad = Instance.new("UIPadding", TabBar)
-tabPad.PaddingLeft = UDim.new(0, 6)
-tabPad.PaddingRight = UDim.new(0, 6)
-tabPad.PaddingTop = UDim.new(0, 4)
-tabPad.PaddingBottom = UDim.new(0, 4)
+tabPad.PaddingLeft   = UDim.new(0, 4)
+tabPad.PaddingRight  = UDim.new(0, 4)
+tabPad.PaddingTop    = UDim.new(0, 3)
+tabPad.PaddingBottom = UDim.new(0, 3)
 
--- ── Content area ─────────────────────────────────────────────────────
-local ContentArea = Instance.new("ScrollingFrame", Main)
-ContentArea.Size             = UDim2.new(1, -20, 1, -98)
-ContentArea.Position         = UDim2.new(0, 10, 0, 92)
-ContentArea.BackgroundTransparency = 1
-ContentArea.BorderSizePixel  = 0
-ContentArea.ScrollBarThickness = 4
-ContentArea.ScrollBarImageColor3 = ACCENT
-ContentArea.CanvasSize       = UDim2.new(0, 0, 0, 0)
-ContentArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ContentArea.ZIndex           = 11
-ContentArea.ClipsDescendants = true
+-- Scroll area
+local ScrollArea = Instance.new("ScrollingFrame", Main)
+ScrollArea.Size              = UDim2.new(1, -8, 1, -82)
+ScrollArea.Position          = UDim2.new(0, 4, 0, 78)
+ScrollArea.BackgroundTransparency = 1
+ScrollArea.BorderSizePixel   = 0
+ScrollArea.ScrollBarThickness = 3
+ScrollArea.ScrollBarImageColor3 = AccentColor
+ScrollArea.CanvasSize        = UDim2.new(0, 0, 0, 0)
+ScrollArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScrollArea.ZIndex            = 11
+local scrollLayout = Instance.new("UIListLayout", ScrollArea)
+scrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
+scrollLayout.Padding   = UDim.new(0, 4)
+local scrollPad = Instance.new("UIPadding", ScrollArea)
+scrollPad.PaddingBottom = UDim.new(0, 8)
 
--- ════ LP10 WIDGET HELPERS ════
--- These build the same style of controls as the clean library
+-- ── Notification system
+local NotifHolder = Instance.new("Frame", ScreenGui)
+NotifHolder.Size              = UDim2.new(0, 260, 0, 400)
+NotifHolder.Position          = UDim2.new(1, -270, 0.5, -200)
+NotifHolder.BackgroundTransparency = 1
+NotifHolder.ZIndex            = 300
+local nLayout = Instance.new("UIListLayout", NotifHolder)
+nLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+nLayout.Padding           = UDim.new(0, 5)
 
-local function makeSection(parent, title)
-    local frame = Instance.new("Frame", parent)
-    frame.Size = UDim2.new(1, 0, 0, 28)
-    frame.BackgroundColor3 = Color3.fromRGB(18, 24, 48)
-    frame.BorderSizePixel = 0
-    frame.AutomaticSize = Enum.AutomaticSize.Y
-    frame.ZIndex = 12
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Color = ACCENT2; stroke.Thickness = 1; stroke.Transparency = 0.5
-    local lbl = Instance.new("TextLabel", frame)
-    lbl.Size = UDim2.new(1, -16, 0, 28)
-    lbl.Position = UDim2.new(0, 10, 0, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 12
-    lbl.TextColor3 = ACCENT
-    lbl.Text = "▸  " .. title:upper()
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 13
-    local inner = Instance.new("Frame", frame)
-    inner.Size = UDim2.new(1, 0, 0, 0)
-    inner.Position = UDim2.new(0, 0, 0, 28)
-    inner.BackgroundTransparency = 1
-    inner.AutomaticSize = Enum.AutomaticSize.Y
-    inner.ZIndex = 12
-    local innerLayout = Instance.new("UIListLayout", inner)
-    innerLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    innerLayout.Padding = UDim.new(0, 2)
-    local innerPad = Instance.new("UIPadding", inner)
-    innerPad.PaddingLeft = UDim.new(0, 8)
-    innerPad.PaddingRight = UDim.new(0, 8)
-    innerPad.PaddingBottom = UDim.new(0, 8)
-    return inner
+local function Notify(msg)
+    local f = Instance.new("Frame", NotifHolder)
+    f.Size             = UDim2.new(1, 0, 0, 40)
+    f.BackgroundColor3 = Color3.fromRGB(12, 16, 36)
+    f.BorderSizePixel  = 0
+    f.ZIndex           = 301
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+    local s = Instance.new("UIStroke", f); s.Color = AccentColor; s.Thickness = 1
+    local l = Instance.new("TextLabel", f)
+    l.Size               = UDim2.new(1, -12, 1, 0)
+    l.Position           = UDim2.new(0, 10, 0, 0)
+    l.BackgroundTransparency = 1
+    l.Font               = Enum.Font.GothamBold
+    l.TextSize           = 11
+    l.TextColor3         = Color3.fromRGB(230, 235, 255)
+    l.Text               = msg
+    l.TextXAlignment     = Enum.TextXAlignment.Left
+    l.TextWrapped        = true
+    l.ZIndex             = 302
+    task.delay(3.5, function()
+        TweenService:Create(f, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(l, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        task.wait(0.35); f:Destroy()
+    end)
 end
+Library.Notify = Notify  -- wire the original logic's notify calls
 
-local function makeRow(parent)
-    local row = Instance.new("Frame", parent)
-    row.Size = UDim2.new(1, 0, 0, 34)
-    row.BackgroundColor3 = BG_CARD
-    row.BorderSizePixel = 0
-    row.ZIndex = 13
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 7)
-    return row
+-- ── Widget helpers
+local TEXT_W   = Color3.fromRGB(225, 230, 255)
+local TEXT_DIM = Color3.fromRGB(120, 140, 180)
+local BG_ROW   = Color3.fromRGB(18, 22, 42)
+local BG_CARD  = Color3.fromRGB(22, 28, 52)
+
+local function makeRow(parent, h)
+    local r = Instance.new("Frame", parent)
+    r.Size             = UDim2.new(1, 0, 0, h or 32)
+    r.BackgroundColor3 = BG_ROW
+    r.BorderSizePixel  = 0
+    r.ZIndex           = 12
+    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 7)
+    return r
 end
 
 local function makeLabel(parent, text)
-    local row = makeRow(parent)
-    row.Size = UDim2.new(1, 0, 0, 28)
-    local lbl = Instance.new("TextLabel", row)
-    lbl.Size = UDim2.new(1, -12, 1, 0)
-    lbl.Position = UDim2.new(0, 10, 0, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 11
-    lbl.TextColor3 = TEXT_DIM
-    lbl.Text = text
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.TextWrapped = true
-    lbl.ZIndex = 14
-    return row
+    local r = makeRow(parent, 26)
+    r.BackgroundTransparency = 1
+    local l = Instance.new("TextLabel", r)
+    l.Size               = UDim2.new(1, -10, 1, 0)
+    l.Position           = UDim2.new(0, 8, 0, 0)
+    l.BackgroundTransparency = 1
+    l.Font               = Enum.Font.Gotham
+    l.TextSize           = 11
+    l.TextColor3         = TEXT_DIM
+    l.Text               = text
+    l.TextXAlignment     = Enum.TextXAlignment.Left
+    l.TextWrapped        = true
+    l.ZIndex             = 13
+    return r
 end
 
-local function makeToggle(parent, text, default, callback)
-    local row = makeRow(parent)
-    local lbl = Instance.new("TextLabel", row)
-    lbl.Size = UDim2.new(1, -54, 1, 0)
-    lbl.Position = UDim2.new(0, 10, 0, 0)
+local function makeToggleWidget(parent, text, toggleKey)
+    local r = makeRow(parent)
+    local lbl = Instance.new("TextLabel", r)
+    lbl.Size               = UDim2.new(1, -54, 1, 0)
+    lbl.Position           = UDim2.new(0, 10, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 12
-    lbl.TextColor3 = TEXT_W
-    lbl.Text = text
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 14
+    lbl.Font               = Enum.Font.Gotham
+    lbl.TextSize           = 12
+    lbl.TextColor3         = TEXT_W
+    lbl.Text               = text
+    lbl.TextXAlignment     = Enum.TextXAlignment.Left
+    lbl.ZIndex             = 13
 
-    local trackBg = Instance.new("Frame", row)
-    trackBg.Size = UDim2.new(0, 38, 0, 20)
-    trackBg.Position = UDim2.new(1, -46, 0.5, -10)
-    trackBg.BackgroundColor3 = Color3.fromRGB(50, 55, 75)
-    trackBg.BorderSizePixel = 0
-    trackBg.ZIndex = 14
-    Instance.new("UICorner", trackBg).CornerRadius = UDim.new(1, 0)
-
-    local knob = Instance.new("Frame", trackBg)
-    knob.Size = UDim2.new(0, 16, 0, 16)
-    knob.Position = UDim2.new(0, 2, 0.5, -8)
-    knob.BackgroundColor3 = Color3.fromRGB(180,185,200)
-    knob.BorderSizePixel = 0
-    knob.ZIndex = 15
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-    local state = default or false
-    local function refreshVisual()
-        if state then
-            TweenService:Create(trackBg, TweenInfo.new(0.18), {BackgroundColor3 = ACCENT}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.18), {Position = UDim2.new(0, 20, 0.5, -8), BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play()
-        else
-            TweenService:Create(trackBg, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(50,55,75)}):Play()
-            TweenService:Create(knob, TweenInfo.new(0.18), {Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = Color3.fromRGB(180,185,200)}):Play()
-        end
-    end
-    refreshVisual()
-
-    local btn = Instance.new("TextButton", row)
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.BackgroundTransparency = 1
-    btn.Text = ""
-    btn.ZIndex = 16
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        refreshVisual()
-        if callback then callback(state) end
-    end)
-
-    return row, function() return state end, function(v) state = v; refreshVisual(); if callback then callback(v) end end
-end
-
-local function makeButton(parent, text, callback)
-    local row = makeRow(parent)
-    row.BackgroundColor3 = Color3.fromRGB(20, 50, 110)
-    local stroke2 = Instance.new("UIStroke", row)
-    stroke2.Color = ACCENT; stroke2.Thickness = 1
-    local btn = Instance.new("TextButton", row)
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.BackgroundTransparency = 1
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    btn.TextColor3 = ACCENT
-    btn.Text = "▶  " .. text
-    btn.ZIndex = 14
-    btn.AutoButtonColor = false
-    btn.MouseButton1Click:Connect(function()
-        TweenService:Create(row, TweenInfo.new(0.08), {BackgroundColor3 = ACCENT}):Play()
-        TweenService:Create(btn, TweenInfo.new(0.08), {TextColor3 = Color3.fromRGB(255,255,255)}):Play()
-        task.delay(0.15, function()
-            TweenService:Create(row, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(20,50,110)}):Play()
-            TweenService:Create(btn, TweenInfo.new(0.15), {TextColor3 = ACCENT}):Play()
-        end)
-        if callback then pcall(callback) end
-    end)
-    return row
-end
-
-local function makeInput(parent, label, default, isNumeric, callback)
-    local row = Instance.new("Frame", parent)
-    row.Size = UDim2.new(1, 0, 0, 52)
-    row.BackgroundColor3 = BG_CARD
-    row.BorderSizePixel = 0
-    row.ZIndex = 13
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 7)
-    local lbl = Instance.new("TextLabel", row)
-    lbl.Size = UDim2.new(1, -12, 0, 22)
-    lbl.Position = UDim2.new(0, 10, 0, 4)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 11
-    lbl.TextColor3 = TEXT_DIM
-    lbl.Text = label
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 14
-    local box = Instance.new("TextBox", row)
-    box.Size = UDim2.new(1, -20, 0, 22)
-    box.Position = UDim2.new(0, 10, 0, 26)
-    box.BackgroundColor3 = Color3.fromRGB(14, 18, 36)
-    box.BorderSizePixel = 0
-    box.Font = Enum.Font.GothamBold
-    box.TextSize = 12
-    box.TextColor3 = TEXT_W
-    box.PlaceholderText = tostring(default)
-    box.Text = tostring(default)
-    box.ClearTextOnFocus = false
-    box.ZIndex = 14
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
-    box.FocusLost:Connect(function()
-        local v = box.Text
-        if isNumeric then
-            local n = tonumber(v)
-            if n then
-                if callback then callback(n) end
-            else
-                box.Text = tostring(default)
-            end
-        else
-            if callback then callback(v) end
-        end
-    end)
-    return row
-end
-
-local function makeSlider(parent, label, min, max, default, rounding, callback)
-    local row = Instance.new("Frame", parent)
-    row.Size = UDim2.new(1, 0, 0, 54)
-    row.BackgroundColor3 = BG_CARD
-    row.BorderSizePixel = 0
-    row.ZIndex = 13
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 7)
-
-    local lbl = Instance.new("TextLabel", row)
-    lbl.Size = UDim2.new(0.7, 0, 0, 22)
-    lbl.Position = UDim2.new(0, 10, 0, 4)
-    lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 11
-    lbl.TextColor3 = TEXT_DIM
-    lbl.Text = label
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 14
-
-    local valLbl = Instance.new("TextLabel", row)
-    valLbl.Size = UDim2.new(0.28, 0, 0, 22)
-    valLbl.Position = UDim2.new(0.72, 0, 0, 4)
-    valLbl.BackgroundTransparency = 1
-    valLbl.Font = Enum.Font.GothamBold
-    valLbl.TextSize = 12
-    valLbl.TextColor3 = ACCENT
-    valLbl.TextXAlignment = Enum.TextXAlignment.Right
-    valLbl.ZIndex = 14
-
-    local track = Instance.new("Frame", row)
-    track.Size = UDim2.new(1, -20, 0, 6)
-    track.Position = UDim2.new(0, 10, 0, 36)
-    track.BackgroundColor3 = Color3.fromRGB(40, 48, 80)
-    track.BorderSizePixel = 0
-    track.ZIndex = 14
+    local track = Instance.new("Frame", r)
+    track.Size             = UDim2.new(0, 36, 0, 18)
+    track.Position         = UDim2.new(1, -44, 0.5, -9)
+    track.BackgroundColor3 = Color3.fromRGB(50, 55, 75)
+    track.BorderSizePixel  = 0
+    track.ZIndex           = 13
     Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
 
-    local fill = Instance.new("Frame", track)
-    fill.Size = UDim2.new(0, 0, 1, 0)
-    fill.BackgroundColor3 = ACCENT
-    fill.BorderSizePixel = 0
-    fill.ZIndex = 15
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-
     local knob = Instance.new("Frame", track)
-    knob.Size = UDim2.new(0, 14, 0, 14)
-    knob.AnchorPoint = Vector2.new(0.5, 0.5)
-    knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    knob.BorderSizePixel = 0
-    knob.ZIndex = 16
+    knob.Size             = UDim2.new(0, 14, 0, 14)
+    knob.Position         = UDim2.new(0, 2, 0.5, -7)
+    knob.BackgroundColor3 = Color3.fromRGB(170, 175, 195)
+    knob.BorderSizePixel  = 0
+    knob.ZIndex           = 14
+    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+
+    local function refresh()
+        local on = Toggles[toggleKey] and Toggles[toggleKey].Value
+        TweenService:Create(track, TweenInfo.new(0.15), {BackgroundColor3 = on and AccentColor or Color3.fromRGB(50,55,75)}):Play()
+        TweenService:Create(knob, TweenInfo.new(0.15), {
+            Position        = on and UDim2.new(0, 20, 0.5, -7) or UDim2.new(0, 2, 0.5, -7),
+            BackgroundColor3= on and Color3.fromRGB(255,255,255) or Color3.fromRGB(170,175,195),
+        }):Play()
+    end
+    refresh()
+
+    local btn = Instance.new("TextButton", r)
+    btn.Size               = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundTransparency = 1
+    btn.Text               = ""
+    btn.ZIndex             = 15
+    btn.MouseButton1Click:Connect(function()
+        if Toggles[toggleKey] then
+            Toggles[toggleKey].Value = not Toggles[toggleKey].Value
+            refresh()
+        end
+    end)
+    return r
+end
+
+local function makeButton(parent, text, cb)
+    local r = makeRow(parent)
+    r.BackgroundColor3 = Color3.fromRGB(15, 40, 100)
+    local s = Instance.new("UIStroke", r); s.Color = AccentColor; s.Thickness = 1
+    local btn = Instance.new("TextButton", r)
+    btn.Size               = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundTransparency = 1
+    btn.Font               = Enum.Font.GothamBold
+    btn.TextSize           = 12
+    btn.TextColor3         = AccentColor
+    btn.Text               = "▶  "..text
+    btn.ZIndex             = 13
+    btn.AutoButtonColor    = false
+    btn.MouseButton1Click:Connect(function()
+        TweenService:Create(r, TweenInfo.new(0.08), {BackgroundColor3 = AccentColor}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.08), {TextColor3 = Color3.fromRGB(255,255,255)}):Play()
+        task.delay(0.18, function()
+            TweenService:Create(r, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(15,40,100)}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.15), {TextColor3 = AccentColor}):Play()
+        end)
+        pcall(cb)
+    end)
+    return r
+end
+
+local function makeInput(parent, label, optKey, isNum)
+    local r = makeRow(parent, 52)
+    local lbl = Instance.new("TextLabel", r)
+    lbl.Size               = UDim2.new(1, -10, 0, 20)
+    lbl.Position           = UDim2.new(0, 8, 0, 3)
+    lbl.BackgroundTransparency = 1
+    lbl.Font               = Enum.Font.Gotham
+    lbl.TextSize           = 11
+    lbl.TextColor3         = TEXT_DIM
+    lbl.Text               = label
+    lbl.TextXAlignment     = Enum.TextXAlignment.Left
+    lbl.ZIndex             = 13
+    local box = Instance.new("TextBox", r)
+    box.Size               = UDim2.new(1, -16, 0, 22)
+    box.Position           = UDim2.new(0, 8, 0, 25)
+    box.BackgroundColor3   = Color3.fromRGB(10, 14, 30)
+    box.BorderSizePixel    = 0
+    box.Font               = Enum.Font.GothamBold
+    box.TextSize           = 12
+    box.TextColor3         = TEXT_W
+    box.Text               = tostring(Options[optKey] and Options[optKey].Value or "")
+    box.PlaceholderText    = tostring(Options[optKey] and Options[optKey].Value or "")
+    box.ClearTextOnFocus   = false
+    box.ZIndex             = 14
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
+    box.FocusLost:Connect(function()
+        if Options[optKey] then
+            if isNum then
+                local n = tonumber(box.Text)
+                if n then Options[optKey].Value = n
+                else box.Text = tostring(Options[optKey].Value) end
+            else
+                Options[optKey].Value = box.Text
+            end
+        end
+    end)
+    return r
+end
+
+local function makeSlider(parent, label, optKey, min, max, rounding)
+    local r = makeRow(parent, 52)
+    local lbl = Instance.new("TextLabel", r)
+    lbl.Size               = UDim2.new(0.68, 0, 0, 20)
+    lbl.Position           = UDim2.new(0, 8, 0, 3)
+    lbl.BackgroundTransparency = 1
+    lbl.Font               = Enum.Font.Gotham
+    lbl.TextSize           = 11
+    lbl.TextColor3         = TEXT_DIM
+    lbl.Text               = label
+    lbl.TextXAlignment     = Enum.TextXAlignment.Left
+    lbl.ZIndex             = 13
+    local valLbl = Instance.new("TextLabel", r)
+    valLbl.Size            = UDim2.new(0.3, 0, 0, 20)
+    valLbl.Position        = UDim2.new(0.7, 0, 0, 3)
+    valLbl.BackgroundTransparency = 1
+    valLbl.Font            = Enum.Font.GothamBold
+    valLbl.TextSize        = 12
+    valLbl.TextColor3      = AccentColor
+    valLbl.TextXAlignment  = Enum.TextXAlignment.Right
+    valLbl.ZIndex          = 13
+    local track = Instance.new("Frame", r)
+    track.Size             = UDim2.new(1, -16, 0, 5)
+    track.Position         = UDim2.new(0, 8, 0, 36)
+    track.BackgroundColor3 = Color3.fromRGB(40, 46, 78)
+    track.BorderSizePixel  = 0
+    track.ZIndex           = 13
+    Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+    local fill = Instance.new("Frame", track)
+    fill.BackgroundColor3  = AccentColor
+    fill.BorderSizePixel   = 0
+    fill.ZIndex            = 14
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    local knob = Instance.new("Frame", track)
+    knob.Size              = UDim2.new(0, 12, 0, 12)
+    knob.AnchorPoint       = Vector2.new(0.5, 0.5)
+    knob.BackgroundColor3  = Color3.fromRGB(255, 255, 255)
+    knob.BorderSizePixel   = 0
+    knob.ZIndex            = 15
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
     local mult = 10^(rounding or 1)
-    local curVal = default
-
     local function setVal(v)
         v = math.clamp(v, min, max)
         v = math.round(v * mult) / mult
-        curVal = v
+        if Options[optKey] then Options[optKey].Value = v end
         local pct = (v - min) / (max - min)
-        fill.Size = UDim2.new(pct, 0, 1, 0)
+        fill.Size     = UDim2.new(pct, 0, 1, 0)
         knob.Position = UDim2.new(pct, 0, 0.5, 0)
-        valLbl.Text = tostring(v)
-        if callback then callback(v) end
+        valLbl.Text   = tostring(v)
     end
-    setVal(default)
+    setVal(Options[optKey] and Options[optKey].Value or min)
 
     local dragging = false
-    local function onInput(inp)
-        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            inp.Changed:Connect(function()
-                if inp.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end
-    track.InputBegan:Connect(onInput)
-    knob.InputBegan:Connect(onInput)
-    UserInputService.InputChanged:Connect(function(inp)
-        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
+    local function startDrag() dragging = true end
+    track.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then startDrag() end
+    end)
+    knob.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then startDrag() end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local pos = track.AbsolutePosition
             local sz  = track.AbsoluteSize
-            local pct = math.clamp((inp.Position.X - pos.X) / sz.X, 0, 1)
+            local pct = math.clamp((i.Position.X - pos.X) / sz.X, 0, 1)
             setVal(min + (max - min) * pct)
         end
     end)
-
-    return row, function() return curVal end
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    return r
 end
 
-local function makeDropdown(parent, label, values, default, callback)
-    local row = Instance.new("Frame", parent)
-    row.Size = UDim2.new(1, 0, 0, 56)
-    row.BackgroundColor3 = BG_CARD
-    row.BorderSizePixel = 0
-    row.ZIndex = 13
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 7)
-
-    local lbl = Instance.new("TextLabel", row)
-    lbl.Size = UDim2.new(1, -12, 0, 22)
-    lbl.Position = UDim2.new(0, 10, 0, 4)
+local function makeDropdown(parent, label, optKey, values, multi, callback)
+    local r = makeRow(parent, 52)
+    local lbl = Instance.new("TextLabel", r)
+    lbl.Size               = UDim2.new(1, -10, 0, 20)
+    lbl.Position           = UDim2.new(0, 8, 0, 3)
     lbl.BackgroundTransparency = 1
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextSize = 11
-    lbl.TextColor3 = TEXT_DIM
-    lbl.Text = label
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.ZIndex = 14
-
-    local selBtn = Instance.new("TextButton", row)
-    selBtn.Size = UDim2.new(1, -20, 0, 24)
-    selBtn.Position = UDim2.new(0, 10, 0, 26)
-    selBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 36)
+    lbl.Font               = Enum.Font.Gotham
+    lbl.TextSize           = 11
+    lbl.TextColor3         = TEXT_DIM
+    lbl.Text               = label
+    lbl.TextXAlignment     = Enum.TextXAlignment.Left
+    lbl.ZIndex             = 13
+    local selBtn = Instance.new("TextButton", r)
+    selBtn.Size            = UDim2.new(1, -16, 0, 22)
+    selBtn.Position        = UDim2.new(0, 8, 0, 25)
+    selBtn.BackgroundColor3 = Color3.fromRGB(10, 14, 30)
     selBtn.BorderSizePixel = 0
-    selBtn.Font = Enum.Font.GothamBold
-    selBtn.TextSize = 11
-    selBtn.TextColor3 = TEXT_W
-    selBtn.Text = (default or (values and values[1]) or "")
-    selBtn.ZIndex = 14
+    selBtn.Font            = Enum.Font.GothamBold
+    selBtn.TextSize        = 11
+    selBtn.TextColor3      = TEXT_W
+    selBtn.Text            = Options[optKey] and tostring(Options[optKey].Value) or (values[1] or "")
+    selBtn.ZIndex          = 14
     selBtn.AutoButtonColor = false
     Instance.new("UICorner", selBtn).CornerRadius = UDim.new(0, 5)
 
-    local curVal = selBtn.Text
-
-    -- dropdown list (rendered above in ScreenGui to avoid clipping)
     local dropFrame = Instance.new("Frame", ScreenGui)
-    dropFrame.Size = UDim2.new(0, 0, 0, 0)
-    dropFrame.BackgroundColor3 = Color3.fromRGB(14, 18, 36)
-    dropFrame.BorderSizePixel = 0
-    dropFrame.Visible = false
-    dropFrame.ZIndex = 300
+    dropFrame.BackgroundColor3 = Color3.fromRGB(10, 14, 30)
+    dropFrame.BorderSizePixel  = 0
+    dropFrame.Visible          = false
+    dropFrame.ZIndex           = 500
     Instance.new("UICorner", dropFrame).CornerRadius = UDim.new(0, 8)
-    local dStroke = Instance.new("UIStroke", dropFrame)
-    dStroke.Color = ACCENT; dStroke.Thickness = 1
-
+    local ds = Instance.new("UIStroke", dropFrame); ds.Color = AccentColor; ds.Thickness = 1
     local dScroll = Instance.new("ScrollingFrame", dropFrame)
-    dScroll.Size = UDim2.new(1, 0, 1, 0)
+    dScroll.Size              = UDim2.new(1, 0, 1, 0)
     dScroll.BackgroundTransparency = 1
-    dScroll.BorderSizePixel = 0
+    dScroll.BorderSizePixel   = 0
     dScroll.ScrollBarThickness = 3
-    dScroll.ScrollBarImageColor3 = ACCENT
-    dScroll.CanvasSize = UDim2.new(0,0,0,0)
+    dScroll.ScrollBarImageColor3 = AccentColor
+    dScroll.CanvasSize        = UDim2.new(0,0,0,0)
     dScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    dScroll.ZIndex = 301
-
-    local dLayout = Instance.new("UIListLayout", dScroll)
-    dLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    dLayout.Padding = UDim.new(0, 1)
+    dScroll.ZIndex            = 501
+    Instance.new("UIListLayout", dScroll).Padding = UDim.new(0, 1)
 
     local isOpen = false
-    local function closeDropdown()
+    local function closeDD()
         isOpen = false
-        TweenService:Create(dropFrame, TweenInfo.new(0.15), {Size = UDim2.new(0, dropFrame.Size.X.Offset, 0, 0)}):Play()
-        task.delay(0.16, function() dropFrame.Visible = false end)
+        TweenService:Create(dropFrame, TweenInfo.new(0.12), {Size = UDim2.new(0, dropFrame.Size.X.Offset, 0, 0)}):Play()
+        task.delay(0.14, function() dropFrame.Visible = false end)
     end
 
-    local optBtns = {}
-    for _, v in ipairs(values or {}) do
+    local multiState = {}
+    for _, v in ipairs(values) do
         local opt = Instance.new("TextButton", dScroll)
-        opt.Size = UDim2.new(1, 0, 0, 28)
-        opt.BackgroundColor3 = Color3.fromRGB(14, 18, 36)
-        opt.BorderSizePixel = 0
-        opt.Font = Enum.Font.Gotham
-        opt.TextSize = 11
-        opt.TextColor3 = TEXT_W
-        opt.Text = v
-        opt.ZIndex = 302
-        opt.AutoButtonColor = false
+        opt.Size               = UDim2.new(1, 0, 0, 26)
+        opt.BackgroundColor3   = Color3.fromRGB(10, 14, 30)
+        opt.BorderSizePixel    = 0
+        opt.Font               = Enum.Font.Gotham
+        opt.TextSize           = 11
+        opt.TextColor3         = TEXT_W
+        opt.Text               = v
+        opt.ZIndex             = 502
+        opt.AutoButtonColor    = false
         Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 0)
         opt.MouseButton1Click:Connect(function()
-            curVal = v
-            selBtn.Text = v
-            closeDropdown()
-            if callback then callback(v) end
+            if multi then
+                multiState[v] = not multiState[v]
+                opt.TextColor3 = multiState[v] and AccentColor or TEXT_W
+                if Options[optKey] then Options[optKey].Value = multiState end
+                if callback then callback(multiState) end
+            else
+                if Options[optKey] then Options[optKey].Value = v end
+                selBtn.Text = v
+                closeDD()
+                if callback then callback(v) end
+            end
         end)
-        optBtns[#optBtns+1] = opt
     end
 
     selBtn.MouseButton1Click:Connect(function()
-        if isOpen then closeDropdown(); return end
+        if isOpen then closeDD(); return end
         isOpen = true
-        -- position below the selBtn in screen space
-        local absPos = selBtn.AbsolutePosition
+        local absPos  = selBtn.AbsolutePosition
         local absSize = selBtn.AbsoluteSize
-        local w = math.max(absSize.X, 180)
-        local maxH = math.min(200, #(values or {}) * 29 + 4)
-        dropFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + absSize.Y + 4)
-        dropFrame.Size = UDim2.new(0, w, 0, 0)
-        dropFrame.Visible = true
-        TweenService:Create(dropFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {Size = UDim2.new(0, w, 0, maxH)}):Play()
+        local w  = math.max(absSize.X, 180)
+        local mh = math.min(200, #values * 27 + 4)
+        dropFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + absSize.Y + 3)
+        dropFrame.Size     = UDim2.new(0, w, 0, 0)
+        dropFrame.Visible  = true
+        TweenService:Create(dropFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Size = UDim2.new(0, w, 0, mh)}):Play()
     end)
-
-    return row, function() return curVal end, function(v) curVal = v; selBtn.Text = v end
+    return r
 end
 
--- ════ TAB SYSTEM ════
-local tabs = {}
-local tabPages = {}
+local function makeSectionHeader(parent, title)
+    local r = makeRow(parent, 24)
+    r.BackgroundColor3 = Color3.fromRGB(15, 20, 50)
+    local s = Instance.new("UIStroke", r); s.Color = AccentColor; s.Thickness = 1; s.Transparency = 0.4
+    local l = Instance.new("TextLabel", r)
+    l.Size               = UDim2.new(1, -10, 1, 0)
+    l.Position           = UDim2.new(0, 8, 0, 0)
+    l.BackgroundTransparency = 1
+    l.Font               = Enum.Font.GothamBold
+    l.TextSize           = 11
+    l.TextColor3         = AccentColor
+    l.Text               = "▸  "..title:upper()
+    l.TextXAlignment     = Enum.TextXAlignment.Left
+    l.ZIndex             = 13
+    return r
+end
+
+-- ── TAB SYSTEM
+local tabPages  = {}
+local tabBtns   = {}
 local activeTab = nil
 
-local function makeTab(name)
-    local tabBtn = Instance.new("TextButton", TabBar)
-    tabBtn.Size = UDim2.new(0, 80, 1, 0)
-    tabBtn.BackgroundColor3 = Color3.fromRGB(18, 24, 48)
-    tabBtn.BorderSizePixel = 0
-    tabBtn.Font = Enum.Font.GothamBold
-    tabBtn.TextSize = 11
-    tabBtn.TextColor3 = TEXT_DIM
-    tabBtn.Text = name
-    tabBtn.AutoButtonColor = false
-    tabBtn.ZIndex = 12
-    Instance.new("UICorner", tabBtn).CornerRadius = UDim.new(0, 8)
+local function makeTab(name, order)
+    local btn = Instance.new("TextButton", TabBar)
+    btn.Size               = UDim2.new(0, 70, 1, 0)
+    btn.BackgroundColor3   = Color3.fromRGB(14, 18, 40)
+    btn.BorderSizePixel    = 0
+    btn.Font               = Enum.Font.GothamBold
+    btn.TextSize           = 11
+    btn.TextColor3         = Color3.fromRGB(120, 140, 180)
+    btn.Text               = name
+    btn.AutoButtonColor    = false
+    btn.ZIndex             = 12
+    btn.LayoutOrder        = order
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
 
-    -- page inside content area
-    local page = Instance.new("Frame", ContentArea)
-    page.Size = UDim2.new(1, 0, 0, 0)
-    page.AutomaticSize = Enum.AutomaticSize.Y
+    local page = Instance.new("Frame", ScrollArea)
+    page.Size              = UDim2.new(1, 0, 0, 0)
+    page.AutomaticSize     = Enum.AutomaticSize.Y
     page.BackgroundTransparency = 1
-    page.Visible = false
-    page.BorderSizePixel = 0
-    page.ZIndex = 12
-    local pageLayout = Instance.new("UIListLayout", page)
-    pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    pageLayout.Padding = UDim.new(0, 6)
-    local pagePad = Instance.new("UIPadding", page)
-    pagePad.PaddingBottom = UDim.new(0, 10)
+    page.Visible           = false
+    page.BorderSizePixel   = 0
+    page.ZIndex            = 12
+    local pl = Instance.new("UIListLayout", page)
+    pl.SortOrder  = Enum.SortOrder.LayoutOrder
+    pl.Padding    = UDim.new(0, 3)
+    local pp = Instance.new("UIPadding", page)
+    pp.PaddingBottom = UDim.new(0, 6)
 
-    tabs[name] = {btn = tabBtn, page = page}
+    tabPages[name] = page
+    tabBtns[name]  = btn
 
-    tabBtn.MouseButton1Click:Connect(function()
-        if activeTab then
-            local old = tabs[activeTab]
-            old.page.Visible = false
-            TweenService:Create(old.btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(18,24,48), TextColor3 = TEXT_DIM}):Play()
+    btn.MouseButton1Click:Connect(function()
+        if activeTab and tabPages[activeTab] then
+            tabPages[activeTab].Visible = false
+            TweenService:Create(tabBtns[activeTab], TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(14,18,40), TextColor3 = Color3.fromRGB(120,140,180)}):Play()
         end
         activeTab = name
         page.Visible = true
-        TweenService:Create(tabBtn, TweenInfo.new(0.15), {BackgroundColor3 = ACCENT, TextColor3 = Color3.fromRGB(255,255,255)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), {BackgroundColor3 = AccentColor, TextColor3 = Color3.fromRGB(255,255,255)}):Play()
+        ScrollArea.CanvasPosition = Vector2.new(0, 0)
     end)
-
     return page
 end
 
-local InfoPage    = makeTab("Info")
-local SeedsPage   = makeTab("Seeds")
-local FarmPage    = makeTab("Farm")
-local SettingsPage= makeTab("Settings")
+local InfoPage     = makeTab("Info",     1)
+local SeedsPage    = makeTab("Seeds",    2)
+local FarmPage     = makeTab("Farm",     3)
+local SettingsPage = makeTab("Settings", 4)
 
--- activate Info by default
-do
-    local t = tabs["Info"]
-    activeTab = "Info"
-    t.page.Visible = true
-    t.btn.BackgroundColor3 = ACCENT
-    t.btn.TextColor3 = Color3.fromRGB(255,255,255)
-end
+-- activate Info
+activeTab = "Info"
+tabPages["Info"].Visible   = true
+tabBtns["Info"].BackgroundColor3 = AccentColor
+tabBtns["Info"].TextColor3       = Color3.fromRGB(255, 255, 255)
 
--- ════════════════════════════════════════════
---             INFO TAB
--- ════════════════════════════════════════════
-local infoSection = makeSection(InfoPage, "Account")
+-- ════════════════════════════════════════
+--   INFO TAB
+-- ════════════════════════════════════════
+local execName = "Unknown"
+pcall(function()
+    if identifyexecutor then
+        local n, v = identifyexecutor()
+        execName = (type(n)=="string" and n~="" and n) or execName
+        if type(v)=="string" and v~="" then execName = execName.." "..v end
+    elseif getexecutorname then execName = getexecutorname() or execName end
+end)
 
-makeLabel(infoSection, "👤  User:  " .. LocalPlayer.Name)
-makeLabel(infoSection, "🔑  Status:  Keyless")
-makeLabel(infoSection, "⚙️  Executor:  " .. execName)
-makeLabel(infoSection, "🎮  Game:  Greedy Growers  [" .. tostring(game.PlaceId) .. "]")
+makeSectionHeader(InfoPage, "Account")
+makeLabel(InfoPage, "👤  User:  "..LocalPlayer.Name)
+makeLabel(InfoPage, "🔑  Status:  Keyless")
+makeLabel(InfoPage, "⚙️  Executor:  "..execName)
+makeLabel(InfoPage, "🎮  Game:  "..GAME_NAME.."  ["..tostring(game.PlaceId).."]")
 
-local sessionLblRow = makeLabel(infoSection, "⏱  Session:  0s")
-local sessionLblInner = sessionLblRow:FindFirstChildOfClass("TextLabel")
+local sessionStart   = os.clock()
+local sessionLblRow  = makeLabel(InfoPage, "⏱  Session:  0s")
+local sessionLblText = sessionLblRow:FindFirstChildOfClass("TextLabel")
 task.spawn(function()
-    while not Unloaded do
+    while not Library.Unloaded do
         task.wait(1)
         local e = math.floor(os.clock() - sessionStart)
-        local txt
-        if e < 60 then txt = e.."s"
-        elseif e < 3600 then txt = ("%dm %ds"):format(math.floor(e/60), e%60)
-        else txt = ("%dh %dm"):format(math.floor(e/3600), math.floor((e%3600)/60)) end
-        if sessionLblInner then sessionLblInner.Text = "⏱  Session:  "..txt end
+        local txt = e < 60 and (e.."s") or e < 3600 and ("%dm %ds"):format(math.floor(e/60),e%60) or ("%dh %dm"):format(math.floor(e/3600),math.floor((e%3600)/60))
+        if sessionLblText then sessionLblText.Text = "⏱  Session:  "..txt end
     end
 end)
 
 local jobId = tostring(game.JobId)
-local shortJobId = #jobId > 20 and (string.sub(jobId,1,20).."...") or jobId
-makeLabel(infoSection, "🌐  Server:  "..shortJobId)
+makeLabel(InfoPage, "🌐  Server:  "..(#jobId>20 and string.sub(jobId,1,20).."..." or jobId))
 
-makeButton(infoSection, "Copy Join Script (Job ID)", function()
-    local joinScript = string.format(
-        'game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game:GetService("Players").LocalPlayer)',
-        game.PlaceId, jobId
-    )
-    safeSetClipboard(joinScript)
-    notify("Copied join script!")
+makeSectionHeader(InfoPage, "Socials")
+makeButton(InfoPage, "Copy Discord Invite", function() safeSetClipboard(DISCORD_INVITE); Notify("Discord invite copied!") end)
+makeButton(InfoPage, "Copy rScripts Link",  function() safeSetClipboard(RSCRIPTS_LINK);  Notify("rScripts link copied!") end)
+makeButton(InfoPage, "Copy Join Script",    function()
+    local s = ('game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game:GetService("Players").LocalPlayer)'):format(game.PlaceId, jobId)
+    safeSetClipboard(s); Notify("Join script copied!")
 end)
 
-local socialsSection = makeSection(InfoPage, "Socials")
-makeButton(socialsSection, "Copy Discord Invite", function()
-    safeSetClipboard(DISCORD_INVITE)
-    notify("Discord invite copied!")
-end)
-makeButton(socialsSection, "Copy rScripts Link", function()
-    safeSetClipboard(RSCRIPTS_LINK)
-    notify("rScripts link copied!")
-end)
+makeSectionHeader(InfoPage, "Features")
+makeLabel(InfoPage, "✅  Auto Buy Seeds & Furniture")
+makeLabel(InfoPage, "✅  Auto Plant & Harvest")
+makeLabel(InfoPage, "✅  Auto Collect Fruit")
+makeLabel(InfoPage, "✅  Auto Sell (Fruits / All / Dead Trees)")
+makeLabel(InfoPage, "✅  Auto Rebirth")
+makeLabel(InfoPage, "✅  Anti-AFK")
 
-local featSection = makeSection(InfoPage, "Features")
-makeLabel(featSection, "✅  Auto Buy Seeds & Furniture")
-makeLabel(featSection, "✅  Auto Plant & Harvest")
-makeLabel(featSection, "✅  Auto Collect Fruit")
-makeLabel(featSection, "✅  Auto Sell Fruits / All / Dead Trees")
-makeLabel(featSection, "✅  Auto Rebirth")
-makeLabel(featSection, "✅  Anti-AFK")
-makeLabel(featSection, "✅  Fully keyless — no ObsidianUltra needed")
-
--- ════════════════════════════════════════════
---             SEEDS TAB
--- ════════════════════════════════════════════
-local buySection = makeSection(SeedsPage, "Auto Buy Seeds")
-
-makeToggle(buySection, "Auto Buy Seeds", false, function(v) Toggles.AutoBuySeeds = v end)
-makeToggle(buySection, "Only Mutated Seeds", false, function(v) Toggles.BuyMutatedOnly = v end)
-makeToggle(buySection, "Notify On Buy", false, function(v) Toggles.BuyNotify = v end)
-
-local _, getBuyMode = makeDropdown(buySection, "Buy Mode",
-    {"Minimum Rarity","Selected Seeds","Buy All"}, "Minimum Rarity",
-    function(v) Options.BuyMode = v end)
-
-local _, getBuyMinRarity = makeDropdown(buySection, "Minimum Rarity",
-    RARITY_NAMES, RARITY_NAMES[1],
-    function(v) Options.BuyMinRarity = v end)
-
-if #SEED_NAMES > 0 then
-    makeDropdown(buySection, "Seeds To Buy (single pick)", SEED_NAMES, SEED_NAMES[1], function(v)
-        wantedSeeds = {}
-        local key = SEED_NAME_TO_KEY[v]
-        if key then wantedSeeds[key] = true end
+-- ════════════════════════════════════════
+--   SEEDS TAB
+-- ════════════════════════════════════════
+makeSectionHeader(SeedsPage, "Auto Buy Seeds")
+makeToggleWidget(SeedsPage, "Auto Buy Seeds",     "AutoBuySeeds")
+makeToggleWidget(SeedsPage, "Only Mutated Seeds", "BuyMutatedOnly")
+makeToggleWidget(SeedsPage, "Notify On Buy",      "BuyNotify")
+makeDropdown(SeedsPage, "Buy Mode", "BuyMode",
+    {"Minimum Rarity","Selected Seeds","Buy All"}, false,
+    function(v) Options.BuyMode.Value = v end)
+makeDropdown(SeedsPage, "Minimum Rarity", "BuyMinRarity",
+    RARITY_NAMES, false,
+    function(v) Options.BuyMinRarity.Value = v end)
+makeDropdown(SeedsPage, "Seeds To Buy (multi)", "BuySeeds",
+    SEED_NAMES, true,
+    function(value)
+        local set = {}
+        for name, state in pairs(value) do
+            if state then local k = SEED_NAME_TO_KEY[name]; if k then set[k] = true end end
+        end
+        wantedSeeds = set
     end)
-end
+makeInput(SeedsPage,  "Max Cost Per Seed (0 = off)", "BuyMaxCost",   false)
+makeInput(SeedsPage,  "Keep Coin Reserve",           "BuyReserve",   false)
+makeSlider(SeedsPage, "Buy Delay",  "BuyActionDelay", 0.1, 2,  2)
+makeSlider(SeedsPage, "Loop Delay", "BuyLoopDelay",   0.1, 10, 1)
 
-makeInput(buySection, "Max Cost Per Seed (0 = off)", "0", true, function(v) Options.BuyMaxCost = v end)
-makeInput(buySection, "Keep Coin Reserve", "0", true, function(v) Options.BuyReserve = v end)
-makeSlider(buySection, "Buy Delay", 0.1, 2, 0.2, 2, function(v) Options.BuyActionDelay = v end)
-makeSlider(buySection, "Loop Delay", 0.1, 10, 0.5, 1, function(v) Options.BuyLoopDelay = v end)
-
-local furnitureSection = makeSection(SeedsPage, "Auto Buy Furniture")
-
-makeToggle(furnitureSection, "Auto Buy Furniture", false, function(v) Toggles.AutoBuyFurniture = v end)
-makeToggle(furnitureSection, "Notify On Buy", false, function(v) Toggles.FurnitureNotify = v end)
-
-if #FURNITURE_NAMES > 0 then
-    makeDropdown(furnitureSection, "Furniture To Buy (single pick)", FURNITURE_NAMES, FURNITURE_NAMES[1], function(v)
-        wantedFurniture = {}
-        local info = FURNITURE_NAME_TO_INFO[v]
-        if info then wantedFurniture = {info} end
+makeSectionHeader(SeedsPage, "Auto Buy Furniture")
+makeToggleWidget(SeedsPage, "Auto Buy Furniture", "AutoBuyFurniture")
+makeToggleWidget(SeedsPage, "Notify On Buy",      "FurnitureNotify")
+makeDropdown(SeedsPage, "Furniture To Buy (multi)", "FurnitureItems",
+    FURNITURE_NAMES, true,
+    function(value)
+        local list = {}
+        for name, state in pairs(value) do
+            if state then local info = FURNITURE_NAME_TO_INFO[name]; if info then list[#list+1] = info end end
+        end
+        wantedFurniture = list
     end)
-end
+makeInput(SeedsPage,  "Keep Coin Reserve",    "FurnitureReserve",     false)
+makeSlider(SeedsPage, "Buy Delay",  "FurnitureActionDelay", 0.1, 2,  2)
+makeSlider(SeedsPage, "Loop Delay", "FurnitureLoopDelay",   0.2, 20, 1)
 
-makeInput(furnitureSection, "Keep Coin Reserve", "0", true, function(v) Options.FurnitureReserve = v end)
-makeSlider(furnitureSection, "Buy Delay", 0.1, 2, 0.2, 2, function(v) Options.FurnitureActionDelay = v end)
-makeSlider(furnitureSection, "Loop Delay", 0.2, 20, 1, 1, function(v) Options.FurnitureLoopDelay = v end)
-
--- ════════════════════════════════════════════
---             FARM TAB
--- ════════════════════════════════════════════
-local plantSection = makeSection(FarmPage, "Auto Plant")
-
-makeToggle(plantSection, "Auto Plant", false, function(v) Toggles.AutoPlant = v end)
-makeToggle(plantSection, "Auto Plant Grown Trees", false, function(v) Toggles.AutoPlantTrees = v end)
-makeToggle(plantSection, "Only Plant During Weather", false, function(v) Toggles.PlantDuringWeatherOnly = v end)
-makeToggle(plantSection, "Notify On Plant", false, function(v) Toggles.PlantNotify = v end)
-
-makeDropdown(plantSection, "Seed Choice",
-    {"Any Seed","Selected Seeds","Highest Value","Lowest Value"}, "Any Seed",
-    function(v) Options.PlantMode = v end)
-
-if #SEED_NAMES > 0 then
-    makeDropdown(plantSection, "Seeds To Plant (single pick)", SEED_NAMES, SEED_NAMES[1], function(v)
-        wantedPlantSeeds = {}
-        local key = SEED_NAME_TO_KEY[v]
-        if key then wantedPlantSeeds[key] = true end
+-- ════════════════════════════════════════
+--   FARM TAB
+-- ════════════════════════════════════════
+makeSectionHeader(FarmPage, "Auto Plant")
+makeToggleWidget(FarmPage, "Auto Plant",               "AutoPlant")
+makeToggleWidget(FarmPage, "Auto Plant Grown Trees",   "AutoPlantTrees")
+makeToggleWidget(FarmPage, "Only Plant During Weather","PlantDuringWeatherOnly")
+makeToggleWidget(FarmPage, "Notify On Plant",          "PlantNotify")
+makeDropdown(FarmPage, "Seed Choice", "PlantMode",
+    {"Any Seed","Selected Seeds","Highest Value","Lowest Value"}, false,
+    function(v) Options.PlantMode.Value = v end)
+makeDropdown(FarmPage, "Seeds To Plant (multi)", "PlantSeeds",
+    SEED_NAMES, true,
+    function(value)
+        local set = {}
+        for name, state in pairs(value) do
+            if state then local k = SEED_NAME_TO_KEY[name]; if k then set[k] = true end end
+        end
+        wantedPlantSeeds = set
     end)
-end
-
-if #FERTILIZER_NAMES > 0 then
-    makeDropdown(plantSection, "Fertilizer", FERTILIZER_NAMES, FERTILIZER_NAMES[1], function(v) Options.PlantFertilizer = v end)
-end
-
-if #WEATHER_NAMES > 0 then
-    makeDropdown(plantSection, "Weather To Plant In (single pick)", WEATHER_NAMES, WEATHER_NAMES[1], function(v)
-        local key = WEATHER_NAME_TO_KEY[v]
-        wantedWeathers = {}
-        if key then wantedWeathers[key] = true end
+makeDropdown(FarmPage, "Fertilizer", "PlantFertilizer",
+    FERTILIZER_NAMES, false,
+    function(v) Options.PlantFertilizer.Value = v end)
+makeDropdown(FarmPage, "Weathers To Plant In (multi)", "PlantWeathers",
+    WEATHER_NAMES, true,
+    function(value)
+        local set = {}
+        for name, state in pairs(value) do
+            if state then local k = WEATHER_NAME_TO_KEY[name]; if k then set[k] = true end end
+        end
+        wantedWeathers = set
     end)
-end
+makeSlider(FarmPage, "Loop Delay", "PlantLoopDelay", 0.2, 20, 1)
 
-makeSlider(plantSection, "Loop Delay", 0.2, 20, 1, 1, function(v) Options.PlantLoopDelay = v end)
+makeSectionHeader(FarmPage, "Auto Harvest")
+makeToggleWidget(FarmPage, "Auto Harvest",           "AutoHarvest")
+makeToggleWidget(FarmPage, "Auto Collect Dead Tree", "AutoCollectDead")
+makeToggleWidget(FarmPage, "Notify On Harvest",      "HarvestNotify")
+makeInput(FarmPage, "Harvest At Multiplier (e.g. 2)", "HarvestMultiplier", false)
+makeLabel(FarmPage, "  1 = 1x  |  1.5 = 1.5x  |  0.5 = 0.5x")
 
-local harvestSection = makeSection(FarmPage, "Auto Harvest")
+makeSectionHeader(FarmPage, "Auto Collect Fruit")
+makeToggleWidget(FarmPage, "Auto Collect Fruit",   "AutoCollectFruit")
+makeToggleWidget(FarmPage, "Teleport To Each Tree","HarvestTeleport")
+makeToggleWidget(FarmPage, "Use Collect All",      "HarvestCollectAll")
+makeSlider(FarmPage, "Collect Delay", "HarvestActionDelay", 0.05, 2,  2)
+makeSlider(FarmPage, "Loop Delay",    "HarvestLoopDelay",   0.2,  20, 1)
 
-makeToggle(harvestSection, "Auto Harvest", false, function(v) Toggles.AutoHarvest = v end)
-makeToggle(harvestSection, "Auto Collect Dead Tree", true, function(v) Toggles.AutoCollectDead = v end)
-makeToggle(harvestSection, "Notify On Harvest", false, function(v) Toggles.HarvestNotify = v end)
+makeSectionHeader(FarmPage, "Auto Sell")
+makeToggleWidget(FarmPage, "Auto Sell Fruits",       "AutoSellFruits")
+makeToggleWidget(FarmPage, "Auto Sell All",          "AutoSellAll")
+makeToggleWidget(FarmPage, "Sell Dead Trees Only",   "SellDeadTreesOnly")
+makeToggleWidget(FarmPage, "Teleport To Sell Stand", "SellTeleport")
+makeSlider(FarmPage, "Minimum Fruits", "SellMinFruits",   1,   50, 0)
+makeSlider(FarmPage, "Sell Delay",     "SellActionDelay", 0.1, 2,  2)
+makeSlider(FarmPage, "Loop Delay",     "SellLoopDelay",   0.5, 30, 1)
 
-makeInput(harvestSection, "Harvest At Multiplier (e.g. 2 = 2x)", "2", true, function(v) Options.HarvestMultiplier = v end)
-makeLabel(harvestSection, "  Examples:  1 for 1x  |  1.50 for 1.5x  |  0.50 for 0.5x")
+makeSectionHeader(FarmPage, "Auto Rebirth")
+makeToggleWidget(FarmPage, "Auto Rebirth",       "AutoRebirth")
+makeToggleWidget(FarmPage, "Notify On Rebirth",  "RebirthNotify")
+makeSlider(FarmPage, "Max Rebirth Level", "RebirthMaxLevel", 1, RebirthConfig.MaxLevel, 0)
+makeSlider(FarmPage, "Loop Delay",        "RebirthLoopDelay", 1, 60, 1)
 
-local fruitSection = makeSection(FarmPage, "Auto Collect Fruit")
-
-makeToggle(fruitSection, "Auto Collect Fruit", false, function(v) Toggles.AutoCollectFruit = v end)
-makeToggle(fruitSection, "Teleport To Each Tree", false, function(v) Toggles.HarvestTeleport = v end)
-makeToggle(fruitSection, "Use Collect All", false, function(v) Toggles.HarvestCollectAll = v end)
-
-makeSlider(fruitSection, "Collect Delay", 0.05, 2, 0.1, 2, function(v) Options.HarvestActionDelay = v end)
-makeSlider(fruitSection, "Loop Delay", 0.2, 20, 1, 1, function(v) Options.HarvestLoopDelay = v end)
-
-local sellSection = makeSection(FarmPage, "Auto Sell")
-
-makeToggle(sellSection, "Auto Sell Fruits", false, function(v) Toggles.AutoSellFruits = v end)
-makeToggle(sellSection, "Auto Sell All", false, function(v) Toggles.AutoSellAll = v end)
-makeToggle(sellSection, "Sell Dead Trees Only", false, function(v) Toggles.SellDeadTreesOnly = v end)
-makeToggle(sellSection, "Teleport To Sell Stand", false, function(v) Toggles.SellTeleport = v end)
-
-makeSlider(sellSection, "Minimum Fruits", 1, 50, 1, 0, function(v) Options.SellMinFruits = v end)
-makeSlider(sellSection, "Sell Delay", 0.1, 2, 0.2, 2, function(v) Options.SellActionDelay = v end)
-makeSlider(sellSection, "Loop Delay", 0.5, 30, 2, 1, function(v) Options.SellLoopDelay = v end)
-
-local rebirthSection = makeSection(FarmPage, "Auto Rebirth")
-
-makeToggle(rebirthSection, "Auto Rebirth", false, function(v) Toggles.AutoRebirth = v end)
-makeToggle(rebirthSection, "Notify On Rebirth", true, function(v) Toggles.RebirthNotify = v end)
-
-makeSlider(rebirthSection, "Max Rebirth Level", 1, (RebirthConfig and RebirthConfig.MaxLevel) or 100,
-    (RebirthConfig and RebirthConfig.MaxLevel) or 100, 0,
-    function(v) Options.RebirthMaxLevel = v end)
-makeSlider(rebirthSection, "Loop Delay", 1, 60, 5, 1, function(v) Options.RebirthLoopDelay = v end)
-
--- ════════════════════════════════════════════
---             SETTINGS TAB
--- ════════════════════════════════════════════
-local menuSection = makeSection(SettingsPage, "Menu")
-
-makeLabel(menuSection, "Toggle key:  RightShift  (hold to show/hide)")
-makeToggle(menuSection, "Anti-AFK", true, function(v) Toggles.AntiAfk = v end)
-
-makeButton(menuSection, "Unload Script", function()
-    Unloaded = true
-    notify("LP10 HUB unloaded.")
+-- ════════════════════════════════════════
+--   SETTINGS TAB
+-- ════════════════════════════════════════
+makeSectionHeader(SettingsPage, "Menu")
+makeLabel(SettingsPage, "Toggle key:  RightShift")
+makeToggleWidget(SettingsPage, "Anti-AFK", "AntiAfk")
+makeButton(SettingsPage, "Unload Script", function()
+    Library.Unloaded = true
     _afkBegan:Disconnect()
     _afkChanged:Disconnect()
-    task.wait(0.5)
+    Notify("LP10 HUB unloaded.")
+    task.wait(0.6)
     ScreenGui:Destroy()
 end)
 
-local credSection = makeSection(SettingsPage, "Credits")
-makeLabel(credSection, "🔷  LP10 HUB  —  Greedy Growers")
-makeLabel(credSection, "👤  By @LPOLVO (Hamza)")
-makeLabel(credSection, "📸  Instagram: @4me.h4mz4_")
-makeLabel(credSection, "💬  Discord: discord.gg/Uqrkdrpwxr")
-makeLabel(credSection, "🌐  rScripts: rscripts.net/@LPOLVO")
+makeSectionHeader(SettingsPage, "Credits")
+makeLabel(SettingsPage, "🔷  LP10 HUB  —  Greedy Growers")
+makeLabel(SettingsPage, "👤  By @LPOLVO (Hamza)")
+makeLabel(SettingsPage, "📸  Instagram: @4me.h4mz4_")
+makeLabel(SettingsPage, "💬  Discord: discord.gg/Uqrkdrpwxr")
+makeLabel(SettingsPage, "🌐  rScripts: rscripts.net/@LPOLVO")
 
--- ════════════════════════════════════════════
---   TOGGLE BUTTON OPEN/CLOSE
--- ════════════════════════════════════════════
-local isOpen = false
-local minimized = false
+-- ════════════════════════════════════════
+--   TOGGLE OPEN/CLOSE  (your library pattern)
+-- ════════════════════════════════════════
+local isOpen = true  -- already visible on execute
 
-local function openGUI()
-    isOpen = true; minimized = false
-    Main.Visible = true
-    Main.Size = UDim2.new(0, 0, 0, 0)
-    TweenService:Create(Main, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Size = currentSize}):Play()
-end
-
-local function closeGUI()
+CloseBtn.MouseButton1Click:Connect(function()
     isOpen = false
-    TweenService:Create(Main, TweenInfo.new(0.2, Enum.EasingStyle.Quad),
-        {Size = UDim2.new(0, 0, 0, 0)}):Play()
-    task.delay(0.22, function() if not isOpen then Main.Visible = false end end)
-end
-
--- Wire up the tap (InputEnded) now that openGUI/closeGUI are defined
-ToggleBtn.InputEnded:Connect(function(inp)
-    if inp.UserInputType == Enum.UserInputType.MouseButton1
-    or inp.UserInputType == Enum.UserInputType.Touch then
-        if not _toggleWasDrag then
-            if isOpen then closeGUI() else openGUI() end
-        end
-        _toggleDragStart = nil
-    end
+    Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+        if not isOpen then Main.Visible = false end
+    end)
 end)
 
-closeBtn.MouseButton1Click:Connect(function() closeGUI() end)
-
-minimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    ContentArea.Visible = not minimized
-    TabBar.Visible = not minimized
-    if minimized then
-        TweenService:Create(Main, TweenInfo.new(0.2), {Size = UDim2.new(0, currentSize.X.Offset, 0, 46)}):Play()
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    if isOpen then
+        Main.Visible = true
+        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
     else
-        TweenService:Create(Main, TweenInfo.new(0.2), {Size = currentSize}):Play()
+        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+            if not isOpen then Main.Visible = false end
+        end)
     end
 end)
 
--- RightShift toggle
+-- RightShift keybind
 UserInputService.InputBegan:Connect(function(inp, processed)
     if not processed and inp.KeyCode == Enum.KeyCode.RightShift then
-        if isOpen then closeGUI() else openGUI() end
-    end
-end)
-
--- ════════════════════════════════════════════
---   AUTO LOOPS (same as original script)
--- ════════════════════════════════════════════
-task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoBuySeeds and SeedConveyorService then pcall(doBuySeeds) end
-        task.wait(Options.BuyLoopDelay or 0.5)
-    end
-end)
-
-task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoBuyFurniture and FurnitureShopService then pcall(doBuyFurniture) end
-        task.wait(Options.FurnitureLoopDelay or 1)
-    end
-end)
-
-task.spawn(function()
-    while not Unloaded do
-        if (Toggles.AutoHarvest or Toggles.AutoCollectDead or Toggles.AutoPlant) and PlantRoundService then
-            pcall(refreshRound)
+        isOpen = not isOpen
+        if isOpen then
+            Main.Visible = true
+            Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
         else
-            activeRound = nil
+            Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+                if not isOpen then Main.Visible = false end
+            end)
         end
+    end
+end)
+
+-- ════════════════════════════════════════
+--   AUTO LOOPS  (exact from original)
+-- ════════════════════════════════════════
+task.spawn(function()
+    while not Library.Unloaded do
+        if Toggles.AutoBuySeeds.Value then pcall(doBuySeeds) end
+        task.wait(Options.BuyLoopDelay.Value or 0.5)
+    end
+end)
+
+task.spawn(function()
+    while not Library.Unloaded do
+        if Toggles.AutoBuyFurniture.Value then pcall(doBuyFurniture) end
+        task.wait(Options.FurnitureLoopDelay.Value or 1)
+    end
+end)
+
+task.spawn(function()
+    while not Library.Unloaded do
+        if Toggles.AutoHarvest.Value or Toggles.AutoCollectDead.Value or Toggles.AutoPlant.Value then
+            pcall(refreshRound)
+        else activeRound = nil end
         task.wait(0.5)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if (Toggles.AutoHarvest or Toggles.AutoCollectDead) and PlantRoundService then
-            pcall(doRoundHarvest)
-        end
+    while not Library.Unloaded do
+        if Toggles.AutoHarvest.Value or Toggles.AutoCollectDead.Value then pcall(doRoundHarvest) end
         task.wait(0.05)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoPlant and PlantRoundService then pcall(doPlant) end
-        task.wait(Options.PlantLoopDelay or 1)
+    while not Library.Unloaded do
+        if Toggles.AutoPlant.Value then pcall(doPlant) end
+        task.wait(Options.PlantLoopDelay.Value or 1)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoPlantTrees and PlayerPlotService then pcall(doPlantTrees) end
-        task.wait(Options.PlantLoopDelay or 1)
+    while not Library.Unloaded do
+        if Toggles.AutoPlantTrees.Value then pcall(doPlantTrees) end
+        task.wait(Options.PlantLoopDelay.Value or 1)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoCollectFruit then pcall(doHarvest) end
-        task.wait(Options.HarvestLoopDelay or 1)
+    while not Library.Unloaded do
+        if Toggles.AutoCollectFruit.Value then pcall(doHarvest) end
+        task.wait(Options.HarvestLoopDelay.Value or 1)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoSellFruits and SellFruitsService then pcall(doSellFruits) end
-        if Toggles.SellDeadTreesOnly and SellStandService then pcall(doSellDeadTrees)
-        elseif Toggles.AutoSellAll and SellStandService then pcall(doSellAll) end
-        task.wait(Options.SellLoopDelay or 2)
+    while not Library.Unloaded do
+        if Toggles.AutoSellFruits.Value then pcall(doSellFruits) end
+        if Toggles.SellDeadTreesOnly.Value then pcall(doSellDeadTrees)
+        elseif Toggles.AutoSellAll.Value then pcall(doSellAll) end
+        task.wait(Options.SellLoopDelay.Value or 2)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
-        if Toggles.AutoRebirth and RebirthService then pcall(doRebirth) end
-        task.wait(Options.RebirthLoopDelay or 5)
+    while not Library.Unloaded do
+        if Toggles.AutoRebirth.Value then pcall(doRebirth) end
+        task.wait(Options.RebirthLoopDelay.Value or 5)
     end
 end)
 
 task.spawn(function()
-    while not Unloaded do
+    while not Library.Unloaded do
         task.wait(2)
-        if Toggles.AntiAfk then
-            local idle = tick() - antiAfkLastInput
+        if Toggles.AntiAfk.Value then
+            local idle     = tick() - antiAfkLastInput
             local sinceTap = tick() - antiAfkLastTap
             if (idle >= 300 and sinceTap >= 60) or (idle < 300 and sinceTap >= 300) then
                 pcall(antiAfkTap)
@@ -1665,6 +1542,5 @@ task.spawn(function()
     end
 end)
 
--- Open on load
-task.delay(0.5, openGUI)
-notify("✅  LP10 HUB — Greedy Growers loaded!")
+Notify("✅  LP10 HUB — Greedy Growers loaded!")
+print("LP10 HUB: Greedy Growers loaded!")
