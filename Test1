@@ -1,475 +1,251 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local VirtualUser = game:GetService("VirtualUser")
-local UserInputService = game:GetService("UserInputService")
+-- ╔══════════════════════════════════════════════════════════════════════╗
+-- ║  LP10 HUB — Greedy Growers                                         ║
+-- ║  Solara / Delta / Codex / Arceus X / Fluxus / Krnl Compatible      ║
+-- ║  Pure Instance GUI — No External Library Required                   ║
+-- ╚══════════════════════════════════════════════════════════════════════╝
 
-local LocalPlayer = Players.LocalPlayer
+-- ════════════ SERVICES ════════════
+local Players            = game:GetService("Players")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+local UserInputService   = game:GetService("UserInputService")
+local TweenService       = game:GetService("TweenService")
+local RunService         = game:GetService("RunService")
+local LocalPlayer        = Players.LocalPlayer
 
-if getgenv then
-    getgenv().gethui = function()
-        return LocalPlayer:WaitForChild("PlayerGui")
+-- ════════════ EXECUTOR COMPAT ════════════
+local function httpGet(url)
+    if syn and syn.request then
+        local ok, r = pcall(syn.request, {Url=url, Method="GET"})
+        if ok and r and r.StatusCode == 200 then return r.Body end
     end
+    if request then
+        local ok, r = pcall(request, {Url=url, Method="GET"})
+        if ok and r and r.StatusCode == 200 then return r.Body end
+    end
+    if http_request then
+        local ok, r = pcall(http_request, {Url=url, Method="GET"})
+        if ok and r and r.StatusCode == 200 then return r.Body end
+    end
+    local ok, r = pcall(function() return game:HttpGet(url) end)
+    if ok and r and r ~= "" then return r end
+    return nil
 end
 
-local GAME_NAME = "Greedy Growers"
+local function safeSetClipboard(text)
+    if setclipboard then pcall(setclipboard, text)
+    elseif toclipboard then pcall(toclipboard, text)
+    elseif rbxSetClipboard then pcall(rbxSetClipboard, text) end
+end
 
-local Knit = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"))
-local SeedConfig = require(ReplicatedStorage.Shared.Info.SeedConfig)
-local ExpandedRarities = require(ReplicatedStorage.Shared.Info.ExpandedRarities)
-local RebirthConfig = require(ReplicatedStorage.Shared.Info.RebirthConfig)
-local FertilizerConfig = require(ReplicatedStorage.Shared.Info.FertilizerConfig)
-local CustomEnum = require(ReplicatedStorage.Shared.Info.CustomEnum)
-local Constants = require(ReplicatedStorage.Shared.Info.Constants)
-local WeatherConfig = require(ReplicatedStorage.Shared.Info.WeatherConfig)
-local FurnitureShopConfig = require(ReplicatedStorage.Shared.Info.FurnitureShopConfig)
-local AbbreviateNumber = require(ReplicatedStorage.Shared.Utility.AbbreviateNumber)
+local function safeGetConnections(signal)
+    if getconnections then
+        local ok, c = pcall(getconnections, signal)
+        if ok then return c end
+    end
+    return {}
+end
 
-local SeedConveyorService = Knit.GetService("SeedConveyorService")
-local PlayerPlotService = Knit.GetService("PlayerPlotService")
-local PlantRoundService = Knit.GetService("PlantRoundService")
-local ToolService = Knit.GetService("ToolService")
-local SellStandService = Knit.GetService("SellStandService")
-local SellFruitsService = Knit.GetService("SellFruitsService")
-local FurnitureShopService = Knit.GetService("FurnitureShopService")
-local RebirthService = Knit.GetService("RebirthService")
-local DataClient = Knit.GetController("DataClient")
+local _fireprox = fireproximityprompt or function(p)
+    pcall(function()
+        local e = p.Parent and p.Parent:FindFirstChildOfClass("RemoteEvent")
+        if e then e:FireServer() end
+    end)
+end
 
-local repo = "https://raw.githubusercontent.com/joustingmatch/ObsidianUltra/main/"
-local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
-
+-- Detect executor name
+local execName = "Unknown"
 pcall(function()
-    Library.ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    if identifyexecutor then
+        local n, v = identifyexecutor()
+        execName = (type(n)=="string" and n~="" and n) or execName
+        if type(v)=="string" and v~="" then execName = execName.." "..v end
+    elseif getexecutorname then
+        execName = getexecutorname() or execName
+    end
 end)
 
-local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
-local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
+-- ════════════ GAME MODULES ════════════
+local Knit, SeedConfig, ExpandedRarities, RebirthConfig
+local FertilizerConfig, CustomEnum, Constants, WeatherConfig
+local FurnitureShopConfig, AbbreviateNumber
+local SeedConveyorService, PlayerPlotService, PlantRoundService
+local ToolService, SellStandService, SellFruitsService
+local FurnitureShopService, RebirthService, DataClient
 
-local Toggles = Library.Toggles
-local Options = Library.Options
+local modulesLoaded = false
+pcall(function()
+    Knit               = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knit"))
+    SeedConfig         = require(ReplicatedStorage.Shared.Info.SeedConfig)
+    ExpandedRarities   = require(ReplicatedStorage.Shared.Info.ExpandedRarities)
+    RebirthConfig      = require(ReplicatedStorage.Shared.Info.RebirthConfig)
+    FertilizerConfig   = require(ReplicatedStorage.Shared.Info.FertilizerConfig)
+    CustomEnum         = require(ReplicatedStorage.Shared.Info.CustomEnum)
+    Constants          = require(ReplicatedStorage.Shared.Info.Constants)
+    WeatherConfig      = require(ReplicatedStorage.Shared.Info.WeatherConfig)
+    FurnitureShopConfig= require(ReplicatedStorage.Shared.Info.FurnitureShopConfig)
+    AbbreviateNumber   = require(ReplicatedStorage.Shared.Utility.AbbreviateNumber)
 
--- Updated Social Links
-local DISCORD_INVITE = "https://discord.gg/Uqrkdrpwxr"
-local RSCRIPTS_LINK = "https://rscripts.net/@LPOLVO"
+    SeedConveyorService  = Knit.GetService("SeedConveyorService")
+    PlayerPlotService    = Knit.GetService("PlayerPlotService")
+    PlantRoundService    = Knit.GetService("PlantRoundService")
+    ToolService          = Knit.GetService("ToolService")
+    SellStandService     = Knit.GetService("SellStandService")
+    SellFruitsService    = Knit.GetService("SellFruitsService")
+    FurnitureShopService = Knit.GetService("FurnitureShopService")
+    RebirthService       = Knit.GetService("RebirthService")
+    DataClient           = Knit.GetController("DataClient")
+    modulesLoaded        = true
+end)
 
-local function copyDiscord()
-    if setclipboard then
-        setclipboard(DISCORD_INVITE)
-    elseif toclipboard then
-        toclipboard(DISCORD_INVITE)
-    end
-    Library:Notify("Copied Discord invite to clipboard")
-end
-
-local function colored(text, color)
-    return string.format('<font color="%s">%s</font>', color, text)
-end
-
-local function field(key, value, color)
-    return string.format("<b>%s</b> %s %s", key, colored("-", "#5a6070"), colored(value, color))
-end
-
-local GREEN = "#7fd47f"
-local BLUE = "#2196f3" -- Royal Blue
-local ORANGE = "#e8a34d"
-local GREY = "#8b93a3"
-
-local RARITY_ORDER = {
-    "COMMON",
-    "UNCOMMON",
-    "RARE",
-    "EPIC",
-    "LEGENDARY",
-    "MYTHIC",
-    "CELESTIAL",
-    "SECRET",
-    "DIVINE",
-}
-
-local RARITY_INDEX = {}
-local RARITY_NAMES = {}
-local RARITY_NAME_TO_KEY = {}
-for i, key in ipairs(RARITY_ORDER) do
-    RARITY_INDEX[key] = i
-    local name = ExpandedRarities[key] and ExpandedRarities[key].name or key
-    RARITY_NAMES[i] = name
-    RARITY_NAME_TO_KEY[name] = key
-end
-
-local SEED_NAMES = {}
-local SEED_NAME_TO_KEY = {}
-for key in pairs(SeedConfig.Seeds) do
-    local seed = SeedConfig.GetSeed(key)
-    local cost = seed and seed.plantCost or 0
-    local priceText = cost > 0 and ("$" .. AbbreviateNumber(cost)) or "Free"
-    local name = SeedConfig.SeedDisplayName(key) .. " (" .. priceText .. ")"
-    SEED_NAMES[#SEED_NAMES + 1] = name
-    SEED_NAME_TO_KEY[name] = key
-end
-table.sort(SEED_NAMES)
-
-local FURNITURE_NAMES = {}
-local FURNITURE_NAME_TO_INFO = {}
-for _, category in ipairs(FurnitureShopConfig.Categories) do
-    for _, item in ipairs(category.items) do
-        local price = tonumber(item.price) or 0
-        local priceText = price > 0 and ("$" .. AbbreviateNumber(price)) or "Free"
-        local name = ("[%s] %s (%s)"):format(category.name, item.id, priceText)
-        FURNITURE_NAMES[#FURNITURE_NAMES + 1] = name
-        FURNITURE_NAME_TO_INFO[name] = { type = category.type, id = item.id, price = price }
-    end
-end
-table.sort(FURNITURE_NAMES)
-
-local wantedFurniture = {}
-
-local function selectedSet(value)
-    local set = {}
-    if type(value) == "table" then
-        for name, state in pairs(value) do
-            if state then
-                set[name] = true
-            end
-        end
-    end
-    return set
-end
-
-local wantedSeeds = {}
-
+-- ════════════ HELPER FUNCTIONS ════════════
 local function getData()
+    if not DataClient then return nil end
     return DataClient.currentData
 end
 
 local function getCoins()
     local data = getData()
-    if not data or not data.Currency then
-        return 0
-    end
+    if not data or not data.Currency or not CustomEnum then return 0 end
     return data.Currency[CustomEnum.CURRENCIES.COINS] or 0
 end
 
 local function hasInventorySpace()
     local data = getData()
-    if not data or not data.Inventory then
-        return true
-    end
+    if not data or not data.Inventory then return true end
     for _, slot in pairs(data.Inventory.Hotbar or {}) do
-        if slot and slot.empty == true then
-            return true
-        end
+        if slot and slot.empty == true then return true end
     end
-    return #(data.Inventory.Storage or {}) < Constants.STORAGE_MAX_SIZE
+    return #(data.Inventory.Storage or {}) < (Constants and Constants.STORAGE_MAX_SIZE or 999)
 end
 
 local function getMyPlot()
     local field = workspace:FindFirstChild("BigField")
     local plots = field and field:FindFirstChild("PlayerPlots")
-    if not plots then
-        return nil
-    end
+    if not plots then return nil end
     for _, plot in ipairs(plots:GetChildren()) do
-        if plot:GetAttribute("OwnerUserId") == LocalPlayer.UserId then
-            return plot
-        end
+        if plot:GetAttribute("OwnerUserId") == LocalPlayer.UserId then return plot end
     end
     return nil
 end
 
 local function getRoot()
-    local character = LocalPlayer.Character
-    return character and character:FindFirstChild("HumanoidRootPart")
+    local char = LocalPlayer.Character
+    return char and char:FindFirstChild("HumanoidRootPart")
 end
 
-local purchasedSpawns = {}
+-- ════════════ STATE ════════════
+local Toggles = {
+    AutoBuySeeds     = false,
+    AutoBuyFurniture = false,
+    AutoPlant        = false,
+    AutoHarvest      = false,
+    AutoCollectDead  = true,
+    AutoCollectFruit = false,
+    AutoSellFruits   = false,
+    AutoSellAll      = false,
+    SellDeadTrees    = false,
+    AutoRebirth      = false,
+    AntiAfk          = true,
+    HarvestTeleport  = false,
+    SellTeleport     = false,
+    PlantNotify      = false,
+    HarvestNotify    = false,
+    BuyNotify        = false,
+}
 
-local function shouldBuySeed(seedType, rarity, mutation)
-    if Toggles.BuyMutatedOnly.Value and (mutation == nil or mutation == "") then
-        return false
-    end
+local Options = {
+    HarvestMultiplier = 2,
+    BuyMaxCost        = 0,
+    BuyReserve        = 0,
+    SellMinFruits     = 1,
+    RebirthMaxLevel   = 999,
+}
 
-    local seed = SeedConfig.GetSeed(seedType)
-    local cost = seed and seed.plantCost or 0
-    local maxCost = tonumber(Options.BuyMaxCost.Value) or 0
-    if maxCost > 0 and cost > maxCost then
-        return false
-    end
-    local reserve = tonumber(Options.BuyReserve.Value) or 0
-    if getCoins() - cost < reserve then
-        return false
-    end
+local purchasedSpawns  = {}
+local activeRound      = nil
+local harvestedRoundId = nil
+local wantedSeeds      = {}
+local wantedPlantSeeds = {}
+local wantedFurniture  = {}
+local running          = true
 
-    local mode = Options.BuyMode.Value
-    if mode == "Buy All" then
-        return true
-    elseif mode == "Selected Seeds" then
-        return wantedSeeds[seedType] == true
-    end
-
-    local minKey = RARITY_NAME_TO_KEY[Options.BuyMinRarity.Value]
-    local have = RARITY_INDEX[rarity]
-    local want = RARITY_INDEX[minKey]
-    if not have or not want then
-        return false
-    end
-    return have >= want
-end
-
+-- ════════════ LOGIC ════════════
 local function doBuySeeds()
-    if not hasInventorySpace() then
-        return
-    end
-
+    if not SeedConveyorService or not SeedConfig then return end
+    if not hasInventorySpace() then return end
     local field = workspace:FindFirstChild("BigField")
     local folder = field and field:FindFirstChild("ConveyorSeeds")
-    if not folder then
-        return
-    end
-
+    if not folder then return end
     for _, holder in ipairs(folder:GetChildren()) do
-        local spawnId = holder:GetAttribute("SpawnId")
-        if spawnId and not purchasedSpawns[spawnId] then
-            local seedType = holder:GetAttribute("SeedType")
-            local rarity = holder:GetAttribute("Rarity")
-            if seedType and rarity and shouldBuySeed(seedType, rarity, holder:GetAttribute("Mutation")) then
-                local ok, success = SeedConveyorService:RequestPurchase(spawnId):await()
-                if ok and success then
-                    purchasedSpawns[spawnId] = true
-                    if Toggles.BuyNotify.Value then
-                        Library:Notify(("Bought %s"):format(SeedConfig.SeedDisplayName(seedType)))
-                    end
-                    if not hasInventorySpace() then
-                        return
-                    end
-                end
-                task.wait(Options.BuyActionDelay.Value or 0.2)
+        local spawnId  = holder:GetAttribute("SpawnId")
+        local seedType = holder:GetAttribute("SeedType")
+        local rarity   = holder:GetAttribute("Rarity")
+        if spawnId and seedType and rarity and not purchasedSpawns[spawnId] then
+            if not Toggles.AutoBuySeeds then return end
+            local seed = SeedConfig.GetSeed(seedType)
+            local cost = seed and seed.plantCost or 0
+            if Options.BuyMaxCost > 0 and cost > Options.BuyMaxCost then goto continue end
+            if getCoins() - cost < Options.BuyReserve then goto continue end
+            local ok, success = pcall(function()
+                return SeedConveyorService:RequestPurchase(spawnId):await()
+            end)
+            if ok and success then
+                purchasedSpawns[spawnId] = true
+                if not hasInventorySpace() then return end
             end
+            task.wait(0.2)
         end
+        ::continue::
     end
-
+    -- cleanup
     for spawnId in pairs(purchasedSpawns) do
-        local stillThere = false
-        for _, holder in ipairs(folder:GetChildren()) do
-            if holder:GetAttribute("SpawnId") == spawnId then
-                stillThere = true
-                break
-            end
+        local still = false
+        for _, h in ipairs(folder:GetChildren()) do
+            if h:GetAttribute("SpawnId") == spawnId then still = true; break end
         end
-        if not stillThere then
-            purchasedSpawns[spawnId] = nil
-        end
+        if not still then purchasedSpawns[spawnId] = nil end
     end
 end
 
-local function doBuyFurniture()
-    local reserve = tonumber(Options.FurnitureReserve.Value) or 0
-    for _, info in ipairs(wantedFurniture) do
-        if Library.Unloaded or not Toggles.AutoBuyFurniture.Value then
-            return
-        end
-        if getCoins() - info.price >= reserve then
-            local ok, success = FurnitureShopService:BuyFurniture(info.type, info.id):await()
-            if ok and success and Toggles.FurnitureNotify.Value then
-                Library:Notify(("Bought %s"):format(info.id))
-            end
-            task.wait(Options.FurnitureActionDelay.Value or 0.2)
-        end
+local function refreshRound()
+    if not PlantRoundService then return end
+    local ok, rounds = pcall(function() return PlantRoundService:GetActiveRounds():await() end)
+    if not ok or type(rounds) ~= "table" then return end
+    for _, round in pairs(rounds) do
+        if round.userId == LocalPlayer.UserId then activeRound = round; return end
     end
+    activeRound = nil
 end
-
-local activeRound = nil
-local harvestedRoundId = nil
 
 local function roundMultiplier(startTime)
     local elapsed = math.max(0, workspace:GetServerTimeNow() - startTime)
     return math.max(0, math.floor((math.exp(elapsed * 0.28) - 1) * 100) / 100)
 end
 
-local function refreshRound()
-    local ok, rounds = PlantRoundService:GetActiveRounds():await()
-    if not ok or type(rounds) ~= "table" then
-        return
-    end
-    for _, round in pairs(rounds) do
-        if round.userId == LocalPlayer.UserId then
-            activeRound = round
-            return
-        end
-    end
-    activeRound = nil
-end
-
 local function doRoundHarvest()
     local round = activeRound
-    if not round then
-        return
-    end
-
+    if not round then return end
     if round.crashed then
-        if Toggles.AutoCollectDead.Value and harvestedRoundId ~= round.roundId then
+        if Toggles.AutoCollectDead and harvestedRoundId ~= round.roundId then
             harvestedRoundId = round.roundId
-            PlantRoundService:CollectDeadTree():await()
+            pcall(function() PlantRoundService:CollectDeadTree():await() end)
         end
         return
     end
-
-    if round.stopped or harvestedRoundId == round.roundId or not Toggles.AutoHarvest.Value then
-        return
-    end
-
-    local target = tonumber(Options.HarvestMultiplier.Value) or 2
-    local multiplier = roundMultiplier(round.startTime)
-    if multiplier < target then
-        return
-    end
-
+    if round.stopped or harvestedRoundId == round.roundId or not Toggles.AutoHarvest then return end
+    local mult = roundMultiplier(round.startTime)
+    if mult < Options.HarvestMultiplier then return end
     harvestedRoundId = round.roundId
-    local ok = PlantRoundService:StopPlant():await()
-    if ok and Toggles.HarvestNotify.Value then
-        Library:Notify(("Harvested at %.2fx"):format(multiplier))
-    end
-end
-
-local FERTILIZER_NAMES = {}
-for _, key in ipairs(FertilizerConfig.Order) do
-    FERTILIZER_NAMES[#FERTILIZER_NAMES + 1] = key
-end
-
-local WEATHER_NAMES = {}
-local WEATHER_NAME_TO_KEY = {}
-for _, key in ipairs(WeatherConfig.Order) do
-    local weather = WeatherConfig.Weathers[key]
-    local name = weather and weather.displayName or key
-    WEATHER_NAMES[#WEATHER_NAMES + 1] = name
-    WEATHER_NAME_TO_KEY[name] = key
-end
-
-local wantedWeathers = {}
-for _, key in ipairs(WeatherConfig.Order) do
-    wantedWeathers[key] = true
-end
-
-local function getActiveWeatherKey()
-    local value = ReplicatedStorage:FindFirstChild("CurrentWeather")
-    return value and WeatherConfig.Normalize(value.Value)
-end
-
-local wantedPlantSeeds = {}
-
-local function getEquippedSeedTool()
-    local character = LocalPlayer.Character
-    if not character then
-        return nil
-    end
-    for _, tool in ipairs(character:GetChildren()) do
-        if tool:IsA("Tool") and tool:GetAttribute("IsSeed") then
-            return tool
-        end
-    end
-    return nil
+    local ok = pcall(function() PlantRoundService:StopPlant():await() end)
 end
 
 local function findPlantableSlot()
     local data = getData()
-    if not data or not data.Inventory then
-        return nil
-    end
-
-    local mode = Options.PlantMode.Value
-    local best, bestSlot, bestHotbar = nil, nil, nil
-    for _, container in ipairs({ { data.Inventory.Hotbar, true }, { data.Inventory.Storage, false } }) do
+    if not data or not data.Inventory then return nil end
+    for _, container in ipairs({{data.Inventory.Hotbar, true}, {data.Inventory.Storage, false}}) do
         local items, isHotbar = container[1], container[2]
         for slot, item in pairs(items or {}) do
             if item and item.itemType == "Seed" and item.seedType then
-                local allowed = mode == "Any Seed" or wantedPlantSeeds[item.seedType] == true
-                if allowed then
-                    local seed = SeedConfig.GetSeed(item.seedType)
-                    local cost = seed and seed.plantCost or 0
-                    if mode == "Highest Value" then
-                        if not best or cost > best then
-                            best, bestSlot, bestHotbar = cost, slot, isHotbar
-                        end
-                    elseif mode == "Lowest Value" then
-                        if not best or cost < best then
-                            best, bestSlot, bestHotbar = cost, slot, isHotbar
-                        end
-                    else
-                        return slot, isHotbar
-                    end
-                end
-            end
-        end
-    end
-    return bestSlot, bestHotbar
-end
-
-local function doPlant()
-    if activeRound and not activeRound.stopped and not activeRound.crashed then
-        return
-    end
-
-    if Toggles.PlantDuringWeatherOnly.Value then
-        local weather = getActiveWeatherKey()
-        if not weather or not wantedWeathers[weather] then
-            return
-        end
-    end
-
-    local tool = getEquippedSeedTool()
-    if not tool then
-        local slot, isHotbar = findPlantableSlot()
-        if not slot then
-            return
-        end
-        ToolService.ToggleEquip:Fire(isHotbar, slot)
-        local deadline = tick() + 3
-        repeat
-            task.wait(0.1)
-            tool = getEquippedSeedTool()
-        until tool or tick() > deadline
-    end
-
-    if not tool then
-        return
-    end
-
-    local seedType = tool:GetAttribute("SeedType")
-    if not seedType then
-        return
-    end
-
-    local fertilizer = Options.PlantFertilizer.Value or "None"
-    local data = getData()
-    if (data and data.Rebirth or 0) < 1 then
-        fertilizer = "None"
-    end
-
-    local ok, started = PlantRoundService:StartRound(seedType, fertilizer):await()
-    if ok and started then
-        harvestedRoundId = nil
-        pcall(refreshRound)
-        if Toggles.PlantNotify.Value then
-            Library:Notify(("Planted %s"):format(SeedConfig.SeedDisplayName(seedType)))
-        end
-    end
-end
-
-local function isTreeItem(item)
-    if not item or item.empty == true or not item.seedType then
-        return false
-    end
-    local itemType = item.itemType
-    return itemType ~= "Seed" and itemType ~= "Fruit" and itemType ~= "Decor" and itemType ~= "Axe"
-end
-
-local function findTreeSlot(dead)
-    local data = getData()
-    if not data or not data.Inventory then
-        return nil
-    end
-    for _, container in ipairs({ { data.Inventory.Hotbar, true }, { data.Inventory.Storage, false } }) do
-        local items, isHotbar = container[1], container[2]
-        for slot, item in pairs(items or {}) do
-            if isTreeItem(item) and (item.isDead == true) == dead then
                 return slot, isHotbar
             end
         end
@@ -477,170 +253,77 @@ local function findTreeSlot(dead)
     return nil
 end
 
-local function getEquippedTreeTool(dead)
-    local character = LocalPlayer.Character
-    if not character then
-        return nil
-    end
-    for _, tool in ipairs(character:GetChildren()) do
-        if tool:IsA("Tool") and tool:GetAttribute("IsTree") and (tool:GetAttribute("IsDead") == true) == dead then
-            return tool
-        end
+local function getEquippedSeedTool()
+    local char = LocalPlayer.Character
+    if not char then return nil end
+    for _, t in ipairs(char:GetChildren()) do
+        if t:IsA("Tool") and t:GetAttribute("IsSeed") then return t end
     end
     return nil
 end
 
-local function equipTree(dead)
-    local tool = getEquippedTreeTool(dead)
-    if tool then
-        return tool
+local function doPlant()
+    if not PlantRoundService or not ToolService then return end
+    if activeRound and not activeRound.stopped and not activeRound.crashed then return end
+    local tool = getEquippedSeedTool()
+    if not tool then
+        local slot, isHotbar = findPlantableSlot()
+        if not slot then return end
+        pcall(function() ToolService.ToggleEquip:Fire(isHotbar, slot) end)
+        local deadline = tick() + 3
+        repeat task.wait(0.1); tool = getEquippedSeedTool() until tool or tick() > deadline
     end
-
-    local slot, isHotbar = findTreeSlot(dead)
-    if not slot then
-        return nil
-    end
-
-    ToolService.ToggleEquip:Fire(isHotbar, slot)
-    local deadline = tick() + 3
-    repeat
-        task.wait(0.1)
-        tool = getEquippedTreeTool(dead)
-    until tool or tick() > deadline
-    return tool
-end
-
-local function getDirtParts()
-    local plot = getMyPlot()
-    if not plot then
-        return {}
-    end
-    local parts = {}
-    for _, descendant in ipairs(plot:GetDescendants()) do
-        if descendant:IsA("BasePart") and descendant.Name == "Dirt" then
-            parts[#parts + 1] = descendant
-        end
-    end
-    return parts
-end
-
-local function randomDirtPoint(dirt)
-    local offset = Vector3.new(
-        (math.random() - 0.5) * dirt.Size.X * 0.8,
-        dirt.Size.Y / 2,
-        (math.random() - 0.5) * dirt.Size.Z * 0.8
-    )
-    return dirt.CFrame:PointToWorldSpace(offset)
-end
-
-local function doPlantTrees()
-    local dirts = getDirtParts()
-    if #dirts == 0 then
-        return
-    end
-
-    while not Library.Unloaded and Toggles.AutoPlantTrees.Value do
-        local tool = equipTree(false)
-        if not tool then
-            return
-        end
-
-        local itemId = tool:GetAttribute("ItemId")
-        if not itemId then
-            return
-        end
-
-        local planted = false
-        for _ = 1, 10 do
-            local dirt = dirts[math.random(#dirts)]
-            local ok, success = PlayerPlotService:PlantTree(itemId, randomDirtPoint(dirt), 0):await()
-            if ok and success then
-                planted = true
-                break
-            end
-            task.wait(0.1)
-        end
-
-        if not planted then
-            return
-        end
-
-        if Toggles.PlantNotify.Value then
-            Library:Notify("Planted a grown tree")
-        end
-        task.wait(0.2)
-    end
-end
-
-local function collectTreePrompts(tree)
-    local prompts = {}
-    for _, descendant in ipairs(tree:GetDescendants()) do
-        if descendant:IsA("ProximityPrompt") then
-            local parent = descendant.Parent
-            while parent and parent ~= tree do
-                if parent.Name == "FruitSpawns" then
-                    prompts[#prompts + 1] = descendant
-                    break
-                end
-                parent = parent.Parent
-            end
-        end
-    end
-    return prompts
+    if not tool then return end
+    local seedType = tool:GetAttribute("SeedType")
+    if not seedType then return end
+    pcall(function()
+        local ok, started = PlantRoundService:StartRound(seedType, "None"):await()
+        if ok and started then harvestedRoundId = nil; pcall(refreshRound) end
+    end)
 end
 
 local function doHarvest()
     local plot = getMyPlot()
-    if not plot then
+    if not plot or not PlayerPlotService then return end
+    if Toggles.HarvestTeleport == false then
+        pcall(function() PlayerPlotService:CollectAllFruits():await() end)
         return
     end
-
-    if Toggles.HarvestCollectAll.Value then
-        pcall(function()
-            PlayerPlotService:CollectAllFruits():await()
-        end)
-    end
-
     local root = getRoot()
-    local returnCFrame = root and root.CFrame
-
+    local returnCF = root and root.CFrame
     for _, tree in ipairs(plot:GetChildren()) do
         if tree.Name:match("^PlotTree_") then
-            local prompts = collectTreePrompts(tree)
-            if #prompts > 0 then
-                if Toggles.HarvestTeleport.Value and root then
-                    local base = tree:FindFirstChild("Base")
-                    if base then
-                        root.CFrame = base.CFrame + Vector3.new(0, 5, 0)
-                        task.wait(0.1)
+            if Toggles.HarvestTeleport and root then
+                local base = tree:FindFirstChild("Base")
+                if base then root.CFrame = base.CFrame + Vector3.new(0,5,0); task.wait(0.1) end
+            end
+            for _, desc in ipairs(tree:GetDescendants()) do
+                if desc:IsA("ProximityPrompt") then
+                    local parent = desc.Parent
+                    while parent and parent ~= tree do
+                        if parent.Name == "FruitSpawns" then
+                            if not Toggles.AutoCollectFruit then break end
+                            pcall(_fireprox, desc)
+                            task.wait(0.1)
+                            break
+                        end
+                        parent = parent.Parent
                     end
-                end
-                for _, prompt in ipairs(prompts) do
-                    if Library.Unloaded or not Toggles.AutoCollectFruit.Value then
-                        break
-                    end
-                    pcall(fireproximityprompt, prompt)
-                    task.wait(Options.HarvestActionDelay.Value or 0.1)
                 end
             end
         end
     end
-
-    if Toggles.HarvestTeleport.Value and root and returnCFrame then
-        root.CFrame = returnCFrame
-    end
+    if Toggles.HarvestTeleport and root and returnCF then root.CFrame = returnCF end
 end
 
 local function countFruitTools()
     local count = 0
-    local character = LocalPlayer.Character
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    for _, container in ipairs({ character, backpack }) do
-        if container then
-            for _, tool in ipairs(container:GetChildren()) do
-                if tool:IsA("Tool") and tool:GetAttribute("IsFruit") then
-                    count = count + 1
-                end
+    local char = LocalPlayer.Character
+    local bp   = LocalPlayer:FindFirstChild("Backpack")
+    for _, c in ipairs({char, bp}) do
+        if c then
+            for _, t in ipairs(c:GetChildren()) do
+                if t:IsA("Tool") and t:GetAttribute("IsFruit") then count += 1 end
             end
         end
     end
@@ -648,735 +331,596 @@ local function countFruitTools()
 end
 
 local function doSellFruits()
-    local character = LocalPlayer.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if not humanoid or not backpack then
-        return
-    end
-
-    if countFruitTools() < (tonumber(Options.SellMinFruits.Value) or 1) then
-        return
-    end
-
-    if Toggles.SellTeleport.Value then
-        local plot = getMyPlot()
-        local stand = plot and plot:FindFirstChild("SellFruits")
-        local root = getRoot()
-        local pivot = stand and stand:GetPivot()
-        if root and pivot then
-            root.CFrame = pivot + Vector3.new(0, 5, 0)
-            task.wait(0.2)
-        end
-    end
-
-    while not Library.Unloaded and Toggles.AutoSellFruits.Value do
+    if not SellFruitsService then return end
+    local char = LocalPlayer.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    local bp   = LocalPlayer:FindFirstChild("Backpack")
+    if not hum or not bp then return end
+    if countFruitTools() < Options.SellMinFruits then return end
+    while running and Toggles.AutoSellFruits do
         local fruit
-        for _, tool in ipairs(character:GetChildren()) do
-            if tool:IsA("Tool") and tool:GetAttribute("IsFruit") then
-                fruit = tool
-                break
-            end
+        for _, t in ipairs(char:GetChildren()) do
+            if t:IsA("Tool") and t:GetAttribute("IsFruit") then fruit = t; break end
         end
         if not fruit then
-            for _, tool in ipairs(backpack:GetChildren()) do
-                if tool:IsA("Tool") and tool:GetAttribute("IsFruit") then
-                    humanoid:EquipTool(tool)
-                    fruit = tool
-                    break
+            for _, t in ipairs(bp:GetChildren()) do
+                if t:IsA("Tool") and t:GetAttribute("IsFruit") then
+                    pcall(function() hum:EquipTool(t) end); fruit = t; break
                 end
             end
         end
-        if not fruit then
-            break
-        end
-        SellFruitsService:SellFruit():await()
-        task.wait(Options.SellActionDelay.Value or 0.2)
+        if not fruit then break end
+        pcall(function() SellFruitsService:SellFruit():await() end)
+        task.wait(0.2)
     end
 end
 
 local function doSellAll()
-    SellStandService:SellAll():await()
-end
-
-local function doSellDeadTrees()
-    if Toggles.SellTeleport.Value then
-        local field = workspace:FindFirstChild("BigField")
-        local stand = field and field:FindFirstChild("SellStand")
-        local root = getRoot()
-        local pivot = stand and stand:GetPivot()
-        if root and pivot then
-            root.CFrame = pivot + Vector3.new(0, 5, 0)
-            task.wait(0.2)
-        end
-    end
-
-    while not Library.Unloaded and Toggles.SellDeadTreesOnly.Value do
-        local tool = equipTree(true)
-        if not tool then
-            return
-        end
-        local ok, sold = SellStandService:SellTree():await()
-        if not ok or not sold then
-            return
-        end
-        task.wait(Options.SellActionDelay.Value or 0.2)
-    end
+    if SellStandService then pcall(function() SellStandService:SellAll():await() end) end
 end
 
 local function doRebirth()
+    if not RebirthService or not RebirthConfig then return end
     local data = getData()
-    if not data then
-        return
-    end
-
+    if not data then return end
     local current = data.Rebirth or 0
-    if current >= (tonumber(Options.RebirthMaxLevel.Value) or RebirthConfig.MaxLevel) then
-        return
-    end
-
-    local nextRebirth = RebirthConfig.GetNext(current)
-    if not nextRebirth or getCoins() < nextRebirth.cost then
-        return
-    end
-
-    RebirthService:DoRebirth():await()
-    if Toggles.RebirthNotify.Value then
-        Library:Notify(("Rebirthed to %d"):format(current + 1))
-    end
+    if current >= (Options.RebirthMaxLevel or RebirthConfig.MaxLevel) then return end
+    local nextR = RebirthConfig.GetNext(current)
+    if not nextR or getCoins() < nextR.cost then return end
+    pcall(function() RebirthService:DoRebirth():await() end)
 end
 
-local Window = Library:CreateWindow({
-    Title = "LP10 HUB",
-    Footer = {
-        { Text = DISCORD_INVITE, Copyable = true },
-        "|",
-        GAME_NAME,
-    },
-    Icon = 12645376577,
-    NotifySide = "Right",
-    Size = UDim2.fromOffset(900, 640),
-    ShowCustomCursor = false,
-    CornerRadius = 10,
-})
-
-Library.ShowCustomCursor = false
-
-local Tabs = {
-    Info = Window:AddTab("Info", "info"),
-    Seeds = Window:AddTab("Seeds", "sprout"),
-    Farm = Window:AddTab("Farm", "trees"),
-    Settings = Window:AddTab("Settings", "settings"),
-}
-
-local function AddDiscordButton(Tab)
-    local DiscordGroup = Tab:AddLeftGroupbox("Discord")
-    DiscordGroup:AddButton({
-        Text = "Join LPOLVO Discord",
-        Func = copyDiscord,
-    })
-    DiscordGroup:AddButton({
-        Text = "Get Free Scripts",
-        Func = copyDiscord,
-    })
-end
-
-for _, Tab in pairs(Tabs) do
-    AddDiscordButton(Tab)
-end
-
-local executorName = "Unknown"
-pcall(function()
-    if identifyexecutor then
-        local name, version = identifyexecutor()
-        if type(name) == "string" and name ~= "" then
-            executorName = type(version) == "string" and version ~= "" and (name .. " " .. version) or name
-        end
-    end
-end)
-
-local AccountGroup = Tabs.Info:AddLeftGroupbox("Account", "circle-user")
-
-AccountGroup:AddLabel(field("User", LocalPlayer.Name, GREEN), true)
-AccountGroup:AddLabel(field("Status", "Keyless", GREEN), true)
-AccountGroup:AddLabel(field("Executor", executorName, GREEN), true)
-
-local GameGroup = Tabs.Info:AddLeftGroupbox("Game Info", "gamepad-2")
-
-GameGroup:AddLabel(colored(GAME_NAME .. " [" .. tostring(game.PlaceId) .. "]", BLUE), true)
-GameGroup:AddLabel(field("Place ID", tostring(game.PlaceId), BLUE), true)
-
-local SessionLabel = GameGroup:AddLabel(field("Session time", "0s", ORANGE), true)
-
-local jobId = tostring(game.JobId)
-local shortJobId = #jobId > 18 and (string.sub(jobId, 1, 18) .. "...") or jobId
-GameGroup:AddLabel(field("Server", shortJobId, GREY), true)
-
-GameGroup:AddButton({
-    Text = "Copy join script (Job ID)",
-    Func = function()
-        local joinScript = string.format(
-            'game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game:GetService("Players").LocalPlayer)',
-            game.PlaceId,
-            jobId
-        )
-        if setclipboard then
-            setclipboard(joinScript)
-        elseif toclipboard then
-            toclipboard(joinScript)
-        end
-        Library:Notify("Copied join script to clipboard")
-    end,
-})
-
-local sessionStart = os.clock()
-task.spawn(function()
-    while true do
-        task.wait(1)
-        if Library.Unloaded then
-            break
-        end
-        local elapsed = math.floor(os.clock() - sessionStart)
-        local text
-        if elapsed < 60 then
-            text = elapsed .. "s"
-        elseif elapsed < 3600 then
-            text = string.format("%dm %ds", math.floor(elapsed / 60), elapsed % 60)
-        else
-            text = string.format("%dh %dm", math.floor(elapsed / 3600), math.floor((elapsed % 3600) / 60))
-        end
-        SessionLabel:SetText(field("Session time", text, ORANGE))
-    end
-end)
-
-local ScriptsGroup = Tabs.Info:AddRightGroupbox("Scripts", "package")
-
-ScriptsGroup:AddLabel(colored("Included in LP10 HUB", GREY), true)
-ScriptsGroup:AddLabel(colored(GAME_NAME, BLUE), true)
-
-local FeaturesGroup = Tabs.Info:AddRightGroupbox("Features", "list")
-
-FeaturesGroup:AddLabel(colored("Auto Buy Seeds & Furniture", BLUE), true)
-FeaturesGroup:AddLabel(colored("Auto Plant & Harvest", GREEN), true)
-FeaturesGroup:AddLabel(colored("Auto Sell", ORANGE), true)
-FeaturesGroup:AddLabel(colored("Auto Rebirth", GREY), true)
-
-local SocialsGroup = Tabs.Info:AddRightGroupbox("Socials", "link")
-
-SocialsGroup:AddButton({
-    Text = "Discord",
-    Func = copyDiscord,
-})
-
-SocialsGroup:AddButton({
-    Text = "Official Site",
-    Func = function()
-        if setclipboard then
-            setclipboard(RSCRIPTS_LINK)
-        elseif toclipboard then
-            toclipboard(RSCRIPTS_LINK)
-        end
-        Library:Notify("Copied link to clipboard")
-    end,
-})
-
-local AdGroup = Tabs.Info:AddLeftGroupbox("LP10 HUB", "sparkles")
-
-AdGroup:AddLabel("Welcome to LP10 HUB! Best Keyless Roblox Scripts.", true)
-AdGroup:AddLabel("Join our Discord for updates, setups, and new scripts.", true)
-
-AdGroup:AddButton({
-    Text = "Copy Discord Invite",
-    Func = copyDiscord,
-})
-
-local FaqGroup = Tabs.Info:AddRightGroupbox("FAQ", "circle-help")
-
-FaqGroup:AddLabel("How to get updates?", true)
-FaqGroup:AddLabel("Join our Discord server to get early updates and news.", true)
-
-local BuyGroup = Tabs.Seeds:AddLeftGroupbox("Auto Buy Seeds", "shopping-cart")
-
-BuyGroup:AddToggle("AutoBuySeeds", {
-    Text = "Auto Buy Seeds",
-    Default = false,
-})
-
-BuyGroup:AddDropdown("BuyMode", {
-    Text = "Buy Mode",
-    Values = { "Minimum Rarity", "Selected Seeds", "Buy All" },
-    Default = "Minimum Rarity",
-    Multi = false,
-})
-
-BuyGroup:AddDropdown("BuyMinRarity", {
-    Text = "Minimum Rarity",
-    Values = RARITY_NAMES,
-    Default = RARITY_NAMES[1],
-    Multi = false,
-})
-
-BuyGroup:AddDropdown("BuySeeds", {
-    Text = "Seeds To Buy",
-    Values = SEED_NAMES,
-    Default = {},
-    Multi = true,
-    Callback = function(value)
-        local set = {}
-        if type(value) == "table" then
-            for name, state in pairs(value) do
-                if state then
-                    local key = SEED_NAME_TO_KEY[name]
-                    if key then
-                        set[key] = true
-                    end
-                end
-            end
-        end
-        wantedSeeds = set
-    end,
-})
-
-BuyGroup:AddToggle("BuyMutatedOnly", {
-    Text = "Only Mutated Seeds",
-    Default = false,
-})
-
-local BuyLimitGroup = Tabs.Seeds:AddRightGroupbox("Limits", "sliders-horizontal")
-
-BuyLimitGroup:AddInput("BuyMaxCost", {
-    Text = "Max Cost Per Seed (0 = off)",
-    Default = "0",
-    Numeric = true,
-    Finished = false,
-    ClearTextOnFocus = false,
-})
-
-BuyLimitGroup:AddInput("BuyReserve", {
-    Text = "Keep Coin Reserve",
-    Default = "0",
-    Numeric = true,
-    Finished = false,
-    ClearTextOnFocus = false,
-})
-
-BuyLimitGroup:AddToggle("BuyNotify", {
-    Text = "Notify On Buy",
-    Default = false,
-})
-
-BuyLimitGroup:AddSlider("BuyActionDelay", {
-    Text = "Buy Delay",
-    Default = 0.2,
-    Min = 0.1,
-    Max = 2,
-    Rounding = 2,
-})
-
-BuyLimitGroup:AddSlider("BuyLoopDelay", {
-    Text = "Loop Delay",
-    Default = 0.5,
-    Min = 0.1,
-    Max = 10,
-    Rounding = 1,
-})
-
-local FurnitureGroup = Tabs.Seeds:AddLeftGroupbox("Auto Buy Furniture", "sofa")
-
-FurnitureGroup:AddToggle("AutoBuyFurniture", {
-    Text = "Auto Buy Furniture",
-    Default = false,
-})
-
-FurnitureGroup:AddDropdown("FurnitureItems", {
-    Text = "Furniture To Buy",
-    Values = FURNITURE_NAMES,
-    Default = {},
-    Multi = true,
-    Callback = function(value)
-        local list = {}
-        if type(value) == "table" then
-            for name, state in pairs(value) do
-                if state then
-                    local info = FURNITURE_NAME_TO_INFO[name]
-                    if info then
-                        list[#list + 1] = info
-                    end
-                end
-            end
-        end
-        wantedFurniture = list
-    end,
-})
-
-FurnitureGroup:AddInput("FurnitureReserve", {
-    Text = "Keep Coin Reserve",
-    Default = "0",
-    Numeric = true,
-    Finished = false,
-    ClearTextOnFocus = false,
-})
-
-FurnitureGroup:AddToggle("FurnitureNotify", {
-    Text = "Notify On Buy",
-    Default = false,
-})
-
-FurnitureGroup:AddSlider("FurnitureActionDelay", {
-    Text = "Buy Delay",
-    Default = 0.2,
-    Min = 0.1,
-    Max = 2,
-    Rounding = 2,
-})
-
-FurnitureGroup:AddSlider("FurnitureLoopDelay", {
-    Text = "Loop Delay",
-    Default = 1,
-    Min = 0.2,
-    Max = 20,
-    Rounding = 1,
-})
-
-local PlantGroup = Tabs.Farm:AddRightGroupbox("Auto Plant", "sprout")
-
-PlantGroup:AddToggle("AutoPlant", {
-    Text = "Auto Plant",
-    Default = false,
-})
-
-PlantGroup:AddDropdown("PlantMode", {
-    Text = "Seed Choice",
-    Values = { "Any Seed", "Selected Seeds", "Highest Value", "Lowest Value" },
-    Default = "Any Seed",
-    Multi = false,
-})
-
-PlantGroup:AddDropdown("PlantSeeds", {
-    Text = "Seeds To Plant",
-    Values = SEED_NAMES,
-    Default = {},
-    Multi = true,
-    Callback = function(value)
-        local set = {}
-        if type(value) == "table" then
-            for name, state in pairs(value) do
-                if state then
-                    local key = SEED_NAME_TO_KEY[name]
-                    if key then
-                        set[key] = true
-                    end
-                end
-            end
-        end
-        wantedPlantSeeds = set
-    end,
-})
-
-PlantGroup:AddDropdown("PlantFertilizer", {
-    Text = "Fertilizer",
-    Values = FERTILIZER_NAMES,
-    Default = "None",
-    Multi = false,
-})
-
-for _, key in ipairs(FertilizerConfig.Order) do
-    local fert = FertilizerConfig.Fertilizers[key]
-    if fert and (fert.rebirthReq or 0) > 0 then
-        PlantGroup:AddLabel(("%s needs Rebirth %d"):format(fert.displayName or key, fert.rebirthReq), true)
-    end
-end
-
-PlantGroup:AddToggle("PlantDuringWeatherOnly", {
-    Text = "Only Plant During Weather",
-    Default = false,
-})
-
-PlantGroup:AddDropdown("PlantWeathers", {
-    Text = "Weathers To Plant In",
-    Values = WEATHER_NAMES,
-    Default = WEATHER_NAMES,
-    Multi = true,
-    Callback = function(value)
-        local set = {}
-        if type(value) == "table" then
-            for name, state in pairs(value) do
-                if state then
-                    local key = WEATHER_NAME_TO_KEY[name]
-                    if key then
-                        set[key] = true
-                    end
-                end
-            end
-        end
-        wantedWeathers = set
-    end,
-})
-
-PlantGroup:AddToggle("AutoPlantTrees", {
-    Text = "Auto Plant Grown Trees",
-    Default = false,
-})
-
-PlantGroup:AddToggle("PlantNotify", {
-    Text = "Notify On Plant",
-    Default = false,
-})
-
-PlantGroup:AddSlider("PlantLoopDelay", {
-    Text = "Loop Delay",
-    Default = 1,
-    Min = 0.2,
-    Max = 20,
-    Rounding = 1,
-})
-
-local HarvestGroup = Tabs.Farm:AddLeftGroupbox("Auto Harvest", "apple")
-
-HarvestGroup:AddToggle("AutoHarvest", {
-    Text = "Auto Harvest",
-    Default = false,
-})
-
-HarvestGroup:AddInput("HarvestMultiplier", {
-    Text = "Harvest At Multiplier",
-    Default = "2",
-    Numeric = true,
-    Finished = false,
-    ClearTextOnFocus = false,
-})
-
-local function greenLabel(text)
-    HarvestGroup:AddLabel('<font color="rgb(85, 255, 85)">' .. text .. "</font>", true)
-end
-
-greenLabel("Examples")
-greenLabel("1 for 1x")
-greenLabel("1.50 for 1.50x")
-greenLabel("0.50 for 0.5x")
-
-HarvestGroup:AddToggle("AutoCollectDead", {
-    Text = "Auto Collect Dead Tree",
-    Default = true,
-})
-
-HarvestGroup:AddToggle("HarvestNotify", {
-    Text = "Notify On Harvest",
-    Default = false,
-})
-
-local FruitGroup = Tabs.Farm:AddLeftGroupbox("Auto Collect Fruit", "grape")
-
-FruitGroup:AddToggle("AutoCollectFruit", {
-    Text = "Auto Collect Fruit",
-    Default = false,
-})
-
-FruitGroup:AddToggle("HarvestTeleport", {
-    Text = "Teleport To Each Tree",
-    Default = false,
-})
-
-FruitGroup:AddToggle("HarvestCollectAll", {
-    Text = "Use Collect All",
-    Default = false,
-})
-
-FruitGroup:AddSlider("HarvestActionDelay", {
-    Text = "Collect Delay",
-    Default = 0.1,
-    Min = 0.05,
-    Max = 2,
-    Rounding = 2,
-})
-
-FruitGroup:AddSlider("HarvestLoopDelay", {
-    Text = "Loop Delay",
-    Default = 1,
-    Min = 0.2,
-    Max = 20,
-    Rounding = 1,
-})
-
-local SellGroup = Tabs.Farm:AddRightGroupbox("Auto Sell", "banknote")
-
-SellGroup:AddToggle("AutoSellFruits", {
-    Text = "Auto Sell Fruits",
-    Default = false,
-})
-
-SellGroup:AddToggle("AutoSellAll", {
-    Text = "Auto Sell All",
-    Default = false,
-})
-
-SellGroup:AddToggle("SellDeadTreesOnly", {
-    Text = "Sell Dead Trees Only",
-    Default = false,
-})
-
-SellGroup:AddToggle("SellTeleport", {
-    Text = "Teleport To Sell Stand",
-    Default = false,
-})
-
-SellGroup:AddSlider("SellMinFruits", {
-    Text = "Minimum Fruits",
-    Default = 1,
-    Min = 1,
-    Max = 50,
-    Rounding = 0,
-})
-
-SellGroup:AddSlider("SellActionDelay", {
-    Text = "Sell Delay",
-    Default = 0.2,
-    Min = 0.1,
-    Max = 2,
-    Rounding = 2,
-})
-
-SellGroup:AddSlider("SellLoopDelay", {
-    Text = "Loop Delay",
-    Default = 2,
-    Min = 0.5,
-    Max = 30,
-    Rounding = 1,
-})
-
-local RebirthGroup = Tabs.Farm:AddRightGroupbox("Auto Rebirth", "refresh-cw")
-
-RebirthGroup:AddToggle("AutoRebirth", {
-    Text = "Auto Rebirth",
-    Default = false,
-})
-
-RebirthGroup:AddSlider("RebirthMaxLevel", {
-    Text = "Max Rebirth Level",
-    Default = RebirthConfig.MaxLevel,
-    Min = 1,
-    Max = RebirthConfig.MaxLevel,
-    Rounding = 0,
-})
-
-RebirthGroup:AddToggle("RebirthNotify", {
-    Text = "Notify On Rebirth",
-    Default = true,
-})
-
-RebirthGroup:AddSlider("RebirthLoopDelay", {
-    Text = "Loop Delay",
-    Default = 5,
-    Min = 1,
-    Max = 60,
-    Rounding = 1,
-})
-
-local MenuGroup = Tabs.Settings:AddLeftGroupbox("Menu", "wrench")
-
-MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {
-    Default = "RightShift",
-    NoUI = true,
-    Text = "Menu keybind",
-})
-
+-- Anti-AFK
 local antiAfkLastInput = tick()
-local antiAfkLastTap = tick()
-
-pcall(function()
-    for _, connection in ipairs(getconnections(LocalPlayer.Idled)) do
-        pcall(function()
-            connection:Disable()
-        end)
-    end
-end)
-
-local function antiAfkTap()
-    local camera = workspace.CurrentCamera
-    if not camera then
-        return
-    end
-    VirtualUser:Button2Down(Vector2.new(0, 0), camera.CFrame)
-    task.wait(0.1)
-    VirtualUser:Button2Up(Vector2.new(0, 0), camera.CFrame)
-    antiAfkLastTap = tick()
-end
-
-local antiAfkBeganConnection = UserInputService.InputBegan:Connect(function()
-    antiAfkLastInput = tick()
-end)
-
-local antiAfkChangedConnection = UserInputService.InputChanged:Connect(function(input)
-    local inputType = input.UserInputType
-    if inputType == Enum.UserInputType.MouseMovement or inputType == Enum.UserInputType.Gamepad1 then
+local antiAfkLastTap   = tick()
+local afkBegan = UserInputService.InputBegan:Connect(function() antiAfkLastInput = tick() end)
+local afkChanged = UserInputService.InputChanged:Connect(function(inp)
+    local t = inp.UserInputType
+    if t == Enum.UserInputType.MouseMovement or t == Enum.UserInputType.Gamepad1 then
         antiAfkLastInput = tick()
     end
 end)
-
-MenuGroup:AddToggle("AntiAfk", {
-    Text = "Anti-AFK",
-    Default = true,
-})
-
-MenuGroup:AddButton("Unload", function()
-    Library:Unload()
+pcall(function()
+    for _, c in ipairs(safeGetConnections(LocalPlayer.Idled)) do pcall(function() c:Disable() end) end
 end)
 
-Library.ToggleKeybind = Options.MenuKeybind
+-- ════════════ PURE INSTANCE GUI ════════════
+-- Works on Solara, Delta, Codex, Arceus X, Fluxus — no external library needed
 
-Library:OnUnload(function()
-    antiAfkBeganConnection:Disconnect()
-    antiAfkChangedConnection:Disconnect()
-    print("LP10 HUB unloaded")
+local function getGui()
+    -- Try gethui first (most executors), then CoreGui, then PlayerGui
+    local parent
+    if gethui then
+        local ok, h = pcall(gethui); if ok and h then parent = h end
+    end
+    if not parent and syn and syn.protect_gui then
+        parent = LocalPlayer:WaitForChild("PlayerGui")
+    end
+    if not parent then
+        local ok, cg = pcall(function() return game:GetService("CoreGui") end)
+        if ok and cg then parent = cg end
+    end
+    if not parent then parent = LocalPlayer:WaitForChild("PlayerGui") end
+    return parent
+end
+
+-- Remove existing instance
+pcall(function()
+    local existing = LocalPlayer.PlayerGui:FindFirstChild("LP10_GreedyGrowers")
+        or game:GetService("CoreGui"):FindFirstChild("LP10_GreedyGrowers")
+    if existing then existing:Destroy() end
 end)
 
-ThemeManager:SetLibrary(Library)
-ThemeManager:SetFolder("LP10HUB")
-ThemeManager:SaveDefault("Monochrome")
+local ScreenGui  = Instance.new("ScreenGui")
+ScreenGui.Name   = "LP10_GreedyGrowers"
+ScreenGui.ResetOnSpawn        = false
+ScreenGui.ZIndexBehavior      = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset      = true
+pcall(function() ScreenGui.DisplayOrder = 999 end)
+ScreenGui.Parent = getGui()
 
-SaveManager:SetLibrary(Library)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
-SaveManager:SetFolder("LP10HUB/GreedyGrowers")
-SaveManager:BuildConfigSection(Tabs.Settings)
+-- Helper builders
+local function new(cls, props, parent)
+    local inst = Instance.new(cls)
+    for k, v in pairs(props or {}) do inst[k] = v end
+    if parent then inst.Parent = parent end
+    return inst
+end
+local function corner(r, p) return new("UICorner", {CornerRadius=UDim.new(0,r)}, p) end
+local function stroke(c, t, p) return new("UIStroke", {Color=c, Thickness=t}, p) end
+local function pad(l,r,t,b,p)
+    return new("UIPadding",{PaddingLeft=UDim.new(0,l),PaddingRight=UDim.new(0,r),
+        PaddingTop=UDim.new(0,t),PaddingBottom=UDim.new(0,b)},p)
+end
+local function tw(obj, t, props)
+    TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quart), props):Play()
+end
 
-ThemeManager:ApplyToTab(Tabs.Settings)
-ThemeManager:LoadDefault()
+-- COLORS
+local C = {
+    bg      = Color3.fromRGB(5,8,18),
+    panel   = Color3.fromRGB(9,14,28),
+    card    = Color3.fromRGB(12,18,36),
+    accent  = Color3.fromRGB(65,105,225),
+    accent2 = Color3.fromRGB(38,144,255),
+    green   = Color3.fromRGB(80,210,120),
+    red     = Color3.fromRGB(220,70,70),
+    white   = Color3.fromRGB(240,245,255),
+    dim     = Color3.fromRGB(100,120,170),
+    text    = Color3.fromRGB(185,200,235),
+}
 
-SaveManager:LoadAutoloadConfig()
+-- MAIN FRAME
+local Main = new("Frame", {
+    Name             = "Main",
+    Size             = UDim2.fromOffset(480, 540),
+    Position         = UDim2.new(0.5,-240,0.5,-270),
+    BackgroundColor3 = C.bg,
+    BorderSizePixel  = 0,
+    ClipsDescendants = true,
+}, ScreenGui)
+corner(14, Main)
+stroke(C.accent, 1.5, Main)
 
-task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoBuySeeds.Value then
-            pcall(doBuySeeds)
+-- Drag
+do
+    local dragging, dragStart, startPos
+    Main.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1
+        or inp.UserInputType == Enum.UserInputType.Touch then
+            dragging  = true
+            dragStart = inp.Position
+            startPos  = Main.Position
         end
-        task.wait(Options.BuyLoopDelay.Value or 0.5)
+    end)
+    UserInputService.InputChanged:Connect(function(inp)
+        if dragging and (inp.UserInputType == Enum.UserInputType.MouseMovement
+            or inp.UserInputType == Enum.UserInputType.Touch) then
+            local delta = inp.Position - dragStart
+            Main.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1
+        or inp.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+-- HEADER
+local Header = new("Frame", {
+    Size             = UDim2.new(1,0,0,46),
+    BackgroundColor3 = C.panel,
+    BorderSizePixel  = 0,
+}, Main)
+corner(14, Header)
+new("Frame", {Size=UDim2.new(1,0,0,14), Position=UDim2.new(0,0,1,-14),
+    BackgroundColor3=C.panel, BorderSizePixel=0}, Header)
+
+new("TextLabel", {
+    Size=UDim2.new(1,-110,1,0), Position=UDim2.fromOffset(14,0),
+    Text="LP10 HUB  —  Greedy Growers",
+    TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=13,
+    BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left,
+    ZIndex=2,
+}, Header)
+
+new("TextLabel", {
+    Size=UDim2.fromOffset(160,16), Position=UDim2.new(1,-170,0,6),
+    Text="Solara · Delta · Codex · Arceus X",
+    TextColor3=C.accent, Font=Enum.Font.GothamSemibold, TextSize=8,
+    BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Right, ZIndex=2,
+}, Header)
+
+-- Close button
+local CloseBtn = new("TextButton", {
+    Size=UDim2.fromOffset(28,28), Position=UDim2.new(1,-36,0,9),
+    Text="✕", TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=11,
+    BackgroundColor3=Color3.fromRGB(40,15,15), ZIndex=3,
+}, Header)
+corner(8, CloseBtn)
+CloseBtn.MouseButton1Click:Connect(function()
+    tw(Main, 0.2, {Size=UDim2.fromOffset(480,0)})
+    task.delay(0.22, function() ScreenGui:Destroy() end)
+    running = false
+    pcall(function() afkBegan:Disconnect() end)
+    pcall(function() afkChanged:Disconnect() end)
+end)
+
+-- Minimize button
+local MinBtn = new("TextButton", {
+    Size=UDim2.fromOffset(28,28), Position=UDim2.new(1,-70,0,9),
+    Text="—", TextColor3=C.dim, Font=Enum.Font.GothamBold, TextSize=11,
+    BackgroundColor3=C.card, ZIndex=3,
+}, Header)
+corner(8, MinBtn)
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    tw(Main, 0.25, {Size=minimized and UDim2.fromOffset(480,46) or UDim2.fromOffset(480,540)})
+end)
+
+-- TAB BAR
+local TabBar = new("Frame", {
+    Size=UDim2.new(1,-20,0,30), Position=UDim2.fromOffset(10,52),
+    BackgroundTransparency=1,
+}, Main)
+new("UIListLayout", {FillDirection=Enum.FillDirection.Horizontal,
+    Padding=UDim.new(0,6), SortOrder=Enum.SortOrder.LayoutOrder}, TabBar)
+
+-- BODY
+local Body = new("Frame", {
+    Size=UDim2.new(1,-20,1,-92), Position=UDim2.fromOffset(10,88),
+    BackgroundTransparency=1,
+}, Main)
+
+-- Notification label
+local NotifLabel = new("TextLabel", {
+    Size=UDim2.new(1,0,0,22), Position=UDim2.new(0,0,1,-24),
+    Text="", TextColor3=C.green, Font=Enum.Font.GothamSemibold, TextSize=9,
+    BackgroundColor3=Color3.fromRGB(8,20,10), BackgroundTransparency=0.3,
+    TextXAlignment=Enum.TextXAlignment.Center, Visible=false, ZIndex=10,
+}, Main)
+corner(6, NotifLabel)
+
+local function notify(msg, isErr)
+    NotifLabel.Text = msg
+    NotifLabel.TextColor3 = isErr and C.red or C.green
+    NotifLabel.Visible = true
+    task.delay(2.5, function() NotifLabel.Visible = false end)
+end
+
+-- PAGES
+local Pages = {}
+local function wipeBody()
+    for _, c in ipairs(Body:GetChildren()) do c:Destroy() end
+end
+
+-- TOGGLE BUILDER
+local function makeToggle(parent, label, key, yOff, desc)
+    local row = new("Frame", {
+        Size=UDim2.new(1,0,0,44), Position=UDim2.fromOffset(0,yOff),
+        BackgroundColor3=C.card, ZIndex=3,
+    }, parent)
+    corner(10, row)
+
+    new("TextLabel", {
+        Size=UDim2.new(1,-60,0,18), Position=UDim2.fromOffset(12,6),
+        Text=label, TextColor3=C.white,
+        Font=Enum.Font.GothamSemibold, TextSize=11,
+        BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4,
+    }, row)
+    if desc then
+        new("TextLabel", {
+            Size=UDim2.new(1,-60,0,14), Position=UDim2.fromOffset(12,26),
+            Text=desc, TextColor3=C.dim,
+            Font=Enum.Font.Gotham, TextSize=8,
+            BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4,
+        }, row)
+    end
+
+    local tog = new("TextButton", {
+        Size=UDim2.fromOffset(46,24), Position=UDim2.new(1,-54,0,10),
+        BackgroundColor3=Toggles[key] and C.accent or Color3.fromRGB(28,28,48),
+        Text=Toggles[key] and "ON" or "OFF",
+        TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=9, ZIndex=4,
+    }, row)
+    corner(12, tog)
+
+    tog.MouseButton1Click:Connect(function()
+        Toggles[key] = not Toggles[key]
+        tog.BackgroundColor3 = Toggles[key] and C.accent or Color3.fromRGB(28,28,48)
+        tog.Text = Toggles[key] and "ON" or "OFF"
+        notify((Toggles[key] and "Enabled: " or "Disabled: ")..label)
+    end)
+    return row
+end
+
+-- SCROLL HELPER
+local function makeScroll(parent)
+    local s = new("ScrollingFrame", {
+        Size=UDim2.new(1,0,1,0),
+        BackgroundTransparency=1,
+        ScrollBarThickness=3,
+        ScrollBarImageColor3=C.accent,
+        CanvasSize=UDim2.fromOffset(0,0),
+    }, parent)
+    local layout = new("UIListLayout", {Padding=UDim.new(0,6),
+        SortOrder=Enum.SortOrder.LayoutOrder}, s)
+    pad(0,4,4,8,s)
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        s.CanvasSize = UDim2.fromOffset(0, layout.AbsoluteContentSize.Y + 12)
+    end)
+    return s, layout
+end
+
+-- ═══ TAB: FARM ═══
+local function buildFarmTab()
+    wipeBody()
+    local scroll, _ = makeScroll(Body)
+
+    -- Section label
+    local function sectionLabel(text, lo)
+        local l = new("TextLabel", {
+            Size=UDim2.new(1,0,0,18),
+            Text=text, TextColor3=C.accent,
+            Font=Enum.Font.GothamBold, TextSize=9,
+            BackgroundTransparency=1,
+            TextXAlignment=Enum.TextXAlignment.Left, ZIndex=3,
+            LayoutOrder=lo,
+        }, scroll)
+        return l
+    end
+
+    local lo = 0
+    local function tog(lbl, key, desc)
+        lo += 1
+        local r = makeToggle(scroll, lbl, key, 0, desc)
+        r.LayoutOrder = lo
+        r.Position = UDim2.fromOffset(0,0)
+        return r
+    end
+
+    sectionLabel("AUTO HARVEST", lo) lo += 1
+    tog("Auto Harvest",          "AutoHarvest",      "Stop plant at multiplier: "..Options.HarvestMultiplier.."x")
+    tog("Auto Collect Dead Tree","AutoCollectDead",   "Collect dead tree automatically")
+    tog("Auto Collect Fruit",    "AutoCollectFruit",  "Collect fruits from trees")
+    tog("Teleport To Trees",     "HarvestTeleport",   "Teleport to each tree while collecting")
+
+    sectionLabel("AUTO PLANT", lo) lo += 1
+    tog("Auto Plant",            "AutoPlant",         "Auto plant seeds from inventory")
+
+    sectionLabel("AUTO SELL", lo) lo += 1
+    tog("Auto Sell Fruits",      "AutoSellFruits",    "Sell fruits automatically")
+    tog("Auto Sell All",         "AutoSellAll",       "Sell everything at sell stand")
+    tog("Sell Dead Trees Only",  "SellDeadTrees",     "Only sell dead/crashed trees")
+    tog("Teleport To Sell Stand","SellTeleport",      "Teleport to sell stand first")
+
+    sectionLabel("AUTO REBIRTH", lo) lo += 1
+    tog("Auto Rebirth",          "AutoRebirth",       "Rebirth when coins are enough")
+
+    sectionLabel("MISC", lo) lo += 1
+    tog("Anti-AFK",              "AntiAfk",           "Prevent being kicked for inactivity")
+end
+
+-- ═══ TAB: SEEDS ═══
+local function buildSeedsTab()
+    wipeBody()
+    local scroll, _ = makeScroll(Body)
+
+    local lo = 0
+    local function sectionLabel(text)
+        lo += 1
+        new("TextLabel", {
+            Size=UDim2.new(1,0,0,18),
+            Text=text, TextColor3=C.accent,
+            Font=Enum.Font.GothamBold, TextSize=9,
+            BackgroundTransparency=1,
+            TextXAlignment=Enum.TextXAlignment.Left,
+            ZIndex=3, LayoutOrder=lo,
+        }, scroll)
+    end
+
+    local function tog(lbl, key, desc)
+        lo += 1
+        local r = makeToggle(scroll, lbl, key, 0, desc)
+        r.LayoutOrder = lo
+        r.Position = UDim2.fromOffset(0,0)
+    end
+
+    sectionLabel("AUTO BUY SEEDS")
+    tog("Auto Buy Seeds",        "AutoBuySeeds",      "Buy seeds from conveyor automatically")
+    tog("Notify On Buy",         "BuyNotify",         "Show notification when seed bought")
+
+    sectionLabel("AUTO BUY FURNITURE")
+    tog("Auto Buy Furniture",    "AutoBuyFurniture",  "Buy wanted furniture items")
+
+    -- Max cost input
+    lo += 1
+    local costRow = new("Frame", {
+        Size=UDim2.new(1,0,0,44), BackgroundColor3=C.card,
+        ZIndex=3, LayoutOrder=lo,
+    }, scroll)
+    corner(10, costRow)
+    new("TextLabel", {
+        Size=UDim2.new(1,-120,0,18), Position=UDim2.fromOffset(12,6),
+        Text="Max Seed Cost (0 = off)", TextColor3=C.white,
+        Font=Enum.Font.GothamSemibold, TextSize=11,
+        BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4,
+    }, costRow)
+    local costBox = new("TextBox", {
+        Size=UDim2.fromOffset(90,24), Position=UDim2.new(1,-102,0,10),
+        Text=tostring(Options.BuyMaxCost),
+        TextColor3=C.white, Font=Enum.Font.GothamSemibold, TextSize=11,
+        BackgroundColor3=C.panel, ZIndex=4,
+        ClearTextOnFocus=false,
+    }, costRow)
+    corner(8, costBox)
+    costBox.FocusLost:Connect(function()
+        Options.BuyMaxCost = tonumber(costBox.Text) or 0
+        costBox.Text = tostring(Options.BuyMaxCost)
+    end)
+
+    -- Min sell fruits
+    lo += 1
+    local sellRow = new("Frame", {
+        Size=UDim2.new(1,0,0,44), BackgroundColor3=C.card,
+        ZIndex=3, LayoutOrder=lo,
+    }, scroll)
+    corner(10, sellRow)
+    new("TextLabel", {
+        Size=UDim2.new(1,-120,0,18), Position=UDim2.fromOffset(12,6),
+        Text="Min Fruits Before Sell", TextColor3=C.white,
+        Font=Enum.Font.GothamSemibold, TextSize=11,
+        BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4,
+    }, sellRow)
+    local sellBox = new("TextBox", {
+        Size=UDim2.fromOffset(90,24), Position=UDim2.new(1,-102,0,10),
+        Text=tostring(Options.SellMinFruits),
+        TextColor3=C.white, Font=Enum.Font.GothamSemibold, TextSize=11,
+        BackgroundColor3=C.panel, ZIndex=4,
+        ClearTextOnFocus=false,
+    }, sellRow)
+    corner(8, sellBox)
+    sellBox.FocusLost:Connect(function()
+        Options.SellMinFruits = tonumber(sellBox.Text) or 1
+        sellBox.Text = tostring(Options.SellMinFruits)
+    end)
+end
+
+-- ═══ TAB: INFO ═══
+local function buildInfoTab()
+    wipeBody()
+    local scroll, _ = makeScroll(Body)
+    local lo = 0
+
+    local function infoCard(lines, color)
+        lo += 1
+        local h = #lines * 18 + 16
+        local card = new("Frame", {
+            Size=UDim2.new(1,0,0,h), BackgroundColor3=C.card,
+            ZIndex=3, LayoutOrder=lo,
+        }, scroll)
+        corner(10, card)
+        stroke(color or C.accent, 1, card)
+        for i, line in ipairs(lines) do
+            new("TextLabel", {
+                Size=UDim2.new(1,-16,0,16),
+                Position=UDim2.fromOffset(10, 8+(i-1)*18),
+                Text=line, TextColor3=C.text,
+                Font=Enum.Font.Gotham, TextSize=10,
+                BackgroundTransparency=1,
+                TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4,
+            }, card)
+        end
+        return card
+    end
+
+    infoCard({
+        "LP10 HUB — Greedy Growers",
+        "Executor: "..execName,
+        "Player: "..LocalPlayer.Name,
+        "Game: "..(game.PlaceId ~= 0 and tostring(game.PlaceId) or "Unknown"),
+        "Modules: "..(modulesLoaded and "Loaded ✓" or "Not in Greedy Growers ✗"),
+    }, C.accent)
+
+    infoCard({
+        "FEATURES",
+        "• Auto Buy Seeds from Conveyor",
+        "• Auto Plant & Harvest",
+        "• Auto Collect Fruits",
+        "• Auto Sell Fruits / All / Dead Trees",
+        "• Auto Rebirth",
+        "• Anti-AFK",
+        "• Drag to move window",
+    }, C.green)
+
+    infoCard({
+        "COMPATIBILITY",
+        "✓ Solara  ✓ Delta  ✓ Codex",
+        "✓ Arceus X  ✓ Fluxus  ✓ Krnl",
+        "Pure Instance GUI — No Library",
+    }, C.accent2)
+
+    infoCard({
+        "LP10 HUB by LPOLVO (Hamza)",
+        "Instagram: @4me.h4mz4_",
+        "Discord: discord.gg/Uqrkdrpwxr",
+        "GitHub: github.com/LPOLVO/LP10",
+    }, C.dim)
+
+    -- Copy Discord button
+    lo += 1
+    local discordBtn = new("TextButton", {
+        Size=UDim2.new(1,0,0,36), BackgroundColor3=C.accent,
+        Text="Copy Discord Invite", TextColor3=C.white,
+        Font=Enum.Font.GothamBold, TextSize=11,
+        ZIndex=3, LayoutOrder=lo,
+    }, scroll)
+    corner(10, discordBtn)
+    discordBtn.MouseButton1Click:Connect(function()
+        safeSetClipboard("https://discord.gg/Uqrkdrpwxr")
+        notify("Discord invite copied!")
+    end)
+end
+
+-- ═══ TAB SYSTEM ═══
+local currentTab = nil
+local tabButtons = {}
+
+local tabDefs = {
+    {name="Farm",  fn=buildFarmTab},
+    {name="Seeds", fn=buildSeedsTab},
+    {name="Info",  fn=buildInfoTab},
+}
+
+local function switchTab(name, fn)
+    if currentTab == name then return end
+    currentTab = name
+    for tname, btn in pairs(tabButtons) do
+        btn.BackgroundColor3 = tname == name and C.accent or C.card
+        btn.TextColor3       = tname == name and C.white or C.dim
+    end
+    fn()
+end
+
+for i, def in ipairs(tabDefs) do
+    local btn = new("TextButton", {
+        Size=UDim2.new(0,1,1,0),
+        BackgroundColor3 = i==1 and C.accent or C.card,
+        Text = def.name,
+        TextColor3 = i==1 and C.white or C.dim,
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        ZIndex = 3,
+        LayoutOrder = i,
+    }, TabBar)
+    corner(8, btn)
+    tabButtons[def.name] = btn
+
+    local capDef = def
+    btn.MouseButton1Click:Connect(function()
+        switchTab(capDef.name, capDef.fn)
+    end)
+end
+
+-- Auto-size tab buttons equally
+task.defer(function()
+    local totalW = TabBar.AbsoluteSize.X
+    local btnW   = math.floor((totalW - (#tabDefs-1)*6) / #tabDefs)
+    for _, btn in pairs(tabButtons) do
+        btn.Size = UDim2.fromOffset(btnW, 30)
+    end
+end)
+
+-- Start on Farm tab
+buildFarmTab()
+currentTab = "Farm"
+
+-- ════════════ GAME LOOPS ════════════
+task.spawn(function()
+    while running do
+        if Toggles.AutoBuySeeds    then pcall(doBuySeeds)    end
+        task.wait(0.5)
     end
 end)
 
 task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoBuyFurniture.Value then
-            pcall(doBuyFurniture)
-        end
-        task.wait(Options.FurnitureLoopDelay.Value or 1)
-    end
-end)
-
-task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoHarvest.Value or Toggles.AutoCollectDead.Value or Toggles.AutoPlant.Value then
+    while running do
+        if Toggles.AutoHarvest or Toggles.AutoCollectDead or Toggles.AutoPlant then
             pcall(refreshRound)
-        else
-            activeRound = nil
         end
         task.wait(0.5)
     end
 end)
 
 task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoHarvest.Value or Toggles.AutoCollectDead.Value then
+    while running do
+        if Toggles.AutoHarvest or Toggles.AutoCollectDead then
             pcall(doRoundHarvest)
         end
         task.wait(0.05)
@@ -1384,68 +928,60 @@ task.spawn(function()
 end)
 
 task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoPlant.Value then
-            pcall(doPlant)
-        end
-        task.wait(Options.PlantLoopDelay.Value or 1)
+    while running do
+        if Toggles.AutoPlant       then pcall(doPlant)       end
+        task.wait(1)
     end
 end)
 
 task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoPlantTrees.Value then
-            pcall(doPlantTrees)
-        end
-        task.wait(Options.PlantLoopDelay.Value or 1)
+    while running do
+        if Toggles.AutoCollectFruit then pcall(doHarvest)    end
+        task.wait(1)
     end
 end)
 
 task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoCollectFruit.Value then
-            pcall(doHarvest)
-        end
-        task.wait(Options.HarvestLoopDelay.Value or 1)
-    end
-end)
-
-task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoSellFruits.Value then
-            pcall(doSellFruits)
-        end
-        if Toggles.SellDeadTreesOnly.Value then
-            pcall(doSellDeadTrees)
-        elseif Toggles.AutoSellAll.Value then
-            pcall(doSellAll)
-        end
-        task.wait(Options.SellLoopDelay.Value or 2)
-    end
-end)
-
-task.spawn(function()
-    while not Library.Unloaded do
-        if Toggles.AutoRebirth.Value then
-            pcall(doRebirth)
-        end
-        task.wait(Options.RebirthLoopDelay.Value or 5)
-    end
-end)
-
-task.spawn(function()
-    while not Library.Unloaded do
+    while running do
+        if Toggles.AutoSellFruits  then pcall(doSellFruits)  end
+        if Toggles.AutoSellAll and not Toggles.SellDeadTrees then pcall(doSellAll) end
         task.wait(2)
-        if Toggles.AntiAfk.Value then
-            local idle = tick() - antiAfkLastInput
+    end
+end)
+
+task.spawn(function()
+    while running do
+        if Toggles.AutoRebirth     then pcall(doRebirth)     end
+        task.wait(5)
+    end
+end)
+
+-- Anti-AFK loop
+task.spawn(function()
+    while running do
+        task.wait(2)
+        if Toggles.AntiAfk then
+            local idle     = tick() - antiAfkLastInput
             local sinceTap = tick() - antiAfkLastTap
-            if idle >= 300 and sinceTap >= 60 then
-                pcall(antiAfkTap)
-            elseif idle < 300 and sinceTap >= 300 then
-                pcall(antiAfkTap)
+            local camera   = workspace.CurrentCamera
+            if camera and idle >= 300 and sinceTap >= 60 then
+                local ok_vu2, vu = pcall(function() return game:GetService("VirtualUser") end)
+                if ok_vu2 and vu then
+                    pcall(function() vu:Button2Down(Vector2.new(0,0), camera.CFrame) end)
+                    task.wait(0.1)
+                    pcall(function() vu:Button2Up(Vector2.new(0,0),   camera.CFrame) end)
+                    antiAfkLastTap = tick()
+                end
             end
         end
     end
 end)
 
-Library:Notify("LP10 HUB Loaded Successfully!")
+-- Toggle visibility with RightShift
+UserInputService.InputBegan:Connect(function(inp, gpe)
+    if not gpe and inp.KeyCode == Enum.KeyCode.RightShift then
+        Main.Visible = not Main.Visible
+    end
+end)
+
+notify("LP10 HUB Loaded! " .. (modulesLoaded and "Modules OK ✓" or "Run in Greedy Growers!"))
