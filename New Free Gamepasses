@@ -1,0 +1,537 @@
+-- ============================================================
+--  LP10 HUB  |  UNIVERSAL FREE GAMEPASSES  |  v2.1
+--  Design   : Royal Blue, Compact, Draggable, Resizable
+--  Features : Product Sniffer, Gamepass Sniffer, Fake Buy,
+--             Animated Dropdowns, Anti-AFK, Working Games
+--  Author   : @LPOLVO (Hamza)
+--  YouTube  : LPOLVOXD1
+-- ============================================================
+
+local Players            = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local HttpService        = game:GetService("HttpService")
+local UserInputService   = game:GetService("UserInputService")
+local CoreGui            = game:GetService("CoreGui")
+local TweenService       = game:GetService("TweenService")
+local VirtualUser        = game:GetService("VirtualUser")
+local LocalPlayer        = Players.LocalPlayer
+
+-- ============================================================
+-- CONFIGURATION
+-- ============================================================
+local Config = {
+    HubName     = "LP10 HUB",
+    Version     = "v2.1",
+    Accent      = Color3.fromRGB(33, 150, 243),
+    AccentDark  = Color3.fromRGB(0, 90, 180),
+    Bg          = Color3.fromRGB(11, 11, 17),
+    CardBg      = Color3.fromRGB(18, 18, 28),
+    HeaderBg    = Color3.fromRGB(16, 16, 26),
+    TextColor   = Color3.fromRGB(210, 220, 235),
+    SubText     = Color3.fromRGB(90, 130, 170),
+    MinSize     = Vector2.new(260, 300),
+    MaxSize     = Vector2.new(520, 560),
+}
+
+local WORKING_GAMES = {
+    "Balloon Game [UPDATE]",
+    "Eat Brainrot for Fight [UPDATE 2]",
+    "Get Strong Simulator",
+    "+1 Speed School Escape",
+    "Farmer Simulator",
+    "Block Incremental [New]",
+    "Prison Mining Simulator",
+    "The $1,000,000 Glass Bridge",
+    "Squabble Game RP",
+    "Valentine's Day [HORROR]",
+    "Raise a Floppa 2",
+    "Raise a Floppa",
+}
+
+-- ============================================================
+-- STATE
+-- ============================================================
+local selectedProduct  = nil
+local selectedGamepass = nil
+local allProducts      = {}
+local productNames     = {}
+local allGamepasses    = {}
+local gamepassNames    = {}
+_G.LP10_AntiAFK        = true
+_G.LP10_Resizing       = false
+
+-- ============================================================
+-- ANTI-AFK
+-- ============================================================
+LocalPlayer.Idled:Connect(function()
+    if _G.LP10_AntiAFK then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
+
+-- ============================================================
+-- FETCH GAME DATA
+-- ============================================================
+local function FetchGameData()
+    table.clear(allProducts); table.clear(productNames)
+    table.clear(allGamepasses); table.clear(gamepassNames)
+    selectedProduct = nil; selectedGamepass = nil
+
+    pcall(function()
+        local ok, page = pcall(function()
+            return MarketplaceService:GetDeveloperProductsAsync():GetCurrentPage()
+        end)
+        if ok and page then
+            for _, v in ipairs(page) do
+                table.insert(allProducts, {id = v.ProductId, name = v.Name})
+                table.insert(productNames, v.Name)
+            end
+        end
+    end)
+
+    pcall(function()
+        local uni = HttpService:JSONDecode(
+            game:HttpGet("https://apis.roblox.com/universes/v1/places/"..game.PlaceId.."/universe")
+        ).universeId
+        local data = HttpService:JSONDecode(
+            game:HttpGet("https://games.roblox.com/v1/games/"..uni.."/game-passes?limit=100")
+        )
+        for _, v in ipairs(data.data or {}) do
+            allGamepasses[v.displayName] = v.id
+            table.insert(gamepassNames, v.displayName)
+        end
+    end)
+end
+
+-- ============================================================
+-- GUI SETUP
+-- ============================================================
+local old = CoreGui:FindFirstChild("LP10_Universal_v21")
+if old then old:Destroy() end
+
+local ScreenGui          = Instance.new("ScreenGui")
+ScreenGui.Name           = "LP10_Universal_v21"
+ScreenGui.Parent         = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn   = false
+
+-- ============================================================
+-- FLOATING LP BUTTON
+-- ============================================================
+local ToggleBtn               = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Name                = "LP_Toggle"
+ToggleBtn.BackgroundColor3    = Config.Bg
+ToggleBtn.Size                = UDim2.new(0, 54, 0, 54)
+ToggleBtn.Position            = UDim2.new(0.04, 0, 0.08, 0)
+ToggleBtn.Text                = ""
+ToggleBtn.AutoButtonColor     = false
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 14)
+local TStroke                 = Instance.new("UIStroke", ToggleBtn)
+TStroke.Color                 = Config.Accent
+TStroke.Thickness             = 2
+
+local LP_Lbl                  = Instance.new("TextLabel", ToggleBtn)
+LP_Lbl.Size                   = UDim2.new(1, 0, 1, 0)
+LP_Lbl.BackgroundTransparency = 1
+LP_Lbl.Text                   = "LP"
+LP_Lbl.Font                   = Enum.Font.FredokaOne
+LP_Lbl.TextColor3             = Color3.new(1,1,1)
+LP_Lbl.TextScaled             = true
+Instance.new("UIGradient", LP_Lbl).Color = ColorSequence.new(
+    Config.Accent, Config.AccentDark
+)
+Instance.new("UIPadding", LP_Lbl).PaddingBottom = UDim.new(0, 8)
+
+-- ============================================================
+-- MAIN FRAME  (compact default size)
+-- ============================================================
+local Main               = Instance.new("Frame", ScreenGui)
+Main.Name                = "MainFrame"
+Main.BackgroundColor3    = Config.Bg
+Main.Position            = UDim2.new(0.5, -130, 0.5, -165)
+Main.Size                = UDim2.new(0, 260, 0, 330)
+Main.Visible             = false
+Main.Active              = true
+Main.ClipsDescendants    = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MStroke            = Instance.new("UIStroke", Main)
+MStroke.Color            = Config.Accent
+MStroke.Thickness        = 1.5
+
+-- Header
+local Header             = Instance.new("Frame", Main)
+Header.Size              = UDim2.new(1, 0, 0, 44)
+Header.BackgroundColor3  = Config.HeaderBg
+Header.BorderSizePixel   = 0
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
+-- patch bottom corners of header
+local HP                 = Instance.new("Frame", Header)
+HP.Size                  = UDim2.new(1, 0, 0.5, 0)
+HP.Position              = UDim2.new(0, 0, 0.5, 0)
+HP.BackgroundColor3      = Config.HeaderBg
+HP.BorderSizePixel       = 0
+
+local HTitle             = Instance.new("TextLabel", Header)
+HTitle.Size              = UDim2.new(1, -10, 0, 24)
+HTitle.Position          = UDim2.new(0, 10, 0, 4)
+HTitle.BackgroundTransparency = 1
+HTitle.Font              = Enum.Font.GothamBold
+HTitle.Text              = "LP10 HUB  |  Universal"
+HTitle.TextColor3        = Config.Accent
+HTitle.TextSize          = 13
+HTitle.TextXAlignment    = Enum.TextXAlignment.Left
+
+local HSub               = Instance.new("TextLabel", Header)
+HSub.Size                = UDim2.new(1, -10, 0, 14)
+HSub.Position            = UDim2.new(0, 10, 0, 28)
+HSub.BackgroundTransparency = 1
+HSub.Font                = Enum.Font.Gotham
+HSub.Text                = "Free Gamepasses  "..Config.Version.."  |  @LPOLVO"
+HSub.TextColor3          = Config.SubText
+HSub.TextSize            = 9
+HSub.TextXAlignment      = Enum.TextXAlignment.Left
+
+-- Status bar
+local StatusBar          = Instance.new("TextLabel", Main)
+StatusBar.Size           = UDim2.new(1, -16, 0, 14)
+StatusBar.Position       = UDim2.new(0, 8, 0, 46)
+StatusBar.BackgroundTransparency = 1
+StatusBar.Font           = Enum.Font.Gotham
+StatusBar.Text           = "Ready"
+StatusBar.TextColor3     = Color3.fromRGB(60, 120, 170)
+StatusBar.TextSize       = 9
+StatusBar.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Scrollable content
+local Container          = Instance.new("ScrollingFrame", Main)
+Container.Name           = "Content"
+Container.Size           = UDim2.new(1, -10, 1, -70)
+Container.Position       = UDim2.new(0, 5, 0, 62)
+Container.BackgroundTransparency = 1
+Container.ScrollBarThickness = 3
+Container.ScrollBarImageColor3 = Config.Accent
+Container.BorderSizePixel = 0
+Container.CanvasSize     = UDim2.new(0, 0, 0, 0)
+Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local UIList             = Instance.new("UIListLayout", Container)
+UIList.Padding           = UDim.new(0, 4)
+UIList.SortOrder         = Enum.SortOrder.LayoutOrder
+local UIPad              = Instance.new("UIPadding", Container)
+UIPad.PaddingLeft        = UDim.new(0, 3)
+UIPad.PaddingRight       = UDim.new(0, 3)
+UIPad.PaddingTop         = UDim.new(0, 3)
+
+-- Resize handle (bottom-right corner triangle)
+local RH                 = Instance.new("TextButton", Main)
+RH.Size                  = UDim2.new(0, 20, 0, 20)
+RH.Position              = UDim2.new(1, -20, 1, -20)
+RH.BackgroundTransparency = 1
+RH.Text                  = "/"
+RH.TextColor3            = Config.Accent
+RH.TextSize              = 14
+RH.Font                  = Enum.Font.GothamBold
+RH.ZIndex                = 10
+
+-- ============================================================
+-- UI BUILDERS
+-- ============================================================
+local function MkSection(order, text)
+    local l = Instance.new("TextLabel", Container)
+    l.Size = UDim2.new(1, 0, 0, 20)
+    l.BackgroundTransparency = 1
+    l.Font = Enum.Font.GothamBold
+    l.Text = "  " .. text
+    l.TextColor3 = Config.Accent
+    l.TextSize = 10
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.LayoutOrder = order
+    return l
+end
+
+local function MkBtn(order, text, bg, cb)
+    local b = Instance.new("TextButton", Container)
+    b.Size = UDim2.new(1, 0, 0, 32)
+    b.BackgroundColor3 = bg or Config.CardBg
+    b.Text = text
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 11
+    b.AutoButtonColor = false
+    b.LayoutOrder = order
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 7)
+    local s = Instance.new("UIStroke", b)
+    s.Color = Config.Accent; s.Thickness = 1; s.Transparency = 0.6
+    b.MouseEnter:Connect(function()
+        TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(28, 90, 165)}):Play()
+    end)
+    b.MouseLeave:Connect(function()
+        TweenService:Create(b, TweenInfo.new(0.12), {BackgroundColor3 = bg or Config.CardBg}):Play()
+    end)
+    b.MouseButton1Click:Connect(function() if cb then pcall(cb) end end)
+    return b
+end
+
+local function MkDropdown(order, title, list, cb)
+    local open = false; local chosen = nil
+    local wrap = Instance.new("Frame", Container)
+    wrap.Size = UDim2.new(1, 0, 0, 32)
+    wrap.BackgroundColor3 = Config.CardBg
+    wrap.BorderSizePixel = 0
+    wrap.ClipsDescendants = true
+    wrap.LayoutOrder = order
+    Instance.new("UICorner", wrap).CornerRadius = UDim.new(0, 7)
+    local ws = Instance.new("UIStroke", wrap)
+    ws.Color = Config.Accent; ws.Thickness = 1; ws.Transparency = 0.6
+
+    local hdr = Instance.new("TextButton", wrap)
+    hdr.Size = UDim2.new(1, 0, 0, 32)
+    hdr.BackgroundTransparency = 1
+    hdr.Font = Enum.Font.GothamBold
+    hdr.Text = "v  " .. title
+    hdr.TextColor3 = Config.Accent
+    hdr.TextSize = 11
+    hdr.TextXAlignment = Enum.TextXAlignment.Left
+    hdr.ZIndex = 2
+    local hp = Instance.new("UIPadding", hdr); hp.PaddingLeft = UDim.new(0, 8)
+
+    local optF = Instance.new("Frame", wrap)
+    optF.Position = UDim2.new(0, 0, 0, 32)
+    optF.Size = UDim2.new(1, 0, 0, 0)
+    optF.BackgroundTransparency = 1
+    local oL = Instance.new("UIListLayout", optF)
+    oL.SortOrder = Enum.SortOrder.LayoutOrder
+
+    for i, item in ipairs(list) do
+        local opt = Instance.new("TextButton", optF)
+        opt.Size = UDim2.new(1, 0, 0, 26)
+        opt.BackgroundTransparency = 1
+        opt.Font = Enum.Font.Gotham
+        opt.Text = "  " .. tostring(item)
+        opt.TextColor3 = Color3.fromRGB(160, 195, 230)
+        opt.TextSize = 10
+        opt.TextXAlignment = Enum.TextXAlignment.Left
+        opt.LayoutOrder = i
+        opt.AutoButtonColor = false
+        opt.MouseEnter:Connect(function() opt.TextColor3 = Config.Accent end)
+        opt.MouseLeave:Connect(function() opt.TextColor3 = Color3.fromRGB(160, 195, 230) end)
+        opt.MouseButton1Click:Connect(function()
+            chosen = item
+            hdr.Text = "OK  " .. tostring(item)
+            if cb then pcall(cb, item) end
+            open = false
+            TweenService:Create(wrap, TweenInfo.new(0.18, Enum.EasingStyle.Quart), {
+                Size = UDim2.new(1, 0, 0, 32)
+            }):Play()
+        end)
+    end
+
+    hdr.MouseButton1Click:Connect(function()
+        open = not open
+        local h = open and (32 + #list * 26 + 4) or 32
+        hdr.Text = (open and "^  " or "v  ") .. (chosen or title)
+        TweenService:Create(wrap, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
+            Size = UDim2.new(1, 0, 0, h)
+        }):Play()
+    end)
+    return wrap
+end
+
+local function MkDiv(order)
+    local d = Instance.new("Frame", Container)
+    d.Size = UDim2.new(1, 0, 0, 1)
+    d.BackgroundColor3 = Config.Accent
+    d.BackgroundTransparency = 0.8
+    d.BorderSizePixel = 0
+    d.LayoutOrder = order
+    return d
+end
+
+local function MkInfo(order, text)
+    local l = Instance.new("TextLabel", Container)
+    l.Size = UDim2.new(1, 0, 0, 18)
+    l.BackgroundTransparency = 1
+    l.Font = Enum.Font.Gotham
+    l.Text = text
+    l.TextColor3 = Config.SubText
+    l.TextSize = 10
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.LayoutOrder = order
+    return l
+end
+
+-- ============================================================
+-- BUILD UI
+-- ============================================================
+local function BuildUI()
+    for _, c in ipairs(Container:GetChildren()) do
+        if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then
+            c:Destroy()
+        end
+    end
+
+    -- PRODUCTS
+    MkSection(1, "DEVELOPER PRODUCTS")
+    if #productNames > 0 then
+        MkDropdown(2, "Select Product ("..#productNames..")", productNames, function(choice)
+            for _, p in ipairs(allProducts) do
+                if p.name == choice then selectedProduct = p.id break end
+            end
+        end)
+    else
+        MkInfo(2, "  No products found in this game")
+    end
+    MkBtn(3, "Fake Buy Product", Color3.fromRGB(15, 55, 110), function()
+        if selectedProduct then
+            MarketplaceService:SignalPromptProductPurchaseFinished(LocalPlayer.UserId, selectedProduct, true)
+            StatusBar.Text = "Fired product: "..tostring(selectedProduct)
+        else
+            StatusBar.Text = "Select a product first"
+        end
+    end)
+
+    MkDiv(4)
+
+    -- GAMEPASSES
+    MkSection(5, "GAMEPASSES")
+    if #gamepassNames > 0 then
+        MkDropdown(6, "Select Gamepass ("..#gamepassNames..")", gamepassNames, function(choice)
+            selectedGamepass = allGamepasses[choice]
+        end)
+    else
+        MkInfo(6, "  No gamepasses found in this game")
+    end
+    MkBtn(7, "Fake Buy Gamepass", Color3.fromRGB(15, 55, 110), function()
+        if selectedGamepass then
+            MarketplaceService:SignalPromptGamePassPurchaseFinished(LocalPlayer, selectedGamepass, true)
+            StatusBar.Text = "Fired gamepass: "..tostring(selectedGamepass)
+        else
+            StatusBar.Text = "Select a gamepass first"
+        end
+    end)
+
+    MkDiv(8)
+
+    -- TOOLS
+    MkSection(9, "TOOLS")
+    MkBtn(10, "Refresh / Re-scan Game", Color3.fromRGB(18, 32, 52), function()
+        StatusBar.Text = "Scanning..."
+        FetchGameData()
+        BuildUI()
+        StatusBar.Text = "Done! "..#productNames.." products, "..#gamepassNames.." gamepasses"
+    end)
+    MkBtn(11, "Copy Gamepass ID", Color3.fromRGB(18, 32, 52), function()
+        if selectedGamepass then
+            pcall(setclipboard, tostring(selectedGamepass))
+            StatusBar.Text = "Copied: "..tostring(selectedGamepass)
+        else
+            StatusBar.Text = "Select a gamepass first"
+        end
+    end)
+    MkBtn(12, "Instagram @4me.h4mz4", Color3.fromRGB(90, 20, 65), function()
+        pcall(setclipboard, "https://www.instagram.com/4me.h4mz4_?igsh=MW9sa20yejExaGo5Nw==")
+        StatusBar.Text = "Instagram link copied!"
+    end)
+
+    MkDiv(13)
+
+    -- WORKING GAMES
+    MkSection(14, "SOME WORKING GAMES")
+    for i, name in ipairs(WORKING_GAMES) do
+        MkInfo(14 + i, "  * " .. name)
+    end
+    MkInfo(14 + #WORKING_GAMES + 1, "  Try any game - you might find more!")
+
+    MkDiv(30)
+
+    -- INFO
+    MkSection(31, "INFO")
+    MkInfo(32, "  Anti-AFK: active")
+    MkInfo(33, "  Key resets after 12 hours")
+    MkInfo(34, "  YouTube: LPOLVOXD1")
+end
+
+-- ============================================================
+-- DRAG
+-- ============================================================
+local function EnableDraggable(frame)
+    local drag, dInput, dStart, sPos
+    frame.InputBegan:Connect(function(i)
+        if (i.UserInputType == Enum.UserInputType.MouseButton1
+         or i.UserInputType == Enum.UserInputType.Touch) and not _G.LP10_Resizing then
+            drag = true; dStart = i.Position; sPos = frame.Position
+        end
+    end)
+    frame.InputChanged:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseMovement
+        or i.UserInputType == Enum.UserInputType.Touch then dInput = i end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if i == dInput and drag then
+            local d = i.Position - dStart
+            frame.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, sPos.Y.Offset + d.Y)
+        end
+    end)
+    frame.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then drag = false end
+    end)
+end
+
+-- ============================================================
+-- RESIZE
+-- ============================================================
+local currentSize = Main.Size
+RH.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        _G.LP10_Resizing = true
+        local ds = input.Position
+        local ss = Main.Size
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseMovement
+            or inp.UserInputType == Enum.UserInputType.Touch then
+                local d = inp.Position - ds
+                Main.Size = UDim2.new(0,
+                    math.clamp(ss.X.Offset + d.X, Config.MinSize.X, Config.MaxSize.X), 0,
+                    math.clamp(ss.Y.Offset + d.Y, Config.MinSize.Y, Config.MaxSize.Y)
+                )
+                currentSize = Main.Size
+            end
+        end)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                _G.LP10_Resizing = false
+                conn:Disconnect()
+            end
+        end)
+    end
+end)
+
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
+
+-- ============================================================
+-- TOGGLE OPEN / CLOSE
+-- ============================================================
+local isOpen = false
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    Main.Visible = true
+    Main:TweenSize(
+        isOpen and currentSize or UDim2.new(0, 0, 0, 0),
+        isOpen and Enum.EasingDirection.Out or Enum.EasingDirection.In,
+        Enum.EasingStyle.Back, 0.28, true,
+        function() if not isOpen then Main.Visible = false end end
+    )
+end)
+
+-- ============================================================
+-- INIT
+-- ============================================================
+FetchGameData()
+BuildUI()
+StatusBar.Text = "Done! "..#productNames.." products, "..#gamepassNames.." gamepasses"
+print("LP10 HUB Universal v2.1 - Loaded! Products: "..#productNames.." | Gamepasses: "..#gamepassNames)
