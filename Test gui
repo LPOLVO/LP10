@@ -161,10 +161,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 print("LP10 HUB: Clean Royal Resizable Edition Loaded!")
+
 -- ============================================================================
--- [ LP10 HUB | RUNAWAYS AUTOMATION ONLY ]
--- This section intentionally does not create Tabs or add Player/ESP/Weapon
--- features. It uses the LP10 frame above and only exposes the automation panel.
+-- [ LP10 HUB | RUNAWAYS AUTOMATION ONLY | FIXED ]
 -- ============================================================================
 
 local Automation = {
@@ -180,8 +179,12 @@ local Automation = {
     Phase = "Idle",
     Detail = "Ready",
     LastError = "None",
+
+    -- كل الحسابات الزمنية الداخلية بـ os.clock()
     GateStartedAt = 0,
     StartedAt = 0,
+    RunStartedAt = 0,
+
     Attempts = 0,
     Completed = 0,
     Failed = 0,
@@ -189,20 +192,31 @@ local Automation = {
     GateActivations = 0,
     NPCRequests = 0,
     Replays = 0,
-    RunStartedAt = 0,
+
     RunActive = false,
-    RootWasAnchored = nil,
-    Root = nil,
+    PendingFinish = false,
+    FinishCrossed = false,
+    PendingAt = 0,
+    LastGameJob = "",
+
+    SafeCFrame = nil,
+    SafeCharacter = nil,
+    SafeRootWasAnchored = nil,
+
     Controls = {},
     StatePath = "MyScriptHub/RUNAWAYS/automation.json",
     StateKey = "LP10_RUNAWAYS_AUTOMATION_STATE",
     EnabledKey = "LP10_RUNAWAYS_AUTOMATION_ENABLED",
+    TransitionKey = "LP10_RUNAWAYS_TRANSITION",
     LoadedState = nil,
     StateReady = false,
     TeleportConnection = nil,
     TeleportFailedConnection = nil,
     ToggleSetters = {},
     NumberSetters = {},
+    QueueJob = nil,
+    TransitionToken = "",
+    GateText = "--",
 }
 
 local AutomationReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -213,8 +227,8 @@ while not AutomationPlayer do
     task.wait()
     AutomationPlayer = Players.LocalPlayer
 end
-local AutomationFlow
 
+local AutomationFlow
 pcall(function()
     AutomationFlow = require(AutomationReplicatedStorage:WaitForChild("FlowClient"))
 end)
@@ -233,19 +247,37 @@ local function AutomationRoot()
     return character and character:FindFirstChild("HumanoidRootPart")
 end
 
-local function AutomationMove(cframe)
+local function AutomationMove(cframe, anchor)
     local character = AutomationPlayer and AutomationPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
-
     if not character or not humanoid or not root or humanoid.Health <= 0 then
         return false
     end
-
+    if humanoid.SeatPart then
+        humanoid.Sit = false
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        task.wait(0.05)
+    end
     character:PivotTo(cframe)
     root.AssemblyLinearVelocity = Vector3.zero
     root.AssemblyAngularVelocity = Vector3.zero
+    if anchor and root.Parent then
+        root.Anchored = true
+    end
     return true
+end
+
+local function AutomationReleaseSafe()
+    local root = Automation.SafeCharacter and Automation.SafeCharacter:FindFirstChild("HumanoidRootPart")
+    if root and Automation.SafeRootWasAnchored ~= nil then
+        root.Anchored = Automation.SafeRootWasAnchored
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+    end
+    Automation.SafeCFrame = nil
+    Automation.SafeCharacter = nil
+    Automation.SafeRootWasAnchored = nil
 end
 
 local function AutomationDamageNPCs()
@@ -253,11 +285,9 @@ local function AutomationDamageNPCs()
     local root = AutomationRoot()
     local npcApi = AutomationFlow and AutomationFlow.NPCs
     local total = 0
-
     if not folder or not root or not npcApi or type(npcApi.Damage) ~= "function" then
         return 0
     end
-
     for _, humanoid in ipairs(folder:GetDescendants()) do
         if humanoid:IsA("Humanoid") and humanoid.Health > 0 then
             local npc = humanoid:FindFirstAncestorOfClass("Model")
@@ -269,113 +299,81 @@ local function AutomationDamageNPCs()
             end
         end
     end
-
     return total
-end
-
-local function AutomationDataValue(name)
-    local localData = AutomationFlow and AutomationFlow.LocalData
-    if localData and type(localData.Get) == "function" then
-        local ok, value = pcall(localData.Get, name)
-        if ok and type(value) == "number" then
-            return value
-        end
-    end
-
-    local playerData = AutomationFlow and AutomationFlow.PlayerDataClient
-    if playerData and type(playerData.getObserver) == "function" then
-        local ok, observer = pcall(playerData.getObserver, name)
-        if ok and observer and type(observer.get) == "function" then
-            local read, value = pcall(observer.get, observer)
-            if read and type(value) == "number" then
-                return value
-            end
-        end
-    end
 end
 
 local function AutomationOwnedCar()
     local playerData = AutomationFlow and AutomationFlow.PlayerDataClient
-    if not playerData or type(playerData.getObserver) ~= "function" then
-        return
-    end
-
+    if not playerData or type(playerData.getObserver) ~= "function" then return end
     local ok, observer = pcall(playerData.getObserver, "cars")
-    if not ok or not observer or type(observer.get) ~= "function" then
-        return
-    end
-
+    if not ok or not observer or type(observer.get) ~= "function" then return end
     local read, cars = pcall(observer.get, observer)
-    if not read or type(cars) ~= "table" then
-        return
-    end
-
-    for carName in pairs(cars) do
-        return tostring(carName)
-    end
+    if not read or type(cars) ~= "table" then return end
+    local names = {}
+    for carName in pairs(cars) do names[#names + 1] = tostring(carName) end
+    table.sort(names)
+    return names[1]
 end
 
 local function AutomationVisible(instance)
     local playerGui = AutomationPlayer and AutomationPlayer:FindFirstChildOfClass("PlayerGui")
     local current = instance
-
     while current and current ~= playerGui do
-        if current:IsA("GuiObject") and not current.Visible then
-            return false
-        end
-        if current:IsA("LayerCollector") and not current.Enabled then
-            return false
-        end
+        if current:IsA("GuiObject") and not current.Visible then return false end
+        if current:IsA("LayerCollector") and not current.Enabled then return false end
         current = current.Parent
     end
-
     return current == playerGui
 end
 
 local function AutomationEndScreen()
     local playerGui = AutomationPlayer and AutomationPlayer:FindFirstChildOfClass("PlayerGui")
-    if not playerGui then
-        return
-    end
+    if not playerGui then return end
 
-    local direct = playerGui:FindFirstChild("EndFrame", true)
-    if direct and AutomationVisible(direct) then
-        return direct
-    end
+    local endFrame = playerGui:FindFirstChild("EndFrame", true)
+    if endFrame and AutomationVisible(endFrame) then
+        local escaped = endFrame:FindFirstChild("Escaped", true)
+        local captured = endFrame:FindFirstChild("Captured", true)
+        local option = endFrame:FindFirstChild("Replay", true) or endFrame:FindFirstChild("Lobby", true)
 
-    for _, item in ipairs(playerGui:GetDescendants()) do
-        if item:IsA("GuiObject") and AutomationVisible(item) then
-            local name = item.Name:lower()
-            local text = (item:IsA("TextLabel") or item:IsA("TextButton"))
-                and tostring(item.Text or ""):lower()
-                or ""
-            if name:find("escaped", 1, true) or name:find("captured", 1, true)
-                or text:find("escaped", 1, true) or text:find("captured", 1, true) then
-                return item:FindFirstAncestor("EndFrame") or item
+        if escaped and AutomationVisible(escaped) then return endFrame, "Escaped" end
+        if captured and AutomationVisible(captured) then return endFrame, "Captured" end
+        if option and AutomationVisible(option) then return endFrame, "Ended" end
+
+        for _, item in ipairs(endFrame:GetDescendants()) do
+            if item:IsA("GuiObject") and AutomationVisible(item) then
+                local name = item.Name:lower()
+                local text = (item:IsA("TextLabel") or item:IsA("TextButton"))
+                    and tostring(item.Text or ""):lower() or ""
+                if name:find("captured", 1, true) or text:find("captured", 1, true) then
+                    return endFrame, "Captured"
+                end
+                if name:find("escaped", 1, true) or text:find("escaped", 1, true) then
+                    return endFrame, "Escaped"
+                end
             end
         end
+        return
     end
 end
 
-local function AutomationPrompt()
+local function AutomationGetFinalDoor()
     local map = workspace:FindFirstChild("Map")
     local buildings = map and map:FindFirstChild("Buildings")
     local customs = buildings and buildings:FindFirstChild("CustomsFinal")
-    local finalDoor = customs and customs:FindFirstChild("FinalDoor", true)
+    return customs and customs:FindFirstChild("FinalDoor", true)
+end
 
+local function AutomationPrompt()
+    local finalDoor = AutomationGetFinalDoor()
     if finalDoor then
+        local command = finalDoor:FindFirstChild("Command", true)
+        local holder = command and command:FindFirstChild("CommandButton")
+        local ph = holder and holder:FindFirstChild("Prompt")
+        local p = ph and (ph:IsA("ProximityPrompt") and ph or ph:FindFirstChildOfClass("ProximityPrompt"))
+        if p then return p end
         for _, item in ipairs(finalDoor:GetDescendants()) do
-            if item:IsA("ProximityPrompt") then
-                return item
-            end
-        end
-    end
-
-    for _, item in ipairs(workspace:GetDescendants()) do
-        if item:IsA("ProximityPrompt") then
-            local parentName = item.Parent and item.Parent:GetFullName():lower() or ""
-            if parentName:find("final", 1, true) or parentName:find("gate", 1, true)
-                or parentName:find("custom", 1, true) then
+            if item:IsA("ProximityPrompt") and item.ActionText == "Activate" then
                 return item
             end
         end
@@ -384,74 +382,67 @@ end
 
 local function AutomationPromptPosition(prompt)
     local holder = prompt and prompt.Parent
-    if holder and holder:IsA("Attachment") then
-        return holder.WorldPosition
-    end
-    if holder and holder:IsA("BasePart") then
-        return holder.Position
+    if holder and holder:IsA("Attachment") then return holder.WorldPosition end
+    if holder and holder:IsA("BasePart") then return holder.Position end
+end
+
+local function AutomationGetEndZ()
+    local flowModule = AutomationReplicatedStorage:FindFirstChild("FlowClient")
+    local gui = flowModule and flowModule:FindFirstChild("Gui")
+    local dist = gui and gui:FindFirstChild("DistanceToBorderClient")
+    if dist then
+        local ok, mod = pcall(require, dist)
+        if ok and type(mod) == "table" and type(debug) == "table" and type(debug.getupvalues) == "function" then
+            local cb = mod.SetEndPos_event or mod.SetEndPos
+            if type(cb) == "function" then
+                local read, upvalues = pcall(debug.getupvalues, cb)
+                if read and type(upvalues) == "table" then
+                    for _, v in pairs(upvalues) do
+                        if type(v) == "number" and math.abs(v) > 1000 then
+                            return v
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
 local function AutomationFirePrompt(prompt)
-    if not prompt then
-        return false
-    end
-
+    if not prompt then return false end
     if type(fireproximityprompt) == "function" then
         local ok = pcall(fireproximityprompt, prompt)
-        if ok then
-            return true
-        end
+        if ok then return true end
     end
-
-    local ok = pcall(function()
-        local duration = prompt.HoldDuration
+    return pcall(function()
+        local d = prompt.HoldDuration
         prompt.HoldDuration = 0
         prompt:InputHoldBegin()
         task.wait(0.1)
         prompt:InputHoldEnd()
-        prompt.HoldDuration = duration
+        prompt.HoldDuration = d
     end)
-    return ok
 end
 
 local function AutomationGateSeconds(prompt)
-    local finalDoor = prompt and prompt:FindFirstAncestor("FinalDoor")
-    if not finalDoor then
-        local map = workspace:FindFirstChild("Map")
-        local buildings = map and map:FindFirstChild("Buildings")
-        local customs = buildings and buildings:FindFirstChild("CustomsFinal")
-        finalDoor = customs and customs:FindFirstChild("FinalDoor", true)
-    end
-
-    if not finalDoor then
-        return
-    end
-
+    local finalDoor = prompt and prompt:FindFirstAncestor("FinalDoor") or AutomationGetFinalDoor()
+    if not finalDoor then return end
     for _, label in ipairs(finalDoor:GetDescendants()) do
         if label:IsA("TextLabel") and AutomationVisible(label) then
-            local minutes, seconds = label.Text:match("(%d+)%s*m%s*(%d+)%s*s")
-            if not minutes then
-                minutes, seconds = label.Text:match("(%d+)%s*:%s*(%d+)")
-            end
-            if minutes and seconds then
-                return tonumber(minutes) * 60 + tonumber(seconds)
-            end
+            local m, s = label.Text:match("(%d+)%s*m%s*(%d+)%s*s")
+            if not m then m, s = label.Text:match("(%d+)%s*:%s*(%d+)") end
+            if m and s then return tonumber(m) * 60 + tonumber(s), label.Text end
         end
     end
 end
 
 function Automation:GetContext()
-    if game.PlaceId == self.LobbyPlaceId then
+    if game.PlaceId == self.LobbyPlaceId then return "Lobby" end
+    if game.PlaceId == self.GamePlaceId then return "Game" end
+    if AutomationFlow and AutomationFlow.LobbyServer and AutomationFlow.LobbyClient then
         return "Lobby"
     end
-    if game.PlaceId == self.GamePlaceId then
-        return "Game"
-    end
-    if AutomationFlow and AutomationFlow.LobbyServer then
-        return "Lobby"
-    end
-    if workspace:FindFirstChild("Map") then
+    if workspace:FindFirstChild("Map") and AutomationFlow and AutomationFlow.NPCs then
         return "Game"
     end
     return "Unsupported"
@@ -466,43 +457,57 @@ end
 function Automation:UpdateUI()
     local elapsed = self.StartedAt > 0 and os.time() - self.StartedAt or 0
     local runElapsed = self.RunStartedAt > 0 and os.time() - self.RunStartedAt or 0
-    local function duration(value)
-        value = math.max(0, math.floor(tonumber(value) or 0))
-        return string.format("%02d:%02d:%02d", math.floor(value / 3600), math.floor(value % 3600 / 60), value % 60)
+    local function dur(v)
+        v = math.max(0, math.floor(tonumber(v) or 0))
+        return string.format("%02d:%02d:%02d", math.floor(v/3600), math.floor(v%3600/60), v%60)
     end
-
     if self.Controls.Status then
-        self.Controls.Status.Text = "Status: " .. self.Phase .. "\n" .. self.Detail
+        self.Controls.Status.Text = "Status: "..self.Phase.."\n"..self.Detail
     end
     if self.Controls.Stats then
         self.Controls.Stats.Text = string.format(
             "Session: %s | Runs: %d/%d\nFailures: %d | Retries: %d | NPC: %d\nCurrent run: %s | Gate: %s",
-            duration(elapsed), self.Completed, self.Attempts, self.Failed, self.Retries,
-            self.NPCRequests, duration(runElapsed), self.GateText or "--"
+            dur(elapsed), self.Completed, self.Attempts, self.Failed, self.Retries,
+            self.NPCRequests, dur(runElapsed), self.GateText or "--"
         )
     end
     if self.Controls.Error then
-        self.Controls.Error.Text = "Last error: " .. tostring(self.LastError)
+        self.Controls.Error.Text = "Last error: "..tostring(self.LastError)
     end
 end
 
-function Automation:CreateTeleportLoader()
-    local loader = tostring(AutomationEnv.LP10RunawaysTeleportLoader or AutomationEnv.LP10RunawaysAutomationSource or [[
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua?cb=" .. tostring(os.time())))()
-]]):match("^%s*(.-)%s*$")
-    local queue = queue_on_teleport or queueonteleport
-    if type(queue) ~= "function" then
-        self.LastError = "queue_on_teleport is unavailable"
-        self:SetPhase("Queue Failed", self.LastError)
-        return false
+-- ============================================================================
+-- نظام الطابور (queue_on_teleport)
+-- ============================================================================
+function Automation:GetQueueFunction()
+    if type(queue_on_teleport) == "function" then return queue_on_teleport end
+    if type(queueonteleport) == "function" then return queueonteleport end
+    if type(syn) == "table" and type(syn.queue_on_teleport) == "function" then return syn.queue_on_teleport end
+    if type(fluxus) == "table" and type(fluxus.queue_on_teleport) == "function" then return fluxus.queue_on_teleport end
+end
+
+function Automation:Persist()
+    local http = game:GetService("HttpService")
+    local ok, encoded = pcall(http.JSONEncode, http, self:GetSnapshot())
+    if not ok then return false end
+    pcall(function()
+        local ts = game:GetService("TeleportService")
+        ts:SetTeleportSetting(self.StateKey, encoded)
+        ts:SetTeleportSetting(self.EnabledKey, self.Running == true)
+        ts:SetTeleportSetting(self.TransitionKey, self.TransitionToken or "")
+    end)
+    if type(writefile) == "function" then
+        pcall(function()
+            if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
+                if type(makefolder) == "function" then makefolder("MyScriptHub") end
+            end
+            if type(isfolder) ~= "function" or not isfolder("MyScriptHub/RUNAWAYS") then
+                if type(makefolder) == "function" then makefolder("MyScriptHub/RUNAWAYS") end
+            end
+            writefile(self.StatePath, encoded)
+        end)
     end
-    self:Persist()
-    local ok = pcall(queue, loader)
-    if not ok then
-        self.LastError = "Teleport loader could not be queued"
-        self:SetPhase("Queue Failed", self.LastError)
-    end
-    return ok
+    return true
 end
 
 function Automation:GetSnapshot()
@@ -523,50 +528,24 @@ function Automation:GetSnapshot()
         GateActivations = self.GateActivations,
         NPCRequests = self.NPCRequests,
         Replays = self.Replays,
+        TransitionToken = self.TransitionToken,
     }
 end
 
-function Automation:Persist()
-    local httpService = game:GetService("HttpService")
-    local snapshot = self:GetSnapshot()
-    local ok, encoded = pcall(httpService.JSONEncode, httpService, snapshot)
-    if not ok then return false end
-
-    pcall(function()
-        local teleportService = game:GetService("TeleportService")
-        teleportService:SetTeleportSetting(self.StateKey, encoded)
-        teleportService:SetTeleportSetting(self.EnabledKey, snapshot.Enabled)
-    end)
-
-    if type(writefile) == "function" then
-        pcall(function()
-            if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
-                if type(makefolder) == "function" then makefolder("MyScriptHub") end
-            end
-            if type(isfolder) ~= "function" or not isfolder("MyScriptHub/RUNAWAYS") then
-                if type(makefolder) == "function" then makefolder("MyScriptHub/RUNAWAYS") end
-            end
-            writefile(self.StatePath, encoded)
-        end)
-    end
-    return true
-end
-
 function Automation:LoadState()
-    local httpService = game:GetService("HttpService")
+    local http = game:GetService("HttpService")
     local candidates = {}
     pcall(function()
-        local value = game:GetService("TeleportService"):GetTeleportSetting(self.StateKey)
-        if type(value) == "string" then candidates[#candidates + 1] = value end
+        local v = game:GetService("TeleportService"):GetTeleportSetting(self.StateKey)
+        if type(v) == "string" then candidates[#candidates+1] = v end
     end)
     if type(readfile) == "function" and type(isfile) == "function" then
         pcall(function()
-            if isfile(self.StatePath) then candidates[#candidates + 1] = readfile(self.StatePath) end
+            if isfile(self.StatePath) then candidates[#candidates+1] = readfile(self.StatePath) end
         end)
     end
-
-    for _, encoded in ipairs(candidates) do
-        local ok, state = pcall(httpService.JSONDecode, httpService, encoded)
+    for _, enc in ipairs(candidates) do
+        local ok, state = pcall(http.JSONDecode, http, enc)
         if ok and type(state) == "table" then
             self.LoadedState = state
             break
@@ -575,18 +554,17 @@ function Automation:LoadState()
 end
 
 function Automation:ApplyLoadedState()
-    local state = self.LoadedState
-    if type(state) ~= "table" then
+    local s = self.LoadedState
+    if type(s) ~= "table" then
         self.StateReady = true
         self:Persist()
         return
     end
-
-    self.SafeGateWait = state.SafeGateWait ~= false
-    self.AutoReplay = state.AutoReplay ~= false
-    self.LobbyDelay = math.clamp(tonumber(state.LobbyDelay) or 3, 0, 30)
-    self.GateTimeout = math.clamp(tonumber(state.GateTimeout) or 165, 125, 240)
-    self.RetryDelay = math.clamp(tonumber(state.RetryDelay) or 10, 3, 30)
+    self.SafeGateWait = s.SafeGateWait ~= false
+    self.AutoReplay = s.AutoReplay ~= false
+    self.LobbyDelay = math.clamp(tonumber(s.LobbyDelay) or 3, 0, 30)
+    self.GateTimeout = math.clamp(tonumber(s.GateTimeout) or 165, 125, 240)
+    self.RetryDelay = math.clamp(tonumber(s.RetryDelay) or 10, 3, 30)
     self.StateReady = true
 
     if self.NumberSetters.LobbyDelay then self.NumberSetters.LobbyDelay(self.LobbyDelay, false) end
@@ -596,7 +574,7 @@ function Automation:ApplyLoadedState()
     if self.ToggleSetters.AutoReplay then self.ToggleSetters.AutoReplay(self.AutoReplay, false) end
     self:UpdateUI()
 
-    if state.Enabled == true then
+    if s.Enabled == true and os.time() - (tonumber(s.UpdatedAt) or 0) <= 900 then
         task.defer(function()
             if self.ToggleSetters.AutoFarm then self.ToggleSetters.AutoFarm(true, true) end
         end)
@@ -605,246 +583,531 @@ function Automation:ApplyLoadedState()
     end
 end
 
+-- ============================================================================
+-- الطابور: يجب أن يُنادى قبل أي عملية Teleport
+-- ============================================================================
+function Automation:QueueForTeleport(targetPlaceId)
+    local queue = self:GetQueueFunction()
+    if not queue then
+        self.LastError = "queue_on_teleport is unavailable"
+        self:SetPhase("Queue Failed", self.LastError)
+        return false
+    end
+    local loader = tostring(
+        AutomationEnv.LP10RunawaysTeleportLoader
+        or AutomationEnv.LP10RunawaysAutomationSource
+        or ""
+    ):match("^%s*(.-)%s*$")
+
+    if loader == "" then
+        self.LastError = "Teleport loader is empty"
+        return false
+    end
+
+    -- Token فريد للانتقال
+    local token = table.concat({
+        tostring(AutomationPlayer.UserId),
+        game.JobId,
+        tostring(targetPlaceId),
+        tostring(os.time()),
+        tostring(math.random(100000, 999999)),
+    }, ":")
+    self.TransitionToken = token
+
+    if not self:Persist() then
+        self.LastError = "Could not persist transition state"
+        return false
+    end
+
+    local snapshot = nil
+    pcall(function()
+        snapshot = game:GetService("HttpService"):JSONEncode(self:GetSnapshot())
+    end)
+
+    local payload = string.format(
+        "if not game:IsLoaded() then game.Loaded:Wait() end\n"
+        .. "if game.PlaceId == %d or game.PlaceId == %d then\n"
+        .. "local PL = game:GetService('Players')\n"
+        .. "while not PL.LocalPlayer do task.wait() end\n"
+        .. "local e = (getgenv and getgenv() or _G)\n"
+        .. "e.LP10RunawaysQueuedState = %q\n"
+        .. "e.LP10RunawaysTransitionToken = %q\n"
+        .. "%s\n"
+        .. "end",
+        self.LobbyPlaceId, self.GamePlaceId,
+        snapshot or "", token, loader
+    )
+
+    local ok, err = pcall(queue, payload)
+    if not ok then
+        self.LastError = "Queue failed: "..tostring(err)
+        self:SetPhase("Queue Failed", self.LastError)
+        return false
+    end
+    self.QueueJob = game.JobId
+    return true
+end
+
+-- ============================================================================
+-- Safe Gate Position
+-- ============================================================================
+function Automation:GetSafeCFrame(prompt)
+    local finalDoor = AutomationGetFinalDoor()
+    local customsBuilding = finalDoor and finalDoor:FindFirstAncestor("CustomsBuilding")
+    local holder = prompt and prompt.Parent
+    local promptPos = holder and holder:IsA("Attachment") and holder.WorldPosition
+        or holder and holder:IsA("BasePart") and holder.Position
+    if not promptPos then return end
+
+    local bestFloor, bestDist = nil, math.huge
+    if customsBuilding then
+        for _, office in ipairs(customsBuilding:GetChildren()) do
+            if office.Name == "CustomsOffice" then
+                local floor = office:FindFirstChild("Floor", true)
+                if floor and floor:IsA("BasePart") then
+                    local d = (floor.Position - promptPos).Magnitude
+                    if d < bestDist then bestFloor, bestDist = floor, d end
+                end
+            end
+        end
+    end
+    if not bestFloor then return end
+
+    local position = bestFloor.CFrame:PointToWorldSpace(Vector3.new(5, bestFloor.Size.Y * 0.5 + 3.25, 8))
+    return CFrame.lookAt(position, Vector3.new(promptPos.X, position.Y, promptPos.Z), Vector3.yAxis)
+end
+
+function Automation:MoveToSafe(prompt, token)
+    if not self.SafeGateWait then
+        AutomationReleaseSafe()
+        return true
+    end
+    local dest = self:GetSafeCFrame(prompt)
+    local root = AutomationRoot()
+    if not dest or not root then
+        return false, "Safe position is unavailable"
+    end
+    AutomationReleaseSafe()
+    self.SafeCharacter = AutomationPlayer.Character
+    self.SafeRootWasAnchored = root.Anchored
+    self.SafeCFrame = dest
+
+    if not AutomationMove(dest, true) then
+        AutomationReleaseSafe()
+        return false, "Could not enter safe zone"
+    end
+    self:SetPhase("Safe Gate Wait", "Waiting in a safe spot")
+    return true
+end
+
+function Automation:MaintainSafe(token)
+    if not self.SafeGateWait then
+        AutomationReleaseSafe()
+        return true
+    end
+    if not self.SafeCFrame then
+        return self:MoveToSafe(AutomationPrompt(), token)
+    end
+    local char = AutomationPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if char ~= self.SafeCharacter or not root then
+        return self:MoveToSafe(AutomationPrompt(), token)
+    end
+    root.CFrame = self.SafeCFrame
+    root.AssemblyLinearVelocity = Vector3.zero
+    root.AssemblyAngularVelocity = Vector3.zero
+    root.Anchored = true
+    return true
+end
+
+-- ============================================================================
+-- Gate Activation
+-- ============================================================================
 function Automation:ActivateGate(prompt, token)
     if not prompt then
         return false, "End gate prompt was not found"
     end
-
     local position = AutomationPromptPosition(prompt)
     local root = AutomationRoot()
     if position and root then
-        local direction = root.Position.Z <= position.Z and 1 or -1
-        AutomationMove(CFrame.lookAt(position - Vector3.new(0, 0, direction * 8), position, Vector3.yAxis))
+        local dir = root.Position.Z <= position.Z and 1 or -1
+        AutomationMove(CFrame.lookAt(position - Vector3.new(0, 0, dir * 6), position, Vector3.yAxis))
+        task.wait(0.3)
     end
 
-    self:SetPhase("Activating Gate", "Starting the gate countdown")
+    self:SetPhase("Activating Gate", "Starting the countdown")
+
     for attempt = 1, 3 do
         if self.Token ~= token or not self.Running then
             return false, "Automation stopped"
         end
-
         local before = AutomationGateSeconds(prompt)
         if AutomationFirePrompt(prompt) then
             local expires = os.clock() + 6
             repeat
                 local current = AutomationGateSeconds(prompt)
-                if not prompt.Enabled or current and (not before or current < before or current < 120) then
-                    self.GateStartedAt = os.time() - math.max(0, 120 - (current or 120))
+                local accepted = (not prompt.Enabled)
+                    or (current and before and current < before)
+                    or (current and current < 120)
+                if accepted then
+                    -- نستخدم os.clock() دائماً
+                    self.GateStartedAt = os.clock() - math.max(0, 120 - (current or 120))
                     self.GateActivations += 1
                     return true
                 end
                 task.wait(0.25)
             until os.clock() >= expires or not self.Running or self.Token ~= token
         end
-
         self.Retries += 1
         task.wait(attempt)
     end
-
     return false, "Gate activation was not confirmed"
 end
 
+-- ============================================================================
+-- WaitForGate — إصلاح جوهري
+-- ============================================================================
 function Automation:WaitForGate(prompt, token)
     local expires = os.clock() + self.GateTimeout
-    local root = AutomationRoot()
     self:SetPhase("Waiting for Gate", "Waiting for the two minute countdown")
 
-    if self.SafeGateWait and root then
-        self.Root = root
-        self.RootWasAnchored = root.Anchored
-        root.Anchored = true
+    local safeOK, safeErr = self:MoveToSafe(prompt, token)
+    if not safeOK then
+        AutomationNotify(safeErr)
     end
 
+    local opened = false
     repeat
         if self.Token ~= token or not self.Running then
+            AutomationReleaseSafe()
             return false, "Automation stopped"
         end
 
-        local seconds = AutomationGateSeconds(prompt)
-        self.GateText = seconds and (tostring(math.floor(seconds)) .. " seconds") or "--"
+        -- شاشة النهاية
+        local endFrame = AutomationEndScreen()
+        if endFrame then
+            AutomationReleaseSafe()
+            return false, "EndScreen"
+        end
+
+        -- الحفاظ على الوضع الآمن
+        if self.SafeGateWait then
+            self:MaintainSafe(token)
+        end
+
+        local secs, text = AutomationGateSeconds(prompt)
+        if text then self.GateText = text end
         self:UpdateUI()
 
-        local endScreen = AutomationEndScreen()
-        if endScreen then
-            return false, "Result screen appeared"
-        end
+        local elapsed = self.GateStartedAt > 0 and (os.clock() - self.GateStartedAt) or 0
 
-        if (seconds and seconds <= 0) or os.clock() - self.GateStartedAt >= 120 then
+        -- البوابة فُتحت
+        if (secs and secs <= 0)
+            or (self.GateStartedAt > 0 and elapsed >= 120)
+            or (prompt and not prompt.Enabled)
+        then
+            opened = true
             break
         end
+
         task.wait(0.5)
     until os.clock() >= expires
 
-    if self.Root and self.Root.Parent then
-        self.Root.Anchored = self.RootWasAnchored == true
-    end
-    self.Root = nil
-    self.RootWasAnchored = nil
+    AutomationReleaseSafe()
 
-    if os.clock() >= expires then
+    if not opened then
         return false, "Gate wait timed out"
     end
     return true
 end
 
-function Automation:CrossGate(token)
-    local prompt = AutomationPrompt()
+-- ============================================================================
+-- CrossGate — إصلاح الاتجاه والتحقق
+-- ============================================================================
+function Automation:CrossGate(prompt, token)
     local position = AutomationPromptPosition(prompt)
     local root = AutomationRoot()
-
     if not position or not root then
         return false, "Gate position is unavailable"
     end
 
-    local direction = root.Position.Z <= position.Z and 1 or -1
+    local endZ = AutomationGetEndZ() or position.Z
+    local start = workspace:FindFirstChildOfClass("SpawnLocation")
+    local direction = (not start or endZ >= start.Position.Z) and 1 or -1
+
     self:SetPhase("Entering Finish", "Crossing the opened gate")
 
-    for _, offset in ipairs({ 8, 24, 55, 100 }) do
+    -- نقاط عبور تدريجية
+    local offsets = { 6, 16, 30, 50, 75, 100, 140 }
+    for _, offset in ipairs(offsets) do
         if self.Token ~= token or not self.Running then
             return false, "Automation stopped"
         end
 
-        local target = position + Vector3.new(0, 3, direction * offset)
+        local target = Vector3.new(position.X, position.Y + 3, position.Z + direction * offset)
         AutomationMove(CFrame.lookAt(target, target + Vector3.new(0, 0, direction), Vector3.yAxis))
         task.wait(0.35)
 
-        if AutomationEndScreen() then
-            return true
+        if (target.Z - endZ) * direction >= 0 then
+            self.FinishCrossed = true
+            self:Persist()
+        end
+
+        local es = AutomationEndScreen()
+        if es then
+            return true, "EndScreen"
         end
     end
 
-    return AutomationEndScreen() ~= nil, "Finish result did not appear"
+    -- محاولة إضافية عبر MoveTo
+    local hum = AutomationHumanoid()
+    if hum then
+        hum:MoveTo(position + Vector3.new(0, 0, direction * 130))
+    end
+
+    local waitExpires = os.clock() + 35
+    repeat
+        if self.Token ~= token or not self.Running then
+            return false, "Automation stopped"
+        end
+        if AutomationEndScreen() then return true, "EndScreen" end
+        task.wait(0.25)
+    until os.clock() >= waitExpires
+
+    return false, "Finish result did not appear"
 end
 
+-- ============================================================================
+-- Replay / Lobby — يجب تجهيز الطابور قبل الضغط
+-- ============================================================================
 function Automation:ReplayOrLobby(token)
-    local endFrame = AutomationEndScreen()
+    local endFrame, outcome = AutomationEndScreen()
     if not endFrame then
         return false, "Result screen was not found"
     end
 
     if self.AutoReplay then
-        self.Replays += 1
-        self:SetPhase("Auto Replay", "Submitting replay")
+        -- 1) جهّز الطابور أولاً قبل أي إجراء
+        if not self:QueueForTeleport(self.GamePlaceId) then
+            return false, self.LastError or "Replay queue failed"
+        end
 
-        if AutomationFlow and AutomationFlow.GameManager and type(AutomationFlow.GameManager.Replay) == "function" then
+        self:SetPhase("Auto Replay", "Submitting replay vote")
+        self.Replays += 1
+
+        -- 2) جرّب FlowClient.Replay أولاً
+        if AutomationFlow and AutomationFlow.GameManager
+            and type(AutomationFlow.GameManager.Replay) == "function"
+        then
             local ok = pcall(AutomationFlow.GameManager.Replay)
             if ok then
-                self:CreateTeleportLoader()
-                return true
+                return true, "ReplayQueued"
             end
         end
 
+        -- 3) جرّب زر Replay
         for _, button in ipairs(endFrame:GetDescendants()) do
-            if button:IsA("GuiButton") then
+            if button:IsA("GuiButton") and AutomationVisible(button) then
                 local name = button.Name:lower()
-                local text = button:IsA("TextButton") and button.Text:lower() or ""
+                local text = button:IsA("TextButton") and tostring(button.Text or ""):lower() or ""
+                if text == "" then
+                    local lbl = button:FindFirstChildWhichIsA("TextLabel", true)
+                    text = lbl and tostring(lbl.Text or ""):lower() or ""
+                end
                 if name:find("replay", 1, true) or text:find("replay", 1, true) then
-                    local ok = type(firesignal) == "function"
+                    local clicked = type(firesignal) == "function"
                         and pcall(firesignal, button.MouseButton1Click)
                         or pcall(button.Activate, button)
-                    if ok then
-                        self:CreateTeleportLoader()
-                        return true
+                    if clicked then
+                        return true, "ReplayClicked"
                     end
                 end
             end
         end
+        -- إن فشل Replay → رجوع للوبي
     end
 
-    if AutomationFlow and AutomationFlow.GameManager and type(AutomationFlow.GameManager.BackToLobby) == "function" then
-        self:SetPhase("Returning to Lobby", "Replay unavailable")
-        self:CreateTeleportLoader()
+    -- رجوع للوبي
+    if not self:QueueForTeleport(self.LobbyPlaceId) then
+        return false, self.LastError or "Lobby queue failed"
+    end
+    self:SetPhase("Returning to Lobby", "Preparing to return")
+    if AutomationFlow and AutomationFlow.GameManager
+        and type(AutomationFlow.GameManager.BackToLobby) == "function"
+    then
         return pcall(AutomationFlow.GameManager.BackToLobby)
     end
-
-    return false, "Replay and lobby controls are unavailable"
+    return false, "Lobby controls are unavailable"
 end
 
+-- ============================================================================
+-- RunGame — الإصلاح الرئيسي: جهّز الطابور قبل CrossGate
+-- ============================================================================
 function Automation:RunGame(token)
-    self.RunStartedAt = os.time()
-    self.Attempts += 1
-    self:SetPhase("Loading Game", "Waiting for the map")
+    -- معالجة Run معلّق من جلسة سابقة
+    if self.PendingFinish and self.LastGameJob ~= "" and self.LastGameJob ~= game.JobId then
+        self.Completed += 1
+        self.PendingFinish = false
+        self.FinishCrossed = false
+        self.PendingAt = 0
+    end
 
+    -- إذا كانت شاشة النهاية ظاهرة فوراً
+    local es = AutomationEndScreen()
+    if es then
+        return self:ReplayOrLobby(token)
+    end
+
+    if self.LastGameJob ~= game.JobId then
+        self.LastGameJob = game.JobId
+        self.RunStartedAt = os.time()
+        self.Attempts += 1
+        self.GateStartedAt = 0
+        self.FinishCrossed = false
+        self.PendingFinish = false
+        self.PendingAt = 0
+        self:Persist()
+    end
+
+    self:SetPhase("Loading Game", "Waiting for the map")
     local expires = os.clock() + 30
     repeat
-        if AutomationHumanoid() and AutomationRoot() and workspace:FindFirstChild("Map") then
+        local hum = AutomationHumanoid()
+        local root = AutomationRoot()
+        if hum and root and hum.Health > 0 and workspace:FindFirstChild("Map") then
             break
         end
         task.wait(0.25)
     until os.clock() >= expires or not self.Running or self.Token ~= token
 
     if not self.Running or self.Token ~= token then
-        return true
+        return true, "Stopped"
     end
 
-    local prompt = AutomationPrompt()
+    -- انتظر ظهور البوابة
+    self:SetPhase("Traveling", "Locating end gate")
+    local prompt, promptExpires = nil, os.clock() + 20
+    repeat
+        prompt = AutomationPrompt()
+        if not prompt then task.wait(0.25) end
+    until prompt or os.clock() >= promptExpires or not self.Running or self.Token ~= token
+
+    if not prompt then
+        self.Failed += 1
+        return false, "End gate prompt was not found"
+    end
+
+    -- تفعيل البوابة
     local activated, activationError = self:ActivateGate(prompt, token)
     if not activated then
+        self.Failed += 1
         return false, activationError
     end
 
+    -- انتظار الفتح
     local opened, gateError = self:WaitForGate(prompt, token)
     if not opened then
+        if gateError == "EndScreen" then
+            return self:ReplayOrLobby(token)
+        end
         self.Failed += 1
         return false, gateError
     end
 
-    local crossed, crossError = self:CrossGate(token)
+    -- ★ مهم: جهّز الطابور قبل اجتياز البوابة
+    local nextPlace = self.AutoReplay and self.GamePlaceId or self.LobbyPlaceId
+    if not self:QueueForTeleport(nextPlace) then
+        self.Failed += 1
+        return false, self.LastError or "Could not queue next teleport"
+    end
+
+    self.PendingFinish = true
+    self.PendingAt = os.time()
+    self:Persist()
+
+    -- اجتياز البوابة
+    local crossed, crossError = self:CrossGate(prompt, token)
     if not crossed then
+        self.PendingFinish = false
         self.Failed += 1
         return false, crossError
     end
 
+    -- وصلنا لشاشة النهاية
     self.Completed += 1
     self.RunStartedAt = 0
     self.GateText = "--"
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+
     return self:ReplayOrLobby(token)
 end
 
 function Automation:RunLobby(token)
     self:SetPhase("Lobby", "Waiting before the next run")
     task.wait(self.LobbyDelay)
-
-    if self.Token ~= token or not self.Running then
-        return true
-    end
+    if self.Token ~= token or not self.Running then return true end
 
     if not AutomationFlow or not AutomationFlow.LobbyServer then
         return false, "Lobby API is unavailable"
     end
-
     local lobby = AutomationFlow.LobbyServer
-    if type(lobby.play) == "function" then
-        pcall(lobby.play)
-    end
 
     local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
-    local createGui = playerGui and (playerGui:FindFirstChild("CreateLobbyGui") or playerGui:WaitForChild("CreateLobbyGui", 10))
-    local car = AutomationOwnedCar()
-
-    if not createGui or not car or type(lobby.create) ~= "function" then
-        return false, "Lobby creation is unavailable"
+    local createGui = playerGui and (playerGui:FindFirstChild("CreateLobbyGui")
+        or playerGui:WaitForChild("CreateLobbyGui", 10))
+    if not createGui then
+        return false, "Create lobby UI is unavailable"
     end
 
-    self:SetPhase("Creating Game", "Vehicle: " .. car)
-    self:CreateTeleportLoader()
-    local ok, result = pcall(lobby.create, {
+    local car = AutomationOwnedCar()
+    if not car then return false, "No owned vehicle available" end
+
+    if type(lobby.play) == "function" then pcall(lobby.play) end
+
+    local createFrame = createGui:FindFirstChild("Frame")
+    local exitFrame = createGui:FindFirstChild("Exit")
+    local waitExpires = os.clock() + 10
+    repeat
+        createFrame = createGui:FindFirstChild("Frame")
+        exitFrame = createGui:FindFirstChild("Exit")
+        if exitFrame and exitFrame.Visible then
+            pcall(lobby.exit)
+            task.wait(0.5)
+        end
+        task.wait(0.2)
+    until (createFrame and createFrame.Visible)
+        or os.clock() >= waitExpires
+        or not self.Running or self.Token ~= token
+
+    if not createFrame or not createFrame.Visible then
+        return false, "Lobby create frame did not appear"
+    end
+    if type(lobby.create) ~= "function" then
+        return false, "Lobby create is unavailable"
+    end
+
+    -- جهّز الطابور قبل الإنشاء
+    if not self:QueueForTeleport(self.GamePlaceId) then
+        return false, self.LastError or "Game queue failed"
+    end
+
+    self:SetPhase("Creating Game", "Vehicle: "..car)
+    createFrame.Visible = false
+    local ok, err = pcall(lobby.create, {
         maxPlayers = 1,
         permissions = "Friends",
         car = car,
     })
-
     if not ok then
-        return false, tostring(result)
+        return false, tostring(err)
     end
-    return true
+    return true, "Creating"
 end
 
 function Automation:Start()
-    if self.Running then
-        return
-    end
-
+    if self.Running then return end
     if not AutomationFlow then
         self.LastError = "FlowClient is unavailable"
         self:SetPhase("Start Failed", self.LastError)
@@ -862,35 +1125,45 @@ function Automation:Start()
     self.GateActivations = 0
     self.NPCRequests = 0
     self.Replays = 0
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+    self.LastGameJob = ""
     self:SetPhase("Starting", "Automation enabled")
     self:Persist()
 
     task.spawn(function()
         local token = self.Token
         while self.Running and self.Token == token do
-            local context = self:GetContext()
+            local ctx = self:GetContext()
             local ok, result, detail = xpcall(function()
-                if context == "Lobby" then
-                    return self:RunLobby(token)
-                elseif context == "Game" then
-                    return self:RunGame(token)
-                end
-                return false, "Unsupported place: " .. tostring(game.PlaceId)
-            end, function(errorMessage)
+                if ctx == "Lobby" then return self:RunLobby(token) end
+                if ctx == "Game" then return self:RunGame(token) end
+                return false, "Unsupported place: "..tostring(game.PlaceId)
+            end, function(m)
                 if debug and type(debug.traceback) == "function" then
-                    return debug.traceback(tostring(errorMessage), 2)
+                    return debug.traceback(tostring(m), 2)
                 end
-                return tostring(errorMessage)
+                return tostring(m)
             end)
+            if not ok then result, detail = false, tostring(result) end
 
-            if not ok then
-                result, detail = false, tostring(result)
+            if self.Token ~= token or not self.Running then break end
+
+            -- انتظر قليلاً لتفعيل الـ Teleport
+            if result == true and (detail == "ReplayQueued"
+                or detail == "ReplayClicked"
+                or detail == "Creating"
+                or detail == "EndScreen")
+            then
+                task.wait(2)
             end
 
             if not result and self.Running and self.Token == token then
                 self.Retries += 1
                 self.LastError = tostring(detail or "Automation failed")
                 self:SetPhase("Retrying", self.LastError)
+                self:Persist()
                 task.wait(math.max(3, self.RetryDelay))
             elseif self.Running and self.Token == token then
                 task.wait(1)
@@ -913,18 +1186,21 @@ end
 function Automation:Stop()
     self.Running = false
     self.Token = nil
-    if self.Root and self.Root.Parent then
-        self.Root.Anchored = self.RootWasAnchored == true
-    end
-    self.Root = nil
-    self.RootWasAnchored = nil
+    AutomationReleaseSafe()
     self:SetPhase("Stopped", "Automation is disabled")
+    pcall(function()
+        local ts = game:GetService("TeleportService")
+        ts:SetTeleportSetting(self.EnabledKey, false)
+        ts:SetTeleportSetting(self.TransitionKey, "")
+    end)
     self:Persist()
 end
 
--- [ 7. AUTOMATION PANEL - NO TABS ]
-Main.Size = UDim2.new(0, 300, 0, 360)
-Main.Position = UDim2.new(0.5, -150, 0.5, -180)
+-- ============================================================================
+-- الواجهة
+-- ============================================================================
+Main.Size = UDim2.new(0, 320, 0, 400)
+Main.Position = UDim2.new(0.5, -160, 0.5, -200)
 currentSize = Main.Size
 Main.Visible = true
 isOpen = true
@@ -974,23 +1250,21 @@ local function AutomationToggle(key, text, default, callback)
 
     local state = default == true
     local function render()
-        button.Text = "  " .. text .. "    [" .. (state and "ON" or "OFF") .. "]"
+        button.Text = "  "..text.."    ["..(state and "ON" or "OFF").."]"
         button.BackgroundColor3 = state and Color3.fromRGB(20, 92, 145) or Color3.fromRGB(25, 25, 25)
     end
-    local function setState(nextState, fire)
-        state = nextState == true
+    local function setState(next, fire)
+        state = next == true
         render()
         if fire and callback then callback(state) end
     end
     Automation.ToggleSetters[key] = setState
-    button.MouseButton1Click:Connect(function()
-        setState(not state, true)
-    end)
+    button.MouseButton1Click:Connect(function() setState(not state, true) end)
     render()
     return button
 end
 
-local function AutomationNumber(key, text, default, minValue, maxValue, callback)
+local function AutomationNumber(key, text, default, minV, maxV, callback)
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, -4, 0, 30)
     box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -1002,10 +1276,10 @@ local function AutomationNumber(key, text, default, minValue, maxValue, callback
     box.ClearTextOnFocus = false
     box.Parent = AutomationPanel
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-    local function setValue(nextValue, fire)
-        local value = math.clamp(tonumber(nextValue) or default, minValue, maxValue)
-        box.Text = tostring(value)
-        if fire and callback then callback(value) end
+    local function setValue(next, fire)
+        local v = math.clamp(tonumber(next) or default, minV, maxV)
+        box.Text = tostring(v)
+        if fire and callback then callback(v) end
     end
     Automation.NumberSetters[key] = setValue
     box.FocusLost:Connect(function() setValue(box.Text, true) end)
@@ -1013,36 +1287,35 @@ local function AutomationNumber(key, text, default, minValue, maxValue, callback
 end
 
 AutomationLabel("AUTOMATION", 26, Config.AccentColor)
-AutomationToggle("AutoFarm", "Auto Farm", false, function(value)
-    if value then
-        Automation:Start()
-    else
-        Automation:Stop()
-    end
+AutomationToggle("AutoFarm", "Auto Farm", false, function(v)
+    if v then Automation:Start() else Automation:Stop() end
 end)
-AutomationToggle("SafeGateWait", "Safe Gate Wait", true, function(value)
-    Automation.SafeGateWait = value
+AutomationToggle("SafeGateWait", "Safe Gate Wait", true, function(v)
+    Automation.SafeGateWait = v
+    if not v then AutomationReleaseSafe() end
+    if Automation.StateReady then Automation:Persist() end
 end)
-AutomationToggle("AutoReplay", "Auto Replay", true, function(value)
-    Automation.AutoReplay = value
+AutomationToggle("AutoReplay", "Auto Replay", true, function(v)
+    Automation.AutoReplay = v
+    if Automation.StateReady then Automation:Persist() end
 end)
 AutomationLabel("Delay Between Runs", 20, Color3.fromRGB(170, 170, 170))
-AutomationNumber("LobbyDelay", "Seconds", Automation.LobbyDelay, 0, 30, function(value)
-    Automation.LobbyDelay = value
+AutomationNumber("LobbyDelay", "Seconds", Automation.LobbyDelay, 0, 30, function(v)
+    Automation.LobbyDelay = v
     if Automation.StateReady then Automation:Persist() end
 end)
 AutomationLabel("Gate Timeout", 20, Color3.fromRGB(170, 170, 170))
-AutomationNumber("GateTimeout", "Seconds", Automation.GateTimeout, 125, 240, function(value)
-    Automation.GateTimeout = value
+AutomationNumber("GateTimeout", "Seconds", Automation.GateTimeout, 125, 240, function(v)
+    Automation.GateTimeout = v
     if Automation.StateReady then Automation:Persist() end
 end)
 AutomationLabel("Retry Delay", 20, Color3.fromRGB(170, 170, 170))
-AutomationNumber("RetryDelay", "Seconds", Automation.RetryDelay, 3, 30, function(value)
-    Automation.RetryDelay = value
+AutomationNumber("RetryDelay", "Seconds", Automation.RetryDelay, 3, 30, function(v)
+    Automation.RetryDelay = v
     if Automation.StateReady then Automation:Persist() end
 end)
 
-Automation.Controls.Status = AutomationLabel("Status: Idle\nReady", 42, Color3.fromRGB(235, 235, 235))
+Automation.Controls.Status = AutomationLabel("Status: Idle\nReady", 42)
 Automation.Controls.Stats = AutomationLabel("Session: 00:00:00 | Runs: 0/0\nFailures: 0 | Retries: 0 | NPC: 0\nCurrent run: 00:00:00 | Gate: --", 56, Color3.fromRGB(180, 210, 230))
 Automation.Controls.Error = AutomationLabel("Last error: None", 28, Color3.fromRGB(255, 145, 145))
 
@@ -1057,13 +1330,9 @@ ResetButton.Parent = AutomationPanel
 Instance.new("UICorner", ResetButton).CornerRadius = UDim.new(0, 6)
 ResetButton.MouseButton1Click:Connect(function()
     Automation.StartedAt = Automation.Running and os.time() or 0
-    Automation.Attempts = 0
-    Automation.Completed = 0
-    Automation.Failed = 0
-    Automation.Retries = 0
-    Automation.GateActivations = 0
-    Automation.NPCRequests = 0
-    Automation.Replays = 0
+    Automation.Attempts = 0; Automation.Completed = 0; Automation.Failed = 0
+    Automation.Retries = 0; Automation.GateActivations = 0
+    Automation.NPCRequests = 0; Automation.Replays = 0
     Automation.LastError = "None"
     Automation:UpdateUI()
 end)
@@ -1096,11 +1365,12 @@ pcall(function()
         end
     end)
 end)
+
 Automation:LoadState()
 Automation:ApplyLoadedState()
 Automation:UpdateUI()
 
-print("LP10 HUB: RUNAWAYS Automation loaded | by LPOLVO")
+print("LP10 HUB: RUNAWAYS Automation FIXED loaded | by LPOLVO")
 ]=]
 LP10SelfEnv.LP10RunawaysAutomationSource = LP10AutomationSource
 local LP10Run = loadstring(LP10AutomationSource)
