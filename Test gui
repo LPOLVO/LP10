@@ -164,11 +164,18 @@ local CollectionService = AutomationCollectionService
 local RunService = AutomationRunService
 local AutomationPlayer = Players.LocalPlayer
 local AutomationEnv = getgenv and getgenv() or _G
-local player = AutomationPlayer
+local player
 
 while not AutomationPlayer do
     task.wait()
     AutomationPlayer = Players.LocalPlayer
+end
+player = AutomationPlayer
+
+if AutomationEnv.AutoLoot and type(AutomationEnv.AutoLoot.Unload) == "function" then
+    pcall(function()
+        AutomationEnv.AutoLoot:Unload()
+    end)
 end
 
 if AutomationEnv.LP10AutomationGui and AutomationEnv.LP10AutomationGui.Parent then
@@ -188,6 +195,21 @@ local flow = require(AutomationReplicatedStorage:WaitForChild("FlowClient"))
 local env = AutomationEnv
 library.Rage = {}
 library.VehicleMods = {}
+
+function library:Unload()
+    self.Unloaded = true
+    if self.AutoFarm and type(self.AutoFarm.Destroy) == "function" then
+        pcall(function()
+            self.AutoFarm:Destroy()
+        end)
+    end
+    if AutomationEnv.LP10AutomationGui == ScreenGui then
+        AutomationEnv.LP10AutomationGui = nil
+    end
+    pcall(function()
+        ScreenGui:Destroy()
+    end)
+end
 
 local function notify(text)
     print("[LP10 HUB] " .. tostring(text))
@@ -5249,6 +5271,7 @@ Main.Position = UDim2.new(0.5, -150, 0.5, -180)
 currentSize = Main.Size
 Main.Visible = true
 isOpen = true
+ScreenGui.ResetOnSpawn = false
 
 local automationPanel = Instance.new("ScrollingFrame")
 automationPanel.Name = "AutomationOnly"
