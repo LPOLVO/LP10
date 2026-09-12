@@ -1,6 +1,10 @@
+-- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM | SELF-RELOADING
+-- Wrapper stores the whole source in getgenv so it can re-execute itself
+-- after Replay/Teleport, restoring all toggles and settings automatically.
+
+local LP10SelfEnv = getgenv and getgenv() or _G
+local LP10AutomationSource = [==[
 -- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM
--- This version ports the ACTUAL AutoFarm logic from the open-source RUNAWAYS.lua
--- including ReachGate, GetGatePassage, WaitForGate, SafeZone, TeleportRecovery.
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -14,8 +18,8 @@ local Config = {
     HubName = "LP10 HUB",
     AccentColor = Color3.fromRGB(33, 150, 243),
     BgColor = Color3.fromRGB(15, 15, 15),
-    MinSize = Vector2.new(200, 150),
-    MaxSize = Vector2.new(600, 500)
+    MinSize = Vector2.new(180, 130),
+    MaxSize = Vector2.new(480, 400)
 }
 
 local LP10BootstrapEnv = getgenv and getgenv() or _G
@@ -61,11 +65,11 @@ local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "LP_Toggle"
 ToggleBtn.Parent = ScreenGui
 ToggleBtn.BackgroundColor3 = Config.BgColor
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
-ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
 ToggleBtn.AutoButtonColor = false
 ToggleBtn.Text = ""
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
 local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
 ToggleStroke.Color = Config.AccentColor
 ToggleStroke.Thickness = 2
@@ -79,40 +83,40 @@ LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
 LP_Label.TextScaled = true
 local UIGradient = Instance.new("UIGradient", LP_Label)
 UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))})
-Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 10)
+Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 8)
 
--- [ 4. MAIN FRAME ]
+-- [ 4. MAIN FRAME — SMALLER SIZE ]
 local Main = Instance.new("Frame")
 Main.Name = "MainFrame"
 Main.Parent = ScreenGui
 Main.BackgroundColor3 = Config.BgColor
-Main.Position = UDim2.new(0.5, -170, 0.5, -220)
-Main.Size = UDim2.new(0, 340, 0, 440)
+Main.Position = UDim2.new(0.5, -130, 0.5, -170)
+Main.Size = UDim2.new(0, 260, 0, 340)
 Main.Visible = false
 Main.Active = true
 Main.ClipsDescendants = true
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = Config.AccentColor
 MainStroke.Thickness = 2
 
 local Header = Instance.new("TextLabel", Main)
-Header.Size = UDim2.new(1, 0, 0, 45)
+Header.Size = UDim2.new(1, 0, 0, 34)
 Header.BackgroundTransparency = 1
 Header.Font = Enum.Font.GothamBold
 Header.Text = "💎 " .. Config.HubName
 Header.TextColor3 = Config.AccentColor
-Header.TextSize = 18
+Header.TextSize = 14
 
 -- [ 5. RESIZE SYSTEM ]
 local ResizeHandle = Instance.new("TextButton", Main)
 ResizeHandle.Name = "ResizeHandle"
-ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
-ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.Size = UDim2.new(0, 18, 0, 18)
+ResizeHandle.Position = UDim2.new(1, -18, 1, -18)
 ResizeHandle.BackgroundTransparency = 1
 ResizeHandle.Text = "◢"
 ResizeHandle.TextColor3 = Config.AccentColor
-ResizeHandle.TextSize = 15
+ResizeHandle.TextSize = 13
 
 local currentSize = Main.Size
 
@@ -180,8 +184,7 @@ local function notify(msg)
 end
 
 -- ============================================================================
--- SECTION B: TELEPORTS HELPERS (ported from RUNAWAYS.lua)
--- These are essential for AutoFarm's gate navigation.
+-- SECTION B: TELEPORTS HELPERS
 -- ============================================================================
 local teleports = {
     LastPosition = nil,
@@ -197,19 +200,14 @@ end
 function teleports:GetRoadNear(z)
     local map = workspace:FindFirstChild("Map")
     if not map then return end
-
     local best
     local bestDistance = math.huge
     local bestArea = 0
-
     for _, part in map:GetDescendants() do
         local name = part.Name:lower()
         local parentName = part.Parent and part.Parent.Name:lower()
-        if part:IsA("BasePart")
-            and (name == "road" or name == "sideroad" or parentName == "road")
-            and not name:find("pathfinding", 1, true)
-            and part.CanCollide
-            and part.Transparency < 0.95
+        if part:IsA("BasePart") and (name == "road" or name == "sideroad" or parentName == "road")
+            and not name:find("pathfinding", 1, true) and part.CanCollide and part.Transparency < 0.95
         then
             local distance = math.max(math.abs(part.Position.Z - z) - math.max(part.Size.X, part.Size.Z) * 0.5, 0)
             local area = part.Size.X * part.Size.Z
@@ -220,10 +218,7 @@ function teleports:GetRoadNear(z)
             end
         end
     end
-
-    if bestDistance <= 2000 then
-        return best
-    end
+    if bestDistance <= 2000 then return best end
 end
 
 function teleports:GetEndPrompt()
@@ -231,7 +226,6 @@ function teleports:GetEndPrompt()
     local buildings = map and map:FindFirstChild("Buildings")
     local customs = buildings and buildings:FindFirstChild("CustomsFinal")
     if not customs then return end
-
     local customsBuilding = customs:FindFirstChild("CustomsBuilding")
     local finalDoor = customsBuilding and customsBuilding:FindFirstChild("FinalDoor")
     local command = finalDoor and finalDoor:FindFirstChild("Command")
@@ -239,7 +233,6 @@ function teleports:GetEndPrompt()
     local holder = commandButton and commandButton:FindFirstChild("Prompt")
     local prompt = holder and (holder:IsA("ProximityPrompt") and holder or holder:FindFirstChildOfClass("ProximityPrompt"))
     if prompt then return prompt end
-
     local ok, candidates = pcall(customs.QueryDescendants, customs, "ProximityPrompt")
     if ok then
         for _, candidate in candidates do
@@ -258,7 +251,6 @@ function teleports:GetEndAnchor(endZ, direction)
     local buildings = map and map:FindFirstChild("Buildings")
     local best = source
     local bestDistance = math.huge
-
     if buildings then
         for _, building in buildings:GetChildren() do
             if building:IsA("Model") then
@@ -277,7 +269,6 @@ function teleports:GetEndAnchor(endZ, direction)
             end
         end
     end
-
     return Vector3.new(best.X, best.Y + 30, endZ - direction * 35)
 end
 
@@ -290,33 +281,24 @@ function teleports:GetEndPromptDestination(prompt, direction)
         holderCFrame = holder.CFrame
     end
     if not holderCFrame then return end
-
     local outward = holderCFrame.LookVector
     if outward.Z * direction > 0 then outward = -outward end
     if math.abs(outward.Z) < 0.25 then outward = Vector3.new(0, 0, -direction) end
-
     local position = holderCFrame.Position + outward * 4
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = AutomationPlayer.Character and { AutomationPlayer.Character } or {}
-
     local result = workspace:Raycast(position + Vector3.yAxis * 20, Vector3.new(0, -60, 0), params)
     if result then
         position = Vector3.new(position.X, result.Position.Y + 3.25, position.Z)
     end
-
-    return CFrame.lookAt(
-        position,
-        Vector3.new(holderCFrame.Position.X, position.Y, holderCFrame.Position.Z),
-        Vector3.yAxis
-    )
+    return CFrame.lookAt(position, Vector3.new(holderCFrame.Position.X, position.Y, holderCFrame.Position.Z), Vector3.yAxis)
 end
 
 function teleports:GetEndZ()
     local flowModule = ReplicatedStorage:FindFirstChild("FlowClient")
     local gui = flowModule and flowModule:FindFirstChild("Gui")
     local distanceModule = gui and gui:FindFirstChild("DistanceToBorderClient")
-
     if distanceModule then
         local ok, module = pcall(require, distanceModule)
         if ok and type(module) == "table" then
@@ -332,7 +314,6 @@ function teleports:GetEndZ()
             end
         end
     end
-
     local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
     if playerGui then
         for _, label in playerGui:GetDescendants() do
@@ -351,31 +332,23 @@ end
 function teleports:GetStartCFrame()
     local spawn = workspace:FindFirstChildOfClass("SpawnLocation")
     if not spawn or not spawn.Enabled then return end
-
     local excludes = { spawn }
-    if AutomationPlayer.Character then
-        excludes[#excludes + 1] = AutomationPlayer.Character
-    end
-
+    if AutomationPlayer.Character then excludes[#excludes + 1] = AutomationPlayer.Character end
     local parameters = RaycastParams.new()
     parameters.FilterType = Enum.RaycastFilterType.Exclude
     parameters.FilterDescendantsInstances = excludes
     parameters.RespectCanCollide = true
-
     local result = workspace:Raycast(spawn.Position + Vector3.yAxis * 6, -Vector3.yAxis * 20, parameters)
     local y = result and result.Position.Y + 3.5 or spawn.Position.Y + 3
-
     return CFrame.new(spawn.Position.X, y, spawn.Position.Z) * spawn.CFrame.Rotation
 end
 
 function teleports:Move(destination, subject, saveLast)
     if typeof(destination) ~= "CFrame" then return false end
-
     local character = AutomationPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
     if not character or not humanoid or not root or humanoid.Health <= 0 then return false end
-
     subject = subject or character
     local mover = subject == character and root or nil
     if subject ~= character then
@@ -383,11 +356,7 @@ function teleports:Move(destination, subject, saveLast)
         mover = system and system:FindFirstChild("chassis")
     end
     if not mover or not subject.Parent then return false end
-
-    if saveLast ~= false then
-        self.LastPosition = root.CFrame
-    end
-
+    if saveLast ~= false then self.LastPosition = root.CFrame end
     local camera = workspace.CurrentCamera
     local cameraCFrame = camera and camera.CFrame
     local cameraSubject = camera and camera.CameraSubject
@@ -396,7 +365,6 @@ function teleports:Move(destination, subject, saveLast)
         camera.CameraType = Enum.CameraType.Scriptable
         camera.CFrame = cameraCFrame
     end
-
     local ok = pcall(function()
         if subject == character and humanoid.SeatPart then
             humanoid.Sit = false
@@ -408,7 +376,6 @@ function teleports:Move(destination, subject, saveLast)
         mover.AssemblyAngularVelocity = Vector3.zero
         RunService.Heartbeat:Wait()
     end)
-
     if camera and camera.Parent then
         camera.CameraSubject = cameraSubject
         camera.CameraType = cameraType
@@ -418,7 +385,7 @@ function teleports:Move(destination, subject, saveLast)
 end
 
 -- ============================================================================
--- SECTION C: AUTOFARM — FULLY PORTED FROM RUNAWAYS.lua
+-- SECTION C: AUTOFARM (port from RUNAWAYS.lua)
 -- ============================================================================
 library = library or {}
 library.Unloaded = false
@@ -433,61 +400,25 @@ local AutoFarm = {
     SessionKey = "LP10_RUNAWAYS_AUTO_FARM_SESSION",
     TransitionKey = "LP10_RUNAWAYS_AUTO_FARM_TRANSITION",
 
-    TeleportLoader = [[
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua?cb=" .. tostring(os.time())))()
-    ]],
+    -- ★ KEY CHANGE: Use stored LP10 source (from getgenv) instead of RUNAWAYS URL
+    TeleportLoader = (env and env.LP10RunawaysAutomationSource) or "",
 
-    Running = false,
-    ResumeRequested = false,
-    Token = nil,
-    QueueJob = nil,
-    Revision = 0,
-    Teleporting = false,
-    RunActive = false,
-    ActiveRunToken = nil,
-    RunHeartbeat = 0,
-    Phase = "Idle",
-    Detail = "Ready",
-    GateText = "--",
-    LastError = "None",
-    QueueStatus = "Not armed",
-    SessionId = "",
-    TransitionToken = "",
-    ExpectedPlaceId = 0,
-    TransitionAt = 0,
-    StartedAt = 0,
-    RunStartedAt = 0,
-    RunCashStart = 0,
-    RunWinsStart = 0,
-    LastCredzBalance = nil,
-    LastWins = nil,
-    PendingCredz = 0,
-    PendingWins = 0,
-    BalanceWarmupUntil = 0,
-    GateStartedAt = 0,
-    PendingFinish = false,
-    FinishCrossed = false,
-    PendingAt = 0,
-    ResultBusy = false,
-    ResultFinalized = false,
-    ReplayRequested = false,
-    SafeCFrame = nil,
-    SafeCharacter = nil,
-    SafeRootAnchored = nil,
-    LastGameJob = "",
-    LastSnapshot = nil,
-    LastPersistAt = 0,
-    StateReady = false,
-    TeleportFailureGeneration = 0,
-    TeleportRecoveryGeneration = 0,
-    TeleportRetryCount = 0,
-    TeleportRetryDelay = 0,
-    TeleportRetryTarget = 0,
-    TeleportRetryOptions = nil,
-    TeleportRecovering = false,
-    LastTeleportFailureAt = 0,
-    LastEndScreenScanAt = 0,
-    CrossCollisions = nil,
+    Running = false, ResumeRequested = false, Token = nil, QueueJob = nil,
+    Revision = 0, Teleporting = false, RunActive = false, ActiveRunToken = nil,
+    RunHeartbeat = 0, Phase = "Idle", Detail = "Ready", GateText = "--",
+    LastError = "None", QueueStatus = "Not armed", SessionId = "",
+    TransitionToken = "", ExpectedPlaceId = 0, TransitionAt = 0, StartedAt = 0,
+    RunStartedAt = 0, RunCashStart = 0, RunWinsStart = 0,
+    LastCredzBalance = nil, LastWins = nil, PendingCredz = 0, PendingWins = 0,
+    BalanceWarmupUntil = 0, GateStartedAt = 0, PendingFinish = false,
+    FinishCrossed = false, PendingAt = 0, ResultBusy = false,
+    ResultFinalized = false, ReplayRequested = false,
+    SafeCFrame = nil, SafeCharacter = nil, SafeRootAnchored = nil,
+    LastGameJob = "", LastSnapshot = nil, LastPersistAt = 0, StateReady = false,
+    TeleportFailureGeneration = 0, TeleportRecoveryGeneration = 0,
+    TeleportRetryCount = 0, TeleportRetryDelay = 0, TeleportRetryTarget = 0,
+    TeleportRetryOptions = nil, TeleportRecovering = false,
+    LastTeleportFailureAt = 0, LastEndScreenScanAt = 0, CrossCollisions = nil,
 
     Config = {
         LobbyDelay = 3,
@@ -498,18 +429,9 @@ local AutoFarm = {
     },
 
     Stats = {
-        Attempts = 0,
-        Completed = 0,
-        Failed = 0,
-        Teleports = 0,
-        GateActivations = 0,
-        NPCAttacks = 0,
-        Retries = 0,
-        Replays = 0,
-        CashEarned = 0,
-        TotalRunTime = 0,
-        BestRun = 0,
-        LastRun = 0,
+        Attempts = 0, Completed = 0, Failed = 0, Teleports = 0,
+        GateActivations = 0, NPCAttacks = 0, Retries = 0, Replays = 0,
+        CashEarned = 0, TotalRunTime = 0, BestRun = 0, LastRun = 0,
     },
 }
 
@@ -523,11 +445,9 @@ end
 local function killAllNPCs(radius)
     local folder = workspace:FindFirstChild("NPCs")
     if not folder or not flow.NPCs or type(flow.NPCs.Damage) ~= "function" then return 0 end
-
     local character = AutomationPlayer.Character
     local playerRoot = character and character:FindFirstChild("HumanoidRootPart")
     local killed = 0
-
     for _, humanoid in folder:QueryDescendants("Humanoid") do
         local npc = humanoid:FindFirstAncestorWhichIsA("Model")
         local npcRoot = npc and npc:FindFirstChild("HumanoidRootPart")
@@ -538,12 +458,6 @@ local function killAllNPCs(radius)
         end
     end
     return killed
-end
-
-local function blockDamage(value)
-    if flow.PlayerDamage and type(flow.PlayerDamage.TakeDamage) == "function" then
-        -- Only block if not already blocked; simple
-    end
 end
 
 function AutoFarm:GetContext()
@@ -569,12 +483,25 @@ function AutoFarm:GetQueueFunction()
 end
 
 function AutoFarm:GetTeleportLoader()
+    -- Try the injected source first, then fall back to the object field
+    local fromEnv = env and env.LP10RunawaysAutomationSource
+    if type(fromEnv) == "string" and fromEnv ~= "" then
+        return fromEnv:match("^%s*(.-)%s*$") or fromEnv
+    end
     return tostring(self.TeleportLoader or ""):match("^%s*(.-)%s*$") or ""
 end
 
 function AutoFarm:HasTeleportLoader()
     local loader = self:GetTeleportLoader()
-    return loader ~= "" and not loader:match("^%-%-")
+    if loader == "" then return false end
+    -- Accept if it has at least one actual code line (not only comments)
+    for line in loader:gmatch("[^\n]+") do
+        local trimmed = line:match("^%s*(.-)%s*$")
+        if trimmed ~= "" and not trimmed:match("^%-%-") then
+            return true
+        end
+    end
+    return false
 end
 
 function AutoFarm:GetTeleportQueueError(expectedPlaceId)
@@ -597,26 +524,14 @@ function AutoFarm:GetDataValue(name)
     end
 end
 
-function AutoFarm:GetCash()
-    return self:GetDataValue("coins")
-end
-
-function AutoFarm:GetWins()
-    return self:GetDataValue("wins")
-end
-
-function AutoFarm:GetEffectiveCredz()
-    return (tonumber(self.LastCredzBalance) or 0) + math.max(0, tonumber(self.PendingCredz) or 0)
-end
-
-function AutoFarm:GetEffectiveWins()
-    return (tonumber(self.LastWins) or 0) + math.max(0, tonumber(self.PendingWins) or 0)
-end
+function AutoFarm:GetCash() return self:GetDataValue("coins") end
+function AutoFarm:GetWins() return self:GetDataValue("wins") end
+function AutoFarm:GetEffectiveCredz() return (tonumber(self.LastCredzBalance) or 0) + math.max(0, tonumber(self.PendingCredz) or 0) end
+function AutoFarm:GetEffectiveWins() return (tonumber(self.LastWins) or 0) + math.max(0, tonumber(self.PendingWins) or 0) end
 
 function AutoFarm:SyncProgress(reset)
     local credz = self:GetCash()
     local wins = self:GetWins()
-
     if type(credz) == "number" then
         if reset or type(self.LastCredzBalance) ~= "number" then
             self.LastCredzBalance = credz
@@ -631,7 +546,6 @@ function AutoFarm:SyncProgress(reset)
             self.LastCredzBalance = credz
         end
     end
-
     if type(wins) == "number" then
         if reset or type(self.LastWins) ~= "number" then
             self.LastWins = wins
@@ -713,7 +627,6 @@ function AutoFarm:Persist()
         return game:GetService("HttpService"):JSONEncode(self:GetSnapshot())
     end)
     if not ok then return false end
-
     self.LastSnapshot = encoded
     self.LastPersistAt = os.clock()
 
@@ -781,7 +694,7 @@ function AutoFarm:ApplySnapshot(snapshot)
     self.BalanceWarmupUntil = os.clock() + 10
 
     if type(snapshot.Stats) == "table" then
-        for name, value in self.Stats do
+        for name, value in pairs(self.Stats) do
             self.Stats[name] = tonumber(snapshot.Stats[name]) or value
         end
     end
@@ -804,7 +717,6 @@ function AutoFarm:ApplySnapshot(snapshot)
 
     self.ResumeRequested = self.SessionId ~= "" and snapshot.Enabled == true
         and os.time() - (tonumber(snapshot.UpdatedAt) or 0) <= 900
-
     return true
 end
 
@@ -825,21 +737,15 @@ function AutoFarm:LoadState()
             value = decoded
         end
         if type(value) ~= "table" or value.UserId ~= AutomationPlayer.UserId then return end
-
         local updated = tonumber(value.UpdatedAt) or 0
         local revision = tonumber(value.Revision) or 0
-
         if not preferenceBest or updated > (tonumber(preferenceBest.UpdatedAt) or 0) then
             preferenceBest = value
         end
-
         local transitionAt = tonumber(value.TransitionAt) or 0
-        if transitionToken ~= ""
-            and tostring(value.TransitionToken or "") == transitionToken
-            and transitionAt > 0
-            and math.abs(os.time() - transitionAt) <= 900
-            and tostring(value.SessionId or "") ~= ""
-            and value.Enabled == true
+        if transitionToken ~= "" and tostring(value.TransitionToken or "") == transitionToken
+            and transitionAt > 0 and math.abs(os.time() - transitionAt) <= 900
+            and tostring(value.SessionId or "") ~= "" and value.Enabled == true
             and os.time() - updated <= 900
             and (updated > resumeUpdated or (updated == resumeUpdated and revision >= resumeRevision))
         then
@@ -885,7 +791,7 @@ function AutoFarm:LoadState()
     self.LastGameJob = ""
     self.LastError = "None"
     self.GateText = "--"
-    for name in self.Stats do self.Stats[name] = 0 end
+    for name in pairs(self.Stats) do self.Stats[name] = 0 end
 end
 
 function AutoFarm:QueueTeleport(reason, expectedPlaceId)
@@ -964,7 +870,7 @@ function AutoFarm:GetOwnedCar()
     local read, cars = pcall(observer.get, observer)
     if not read or type(cars) ~= "table" then return end
     local names = {}
-    for name in cars do names[#names + 1] = tostring(name) end
+    for name in pairs(cars) do names[#names + 1] = tostring(name) end
     table.sort(names)
     return names[1]
 end
@@ -973,14 +879,12 @@ function AutoFarm:WaitForTeleport(token, duration, failureGeneration)
     local expires = os.clock() + duration
     failureGeneration = tonumber(failureGeneration) or self.TeleportFailureGeneration
     if self.TeleportFailureGeneration ~= failureGeneration then return false, "Teleport failed" end
-
     repeat
         if self.TeleportFailureGeneration ~= failureGeneration then return false, "Teleport failed" end
         if self.Teleporting then return true, "Teleport started" end
         task.wait(0.25)
     until not self.Running or self.Token ~= token or library.Unloaded
         or self.TeleportFailureGeneration ~= failureGeneration or os.clock() >= expires
-
     if self.Teleporting and self.TeleportFailureGeneration == failureGeneration then
         return true, "Teleport started"
     end
@@ -1042,7 +946,7 @@ function AutoFarm:StartTeleportRecovery(token)
             return
         end
 
-        self:SetPhase(exactRetry and "Retrying Teleport" or target == self.GamePlaceId and "Rejoining Game" or "Rejoining Lobby",
+        self:SetPhase(exactRetry and "Retrying Teleport" or (target == self.GamePlaceId and "Rejoining Game" or "Rejoining Lobby"),
             "Recovery attempt " .. tostring(attempt))
         self:Persist()
 
@@ -1088,13 +992,11 @@ function AutoFarm:HandleTeleportFailure(result, message, targetPlaceId, teleport
     task.defer(self.DismissTeleportError, self)
     if os.clock() - self.LastTeleportFailureAt < 0.75 then return end
     self.LastTeleportFailureAt = os.clock()
-
     local target = tonumber(targetPlaceId)
     if target ~= self.LobbyPlaceId and target ~= self.GamePlaceId then target = tonumber(self.ExpectedPlaceId) end
     if target ~= self.LobbyPlaceId and target ~= self.GamePlaceId then
-        target = self:GetContext() == "Game" and self:IsAutoReplayEnabled() and self.GamePlaceId or self.LobbyPlaceId
+        target = self:GetContext() == "Game" and (self:IsAutoReplayEnabled() and self.GamePlaceId or self.LobbyPlaceId) or self.LobbyPlaceId
     end
-
     self.TeleportFailureGeneration += 1
     self.Teleporting = false
     self.QueueJob = nil
@@ -1115,7 +1017,6 @@ function AutoFarm:GetEndScreen()
     local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
     if not playerGui then return end
     local endFrame = playerGui:FindFirstChild("EndFrame", true)
-
     local function visible(instance)
         local current = instance
         while current and current ~= playerGui do
@@ -1125,7 +1026,6 @@ function AutoFarm:GetEndScreen()
         end
         return current == playerGui
     end
-
     local function layer(instance)
         local current = instance
         while current and current ~= playerGui do
@@ -1133,7 +1033,6 @@ function AutoFarm:GetEndScreen()
             current = current.Parent
         end
     end
-
     if endFrame and visible(endFrame) then
         local escaped = endFrame:FindFirstChild("Escaped", true)
         local captured = endFrame:FindFirstChild("Captured", true)
@@ -1141,7 +1040,7 @@ function AutoFarm:GetEndScreen()
         if escaped and visible(escaped) then return endFrame, "Escaped" end
         if captured and visible(captured) then return endFrame, "Captured" end
         if option and visible(option) then return endFrame, "Ended" end
-        for _, instance in endFrame:GetDescendants() do
+        for _, instance in ipairs(endFrame:GetDescendants()) do
             if instance:IsA("GuiObject") and visible(instance) then
                 local name = instance.Name:lower()
                 local text = (instance:IsA("TextLabel") or instance:IsA("TextButton")) and instance.Text:lower() or ""
@@ -1151,11 +1050,9 @@ function AutoFarm:GetEndScreen()
         end
         return
     end
-
     if os.clock() - self.LastEndScreenScanAt < 1 then return end
     self.LastEndScreenScanAt = os.clock()
-
-    for _, instance in playerGui:GetDescendants() do
+    for _, instance in ipairs(playerGui:GetDescendants()) do
         if instance:IsA("GuiObject") and visible(instance) then
             local name = instance.Name:lower()
             local text = (instance:IsA("TextLabel") or instance:IsA("TextButton")) and instance.Text:lower() or ""
@@ -1198,7 +1095,7 @@ function AutoFarm:GetReplayButton(endFrame)
         local nested = direct:FindFirstChildWhichIsA("GuiButton", true)
         if nested and matches(nested) then return nested end
     end
-    for _, button in endFrame:GetDescendants() do
+    for _, button in ipairs(endFrame:GetDescendants()) do
         if matches(button) then return button end
     end
 end
@@ -1223,7 +1120,7 @@ end
 function AutoFarm:GetResultCredz(endFrame)
     local total = endFrame and endFrame:FindFirstChild("Total", true)
     if not total then return end
-    for _, name in { "RobloxPlus", "Credz" } do
+    for _, name in ipairs({ "RobloxPlus", "Credz" }) do
         local label = total:FindFirstChild(name, true)
         if label and (label:IsA("TextLabel") or label:IsA("TextButton")) and self:IsVisible(label) then
             local digits = tostring(label.Text or ""):gsub("[^%d]", "")
@@ -1238,12 +1135,10 @@ function AutoFarm:FinalizeRun(outcome, detail, reward)
     local duration = self.RunStartedAt > 0 and math.max(0, os.time() - self.RunStartedAt) or 0
     local active = self.RunStartedAt > 0
     self:SyncProgress()
-
     local effectiveCredz = self:GetEffectiveCredz()
     local effectiveWins = self:GetEffectiveWins()
     local earned = math.max(0, effectiveCredz - (tonumber(self.RunCashStart) or effectiveCredz))
     local reported = tonumber(reward)
-
     if active and reported and reported > earned then
         local missing = reported - earned
         self.Stats.CashEarned += missing
@@ -1251,14 +1146,11 @@ function AutoFarm:FinalizeRun(outcome, detail, reward)
         effectiveCredz += missing
         earned = reported
     end
-
     self:ReleaseSafeZone()
     self.ResultFinalized = true
-
     if active then
         self.Stats.Attempts = math.max(self.Stats.Attempts, self.Stats.Completed + self.Stats.Failed + 1)
     end
-
     if active and outcome == "Escaped" then
         self.Stats.Completed += 1
         if effectiveWins <= (tonumber(self.RunWinsStart) or effectiveWins) then
@@ -1272,7 +1164,6 @@ function AutoFarm:FinalizeRun(outcome, detail, reward)
         self.Stats.Failed += 1
         self.Stats.LastRun = duration
     end
-
     self.PendingFinish = false
     self.FinishCrossed = false
     self.PendingAt = 0
@@ -1282,7 +1173,6 @@ function AutoFarm:FinalizeRun(outcome, detail, reward)
     self.GateStartedAt = 0
     self.GatePassage = nil
     self.GateText = "--"
-
     if outcome == "Escaped" then
         self.LastError = "None"
         self:SetPhase("Run Completed", (detail or "Finish confirmed") .. " | +" .. tostring(math.floor(earned)) .. " Credz")
@@ -1311,7 +1201,6 @@ function AutoFarm:HandleEndScreen(token)
     if self.ResultBusy then return false, "Result already being handled" end
     local endFrame, outcome = self:GetEndScreen()
     if not endFrame then return false, "Result screen unavailable" end
-
     self.ResultBusy = true
     self:ReleaseSafeZone()
 
@@ -1322,7 +1211,6 @@ function AutoFarm:HandleEndScreen(token)
             endFrame, outcome = self:GetEndScreen()
         until outcome ~= "Ended" or not endFrame or not self.Running or self.Token ~= token or os.clock() >= outcomeExpires
     end
-
     if outcome == "Escaped" or (outcome == "Ended" and self.FinishCrossed) then
         outcome = "Escaped"
     else
@@ -1342,8 +1230,7 @@ function AutoFarm:HandleEndScreen(token)
         return true, "Stopped"
     end
 
-    self:FinalizeRun(outcome,
-        outcome == "Escaped" and "Finish confirmed" or "The run ended before the finish", reward)
+    self:FinalizeRun(outcome, outcome == "Escaped" and "Finish confirmed" or "The run ended before the finish", reward)
 
     if not self.Running or self.Token ~= token then
         self.ResultBusy = false
@@ -1364,10 +1251,8 @@ function AutoFarm:HandleEndScreen(token)
         repeat
             self.RunHeartbeat = os.clock()
             if self.Teleporting then return true, "Teleporting" end
-
             local currentFrame = self:GetEndScreen()
             if not currentFrame then
-                -- reset detection
                 local currentCharacter = AutomationPlayer.Character
                 local currentHumanoid = currentCharacter and currentCharacter:FindFirstChildOfClass("Humanoid")
                 if currentHumanoid and currentHumanoid.Health > 0 and os.clock() - replayStartedAt >= 2 then
@@ -1451,10 +1336,8 @@ function AutoFarm:HandleEndScreen(token)
         self.ResultBusy = false
         return false, "Lobby return unavailable"
     end
-
     local queued, queueError = self:QueueTeleport("lobby", self.LobbyPlaceId)
     if not queued then self.LastError = tostring(queueError) end
-
     local failureGeneration = self.TeleportFailureGeneration
     local called = pcall(flow.GameManager.BackToLobby)
     if not called then
@@ -1492,7 +1375,6 @@ function AutoFarm:RunLobby(token)
 
     local car = self:GetOwnedCar()
     if not car then return false, "No owned vehicle" end
-
     local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
     local createGui = playerGui and (playerGui:FindFirstChild("CreateLobbyGui") or playerGui:WaitForChild("CreateLobbyGui", 10))
     if not createGui then return false, "Create lobby UI unavailable" end
@@ -1507,7 +1389,6 @@ function AutoFarm:RunLobby(token)
         if not self.Running or self.Token ~= token then return true end
         createFrame = createGui:FindFirstChild("Frame")
         exitFrame = createGui:FindFirstChild("Exit")
-
         if exitFrame and exitFrame.Visible then
             pcall(flow.LobbyServer.exit)
             local leaveExpires = os.clock() + 5
@@ -1518,7 +1399,6 @@ function AutoFarm:RunLobby(token)
                 continue
             end
         end
-
         if not createFrame or not createFrame.Visible then
             pcall(flow.LobbyServer.play)
             local selectionExpires = os.clock() + 10
@@ -1529,7 +1409,6 @@ function AutoFarm:RunLobby(token)
                 or (createFrame and createFrame.Visible) or (exitFrame and exitFrame.Visible)
                 or os.clock() >= selectionExpires
         end
-
         if exitFrame and exitFrame.Visible then
             self.Stats.Retries += 1
             pcall(flow.LobbyServer.exit)
@@ -1548,18 +1427,15 @@ function AutoFarm:RunLobby(token)
         local failureGeneration = self.TeleportFailureGeneration
         local created = pcall(flow.LobbyServer.create, { maxPlayers = 1, permissions = "Friends", car = car })
         if not created then return false, "Create failed" end
-
         local joinExpires = os.clock() + 5
         repeat task.wait(0.2) until self.Teleporting or (exitFrame and exitFrame.Visible)
             or not self.Running or self.Token ~= token or os.clock() >= joinExpires
-
         local teleportStarted = self.Teleporting
         if not teleportStarted then
             teleportStarted = self:WaitForTeleport(token, 20, failureGeneration)
         end
         if teleportStarted then return true end
         if self.TeleportRecovering then return false, "Teleport recovery active" end
-
         self.Stats.Retries += 1
         pcall(flow.LobbyServer.exit)
         if flow.LobbyClient and type(flow.LobbyClient.forceLeave_event) == "function" then
@@ -1571,7 +1447,6 @@ function AutoFarm:RunLobby(token)
     self:SetPhase("Refreshing Lobby", "Game creation timed out")
     local requeued = self:QueueTeleport("lobby retry", self.LobbyPlaceId)
     if not requeued then return false, "Lobby retry failed" end
-
     local failureGeneration = self.TeleportFailureGeneration
     pcall(game:GetService("TeleportService").Teleport,
         game:GetService("TeleportService"), self.LobbyPlaceId, AutomationPlayer)
@@ -1583,7 +1458,6 @@ function AutoFarm:ReachGate(token)
     self:SetPhase("Traveling", "Teleporting to end gate")
     local endZ
     local expires = os.clock() + 20
-
     repeat
         endZ = teleports:GetEndZ()
         if not endZ then task.wait(0.25) end
@@ -1593,7 +1467,6 @@ function AutoFarm:ReachGate(token)
     local start = teleports:GetStartCFrame()
     local direction = (not start or endZ >= start.Position.Z) and 1 or -1
     local anchor = teleports:GetEndAnchor(endZ, direction)
-
     teleports:Stream(anchor)
     local prompt = teleports:GetEndPrompt()
 
@@ -1657,11 +1530,11 @@ function AutoFarm:GetGateTimer(prompt)
     local ok, labels = pcall(finalDoor.QueryDescendants, finalDoor, "TextLabel")
     if not ok then
         labels = {}
-        for _, instance in finalDoor:GetDescendants() do
+        for _, instance in ipairs(finalDoor:GetDescendants()) do
             if instance:IsA("TextLabel") then labels[#labels + 1] = instance end
         end
     end
-    for _, label in labels do
+    for _, label in ipairs(labels) do
         local text = label.Text
         local minutes, seconds = text:match("(%d+)%s*m%s*(%d+)%s*s")
         if not minutes then minutes, seconds = text:match("(%d+)%s*:%s*(%d+)") end
@@ -1678,11 +1551,11 @@ function AutoFarm:CaptureGate(prompt)
     local ok, parts = pcall(finalDoor.QueryDescendants, finalDoor, "BasePart")
     if not ok then
         parts = {}
-        for _, instance in finalDoor:GetDescendants() do
+        for _, instance in ipairs(finalDoor:GetDescendants()) do
             if instance:IsA("BasePart") then parts[#parts + 1] = instance end
         end
     end
-    for _, part in parts do
+    for _, part in ipairs(parts) do
         records[part] = {
             Position = part.Position,
             CanCollide = part.CanCollide,
@@ -1705,11 +1578,11 @@ function AutoFarm:GetGatePassage(prompt, direction, endZ)
         local ok, parts = pcall(finalDoor.QueryDescendants, finalDoor, "BasePart")
         if not ok then
             parts = {}
-            for _, instance in finalDoor:GetDescendants() do
+            for _, instance in ipairs(finalDoor:GetDescendants()) do
                 if instance:IsA("BasePart") then parts[#parts + 1] = instance end
             end
         end
-        for _, part in parts do
+        for _, part in ipairs(parts) do
             if part.CanCollide and part.Transparency < 0.95 and part.Size.Y >= 4
                 and (not command or not part:IsDescendantOf(command))
             then
@@ -1742,14 +1615,12 @@ function AutoFarm:GetGatePassage(prompt, direction, endZ)
     if finalDoor then excludes[#excludes + 1] = finalDoor end
     parameters.FilterDescendantsInstances = excludes
     parameters.RespectCanCollide = true
-
     local result = workspace:Raycast(position + Vector3.yAxis * 30, -Vector3.yAxis * 80, parameters)
     if result then
         position = Vector3.new(position.X, result.Position.Y + 3.5, position.Z)
     elseif road then
         position = Vector3.new(position.X, road.Position.Y + road.Size.Y * 0.5 + 3.5, position.Z)
     end
-
     return {
         Position = position,
         Direction = direction,
@@ -1774,7 +1645,6 @@ function AutoFarm:IsGatePassageOpen(passage)
         if cl and cl:IsA("BasePart") then passage.DoorL = cl end
         if cr and cr:IsA("BasePart") then passage.DoorR = cr end
     end
-
     local leftDoor, rightDoor = passage.DoorL, passage.DoorR
     if leftDoor and leftDoor.Parent and leftDoor:IsA("BasePart")
         and rightDoor and rightDoor.Parent and rightDoor:IsA("BasePart")
@@ -1793,7 +1663,6 @@ function AutoFarm:IsGatePassageOpen(passage)
             return difference.Magnitude - leftHalf - rightHalf >= 12
         end
     end
-
     local parameters = RaycastParams.new()
     parameters.FilterType = Enum.RaycastFilterType.Exclude
     parameters.FilterDescendantsInstances = AutomationPlayer.Character and { AutomationPlayer.Character } or {}
@@ -1815,7 +1684,6 @@ function AutoFarm:IsGateWindowOpen()
             if opensAt and closesAt and now >= opensAt and now < closesAt then return true end
         end
     end
-
     local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
     local hud = playerGui and playerGui:FindFirstChild("HudGui")
     local events = hud and hud:FindFirstChild("Events")
@@ -1836,20 +1704,17 @@ function AutoFarm:ActivateGate(prompt, direction, token)
         end
         self.GateStartedAt = 0
     end
-
     self:SetPhase("Activating Gate", "Starting two minute countdown")
     local records = self:CaptureGate(prompt)
 
     for attempt = 1, 3 do
         if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
-
         local destination = teleports:GetEndPromptDestination(prompt, direction)
         if destination then
             teleports:Move(destination, nil, false)
             task.wait(0.4)
         end
         if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
-
         local before = self:GetGateTimer(prompt)
         local fired = false
         if type(fireproximityprompt) == "function" then
@@ -1866,7 +1731,6 @@ function AutoFarm:ActivateGate(prompt, direction, token)
             end)
         end
         if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
-
         if fired then
             local expires = os.clock() + 6
             repeat
@@ -1894,7 +1758,6 @@ end
 function AutoFarm:GetSafeCFrame()
     local passage = self.GatePassage
     if not passage or typeof(passage.Position) ~= "Vector3" then return end
-
     local finalDoor = passage.FinalDoor
     local customsBuilding = finalDoor and finalDoor:FindFirstAncestor("CustomsBuilding")
     local prompt = teleports:GetEndPrompt()
@@ -1904,9 +1767,8 @@ function AutoFarm:GetSafeCFrame()
         or passage.Position
     local bestFloor
     local bestDistance = math.huge
-
     if customsBuilding then
-        for _, office in customsBuilding:GetChildren() do
+        for _, office in ipairs(customsBuilding:GetChildren()) do
             if office.Name == "CustomsOffice" then
                 local floor = office:FindFirstChild("Floor", true)
                 if floor and floor:IsA("BasePart") then
@@ -1916,7 +1778,6 @@ function AutoFarm:GetSafeCFrame()
             end
         end
     end
-
     if bestFloor then
         local position = bestFloor.CFrame:PointToWorldSpace(Vector3.new(5, bestFloor.Size.Y * 0.5 + 3.25, 8))
         return CFrame.lookAt(position, Vector3.new(promptPosition.X, position.Y, promptPosition.Z), Vector3.yAxis)
@@ -1945,7 +1806,6 @@ end
 function AutoFarm:MoveToSafeZone(token)
     if not self.Config.SafeGateWait then self:ReleaseSafeZone(); return true end
     if not self.Running or self.Token ~= token then return false, "Auto Farm stopped" end
-
     local destination = self:GetSafeCFrame()
     local character = AutomationPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -1953,26 +1813,21 @@ function AutoFarm:MoveToSafeZone(token)
     if not destination or not humanoid or not root or humanoid.Health <= 0 then
         return false, "Safe gate position unavailable"
     end
-
     self:ReleaseSafeZone()
     self.SafeCharacter = character
     self.SafeRootAnchored = root.Anchored
     self.SafeCFrame = destination
-
     local moved = teleports:Move(destination, nil, false)
     if not moved then self:ReleaseSafeZone(); return false, "Could not enter safe zone" end
     if not self.Running or self.Token ~= token or library.Unloaded then
         self:ReleaseSafeZone(); return false, "Auto Farm stopped"
     end
     if not self.Config.SafeGateWait then self:ReleaseSafeZone(); return true end
-
     if AutomationPlayer.Character ~= character or self.SafeCharacter ~= character or self.SafeCFrame ~= destination then
         self:ReleaseSafeZone(); return false, "Character changed while entering safe zone"
     end
-
     root = character:FindFirstChild("HumanoidRootPart")
     if not root then self:ReleaseSafeZone(); return false, "Root missing" end
-
     root.CFrame = destination
     root.AssemblyLinearVelocity = Vector3.zero
     root.AssemblyAngularVelocity = Vector3.zero
@@ -1987,7 +1842,6 @@ function AutoFarm:MaintainSafeZone(token)
     local character = AutomationPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
-
     if character ~= self.SafeCharacter or not self.SafeCFrame then
         return self:MoveToSafeZone(token)
     end
@@ -2005,7 +1859,6 @@ function AutoFarm:WaitForGate(token, prompt, records)
     local timeout = self.Config.GateTimeout
     local expires = os.clock() + timeout
     self:SetPhase("Waiting for Gate", "God Mode and NPC clearing active")
-
     repeat
         self.RunHeartbeat = os.clock()
         local endFrame = self:GetEndScreen()
@@ -2014,7 +1867,6 @@ function AutoFarm:WaitForGate(token, prompt, records)
             local _, result = self:HandleEndScreen(token)
             return false, result
         end
-
         local safe, safeError = self:MaintainSafeZone(token)
         if not safe then
             self:ReleaseSafeZone()
@@ -2028,25 +1880,20 @@ function AutoFarm:WaitForGate(token, prompt, records)
             until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= resultExpires
             return false, safeError
         end
-
         local elapsed = math.max(0, os.time() - self.GateStartedAt)
         local seconds, text = self:GetGateTimer(prompt)
         if text then self.GateText = text
         else self.GateText = self:FormatDuration(math.max(120 - elapsed, 0)):sub(4) end
-
         local passageRead, passageOpen = pcall(self.IsGatePassageOpen, self, self.GatePassage)
         local windowRead, gateWindowOpen = pcall(self.IsGateWindowOpen, self)
         local timedOpen = self.GateStartedAt > 0 and elapsed >= 120
-
         if (passageRead and passageOpen) or (windowRead and gateWindowOpen) or timedOpen then
             self:ReleaseSafeZone()
             return true
         end
-
         if os.clock() - self.LastPersistAt >= 10 then self:Persist() end
         task.wait(0.5)
     until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= expires
-
     if not self.Running or self.Token ~= token then self:ReleaseSafeZone(); return false, "Auto Farm stopped" end
     self:ReleaseSafeZone()
     return false, "Gate wait timed out"
@@ -2058,7 +1905,7 @@ function AutoFarm:SetCrossNoclip(value)
         self.CrossCollisions = {}
         local character = AutomationPlayer.Character
         if character then
-            for _, part in character:GetDescendants() do
+            for _, part in ipairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
                     self.CrossCollisions[part] = part.CanCollide
                     part.CanCollide = false
@@ -2067,7 +1914,7 @@ function AutoFarm:SetCrossNoclip(value)
         end
         return
     end
-    for part, canCollide in self.CrossCollisions or {} do
+    for part, canCollide in pairs(self.CrossCollisions or {}) do
         if part.Parent then part.CanCollide = canCollide end
     end
     self.CrossCollisions = nil
@@ -2092,7 +1939,6 @@ function AutoFarm:CrossGate(token, prompt, direction, endZ)
     self:ReleaseSafeZone()
     self:SetPhase("Entering Finish", "Crossing the opened gate")
     self:SetCrossNoclip(true)
-
     local character = AutomationPlayer.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -2100,35 +1946,28 @@ function AutoFarm:CrossGate(token, prompt, direction, endZ)
         self:SetCrossNoclip(false)
         return false, "Character unavailable"
     end
-
     local passage = self.GatePassage or self:GetGatePassage(prompt, direction, endZ)
     if not passage then
         self:SetCrossNoclip(false)
         return false, "Gate passage unavailable"
     end
-
     self:IsGatePassageOpen(passage)
     teleports:Stream(passage.Position)
     task.wait(0.4)
-
     local finishOffset = math.max(12, (tonumber(endZ) and (endZ - passage.Position.Z) * direction or 0) + 12)
-
-    for _, offset in { -10, -3, 6, finishOffset, finishOffset + 24, finishOffset + 50, finishOffset + 85 } do
+    for _, offset in ipairs({ -10, -3, 6, finishOffset, finishOffset + 24, finishOffset + 50, finishOffset + 85 }) do
         if not self.Running or self.Token ~= token or library.Unloaded then
             self:SetCrossNoclip(false)
             return false, "Auto Farm stopped"
         end
-
         local position = passage.Position + Vector3.new(0, 0, direction * offset)
         local moved = teleports:Move(
             CFrame.lookAt(position, position + Vector3.new(0, 0, direction), Vector3.yAxis), nil, false)
-
         local crossedEnd = (tonumber(endZ) and (position.Z - endZ) * direction >= 0) or offset >= 6
         if moved and crossedEnd and not self.FinishCrossed then
             self.FinishCrossed = true
             self:Persist()
         end
-
         task.wait(0.4)
         if self.Teleporting then
             self:SetCrossNoclip(false)
@@ -2139,7 +1978,6 @@ function AutoFarm:CrossGate(token, prompt, direction, endZ)
             return self:HandleEndScreen(token)
         end
     end
-
     humanoid:MoveTo(passage.Position + Vector3.new(0, 0, direction * 110))
     local handled, result = self:WaitForFinishResult(token, 35)
     if handled then return true, result end
@@ -2151,9 +1989,7 @@ function AutoFarm:RunGame(token)
     if self.PendingFinish and self.LastGameJob ~= "" and self.LastGameJob ~= game.JobId then
         self:CompletePending("Replay transition confirmed")
     end
-
     if self:GetEndScreen() then return self:HandleEndScreen(token) end
-
     if self.LastGameJob ~= game.JobId then
         self:ReleaseSafeZone()
         self.BalanceWarmupUntil = os.clock() + 10
@@ -2173,7 +2009,6 @@ function AutoFarm:RunGame(token)
         self.Stats.Attempts += 1
         self:Persist()
     end
-
     self:SetPhase("Loading Game", "Waiting for character and map")
     local expires = os.clock() + 30
     repeat
@@ -2196,7 +2031,6 @@ function AutoFarm:RunGame(token)
 
     local prompt, direction, endZ, reachError, gateAlreadyActivated = self:ReachGate(token)
     if not prompt and not gateAlreadyActivated then return false, reachError end
-
     local records
     if gateAlreadyActivated then
         records = self:CaptureGate(prompt)
@@ -2205,7 +2039,6 @@ function AutoFarm:RunGame(token)
         if not activated then return false, activationError end
         records = activationRecords
     end
-
     local opened, gateError = self:WaitForGate(token, prompt, records)
     if not opened then
         if gateError == "Replay" or gateError == "Teleporting" or gateError == "Stopped" then
@@ -2213,12 +2046,10 @@ function AutoFarm:RunGame(token)
         end
         return false, gateError
     end
-
     self.PendingFinish = true
     self.FinishCrossed = true
     self.PendingAt = os.time()
     self:Persist()
-
     local autoReplay = self:IsAutoReplayEnabled()
     local nextPlaceId = autoReplay and self.GamePlaceId or self.LobbyPlaceId
     local queued, queueError = self:QueueTeleport(autoReplay and "replay" or "lobby", nextPlaceId)
@@ -2228,7 +2059,6 @@ function AutoFarm:RunGame(token)
         self.PendingAt = 0
         return false, queueError
     end
-
     for attempt = 1, 3 do
         local crossed, crossError = self:CrossGate(token, prompt, direction, endZ)
         if crossed then return true, crossError end
@@ -2237,7 +2067,6 @@ function AutoFarm:RunGame(token)
         self.LastError = crossError
         task.wait(attempt * 2)
     end
-
     self.PendingFinish = false
     self.FinishCrossed = false
     self.PendingAt = 0
@@ -2264,7 +2093,6 @@ function AutoFarm:Run(token)
     while self.Running and self.Token == token and not library.Unloaded do
         self.RunHeartbeat = os.clock()
         if self.TeleportRecovering then task.wait(0.25); continue end
-
         local executed, ok, message = xpcall(function()
             local context = self:GetContext()
             if context == "Lobby" then return self:RunLobby(token) end
@@ -2277,7 +2105,6 @@ function AutoFarm:Run(token)
             end
             return tostring(message)
         end)
-
         if not executed then
             message = ok
             ok = false
@@ -2286,7 +2113,6 @@ function AutoFarm:Run(token)
             self.ResultBusy = false
             self.ReplayRequested = false
         end
-
         if self.TeleportRecovering then failures = 0; task.wait(0.25); continue end
         if ok and message == "Replay" and not self.Teleporting and self.Running and self.Token == token then
             failures = 0
@@ -2297,13 +2123,11 @@ function AutoFarm:Run(token)
             self:ReleaseRun(token)
             return
         end
-
         failures += 1
         self.Stats.Retries += 1
         self.LastError = tostring(message or "Unknown error")
         self:SetPhase("Retrying", self.LastError)
         self:Persist()
-
         local delay = self.Config.RetryDelay
         local expires = os.clock() + math.min(delay * failures, 30)
         repeat self.RunHeartbeat = os.clock(); task.wait(0.25)
@@ -2320,7 +2144,6 @@ function AutoFarm:Start()
         notify(self.LastError)
         return
     end
-
     local resumed = self.ResumeRequested
     if not resumed then
         self.SessionId = tostring(AutomationPlayer.UserId) .. "-" .. tostring(os.time()) .. "-" .. tostring(math.random(100000, 999999))
@@ -2328,7 +2151,6 @@ function AutoFarm:Start()
     elseif self.StartedAt <= 0 then
         self.StartedAt = os.time()
     end
-
     self.ResumeRequested = false
     self.Running = true
     self.RunActive = false
@@ -2370,24 +2192,19 @@ function AutoFarm:Start()
         return
     end
 
-    -- NPC killer loop
     task.spawn(function()
         local token = self.Token
         while self.Running and self.Token == token and not library.Unloaded do
             local context = self:GetContext()
             if context == "Game" then
                 local humanoid = getHumanoid()
-                if humanoid then
-                    -- simple god mode
-                    if humanoid.Health < humanoid.MaxHealth then humanoid.Health = humanoid.MaxHealth end
-                end
+                if humanoid and humanoid.Health < humanoid.MaxHealth then humanoid.Health = humanoid.MaxHealth end
                 self.Stats.NPCAttacks += killAllNPCs()
             end
             task.wait(context == "Game" and 0.4 or 1)
         end
     end)
 
-    -- Result screen watcher
     task.spawn(function()
         local token = self.Token
         while self.Running and self.Token == token and not library.Unloaded do
@@ -2417,7 +2234,6 @@ function AutoFarm:ResetStats()
     local active = self.Running and self.RunStartedAt > 0
     local runCashStart = self:GetEffectiveCredz()
     local runWinsStart = self:GetEffectiveWins()
-
     self.StartedAt = now
     self.RunStartedAt = active and now or 0
     self.RunCashStart = runCashStart
@@ -2439,7 +2255,6 @@ end
 
 function AutoFarm:Stop(silent)
     if not self.Running and not self.ResumeRequested then return end
-
     self.Running = false
     self.ResumeRequested = false
     self.Token = nil
@@ -2467,282 +2282,4 @@ function AutoFarm:Stop(silent)
     self.GateStartedAt = 0
     self.GatePassage = nil
     self.GateText = "--"
-    self.QueueStatus = "Disabled"
-    self:ReleaseSafeZone()
-    self:SetCrossNoclip(false)
-    self:DismissTeleportError()
-
-    pcall(function()
-        local ts = game:GetService("TeleportService")
-        ts:SetTeleportSetting(self.EnabledKey, false)
-        ts:SetTeleportSetting(self.TransitionKey, "")
-    end)
-
-    self:SetPhase("Stopped", "Auto Farm disabled")
-    self:Persist()
-    if not silent then notify("Auto Farm stopped.") end
-end
-
--- ============================================================================
--- SECTION D: LP10 UI PANEL (AutoFarm Wired In)
--- ============================================================================
-LP10UI = {
-    toggles = {
-        autoFarm = false,
-        safeGateWait = true,
-        autoReplay = true,
-    },
-    refs = {},
-}
-
-local AutomationPanel = Instance.new("ScrollingFrame")
-AutomationPanel.Name = "AutomationPanel"
-AutomationPanel.Parent = Main
-AutomationPanel.Position = UDim2.new(0, 8, 0, 50)
-AutomationPanel.Size = UDim2.new(1, -16, 1, -68)
-AutomationPanel.BackgroundTransparency = 1
-AutomationPanel.BorderSizePixel = 0
-AutomationPanel.ScrollBarThickness = 4
-AutomationPanel.ScrollBarImageColor3 = Config.AccentColor
-AutomationPanel.CanvasSize = UDim2.new()
-AutomationPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-local Layout = Instance.new("UIListLayout", AutomationPanel)
-Layout.Padding = UDim.new(0, 6)
-Layout.SortOrder = Enum.SortOrder.LayoutOrder
-
-local function makeLabel(text, height, color)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -4, 0, height or 28)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
-    label.Text = text
-    label.TextColor3 = color or Color3.fromRGB(235, 235, 235)
-    label.TextSize = 13
-    label.TextWrapped = true
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.TextYAlignment = Enum.TextYAlignment.Center
-    label.Parent = AutomationPanel
-    return label
-end
-
-local function makeToggle(text, default, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -4, 0, 30)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    btn.AutoButtonColor = false
-    btn.Font = Enum.Font.GothamBold
-    btn.TextColor3 = Color3.fromRGB(245, 245, 245)
-    btn.TextSize = 13
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = AutomationPanel
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-
-    local state = default == true
-    local function render()
-        btn.Text = "  " .. text .. "    [" .. (state and "ON" or "OFF") .. "]"
-        btn.BackgroundColor3 = state and Color3.fromRGB(20, 92, 145) or Color3.fromRGB(25, 25, 25)
-    end
-    render()
-
-    local setter
-    setter = function(newState, fire)
-        state = newState == true
-        render()
-        if fire and callback then callback(state) end
-    end
-
-    btn.MouseButton1Click:Connect(function()
-        setter(not state, true)
-    end)
-    return btn, setter
-end
-
-local function makeNumber(text, default, minV, maxV, callback)
-    local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -4, 0, 30)
-    box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    box.Font = Enum.Font.Gotham
-    box.PlaceholderText = text
-    box.Text = tostring(default)
-    box.TextColor3 = Color3.fromRGB(245, 245, 245)
-    box.TextSize = 13
-    box.ClearTextOnFocus = false
-    box.Parent = AutomationPanel
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-    box.FocusLost:Connect(function()
-        local v = math.clamp(tonumber(box.Text) or default, minV, maxV)
-        box.Text = tostring(v)
-        if callback then callback(v) end
-    end)
-    return box
-end
-
-makeLabel("AUTOMATION", 26, Config.AccentColor)
-
-local autoFarmBtn, autoFarmSet = makeToggle("Auto Farm", false, function(v)
-    LP10UI.toggles.autoFarm = v
-    if v then AutoFarm:Start() else AutoFarm:Stop() end
-end)
-LP10UI.setAutoFarmToggle = function(v) autoFarmSet(v, false) end
-LP10UI.refs.autoFarmBtn = autoFarmBtn
-
-local safeGateBtn, safeGateSet = makeToggle("Safe Gate Wait", true, function(v)
-    LP10UI.toggles.safeGateWait = v
-    AutoFarm.Config.SafeGateWait = v
-    if not v then AutoFarm:ReleaseSafeZone() end
-    if AutoFarm.StateReady then AutoFarm:Persist() end
-end)
-LP10UI.refs.safeGateBtn = safeGateBtn
-
-local autoReplayBtn, autoReplaySet = makeToggle("Auto Replay", true, function(v)
-    LP10UI.toggles.autoReplay = v
-    AutoFarm.Config.AutoReplay = v
-    if AutoFarm.StateReady then AutoFarm:Persist() end
-end)
-LP10UI.refs.autoReplayBtn = autoReplayBtn
-
-makeLabel("Delay Between Runs", 20, Color3.fromRGB(170, 170, 170))
-local delayBox = makeNumber("Seconds", 3, 0, 30, function(v)
-    AutoFarm.Config.LobbyDelay = v
-    if AutoFarm.StateReady then AutoFarm:Persist() end
-end)
-LP10UI.refs.delayBox = delayBox
-
-makeLabel("Gate Timeout", 20, Color3.fromRGB(170, 170, 170))
-local gateBox = makeNumber("Seconds", 165, 125, 240, function(v)
-    AutoFarm.Config.GateTimeout = v
-    if AutoFarm.StateReady then AutoFarm:Persist() end
-end)
-LP10UI.refs.gateBox = gateBox
-
-makeLabel("Retry Delay", 20, Color3.fromRGB(170, 170, 170))
-local retryBox = makeNumber("Seconds", 10, 3, 30, function(v)
-    AutoFarm.Config.RetryDelay = v
-    if AutoFarm.StateReady then AutoFarm:Persist() end
-end)
-LP10UI.refs.retryBox = retryBox
-
-local StatusLabel = makeLabel("Status: Idle\nReady", 42)
-local StatsLabel = makeLabel("Session: 00:00:00 | Runs: 0/0\nFailures: 0 | Retries: 0 | NPC: 0\nCurrent run: 00:00:00 | Gate: --", 56, Color3.fromRGB(180, 210, 230))
-local ErrorLabel = makeLabel("Last error: None", 28, Color3.fromRGB(255, 145, 145))
-LP10UI.refs.status = StatusLabel
-LP10UI.refs.stats = StatsLabel
-LP10UI.refs.error = ErrorLabel
-
-local resetBtn = Instance.new("TextButton")
-resetBtn.Size = UDim2.new(1, -4, 0, 30)
-resetBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-resetBtn.Font = Enum.Font.GothamBold
-resetBtn.Text = "Reset Statistics"
-resetBtn.TextColor3 = Color3.fromRGB(245, 245, 245)
-resetBtn.TextSize = 13
-resetBtn.Parent = AutomationPanel
-Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
-resetBtn.MouseButton1Click:Connect(function()
-    AutoFarm:ResetStats()
-    LP10UI.update()
-end)
-
-local Footer = Instance.new("TextLabel")
-Footer.Name = "LPOLVOFooter"
-Footer.Parent = Main
-Footer.Position = UDim2.new(0, 8, 1, -20)
-Footer.Size = UDim2.new(1, -16, 0, 16)
-Footer.BackgroundTransparency = 1
-Footer.Font = Enum.Font.Gotham
-Footer.Text = "by LPOLVO"
-Footer.TextColor3 = Config.AccentColor
-Footer.TextSize = 11
-Footer.TextXAlignment = Enum.TextXAlignment.Right
-
--- ============================================================================
--- SECTION E: LIVE SYNC LOOP
--- ============================================================================
-local function dur(v)
-    v = math.max(0, math.floor(tonumber(v) or 0))
-    return string.format("%02d:%02d:%02d", math.floor(v/3600), math.floor(v%3600/60), v%60)
-end
-
-LP10UI.update = function()
-    local elapsed = AutoFarm.StartedAt > 0 and os.time() - AutoFarm.StartedAt or 0
-    local runElapsed = AutoFarm.RunStartedAt > 0 and os.time() - AutoFarm.RunStartedAt or 0
-
-    StatusLabel.Text = "Status: " .. AutoFarm.Phase .. "\n" .. AutoFarm.Detail
-    StatsLabel.Text = string.format(
-        "Session: %s | Runs: %d/%d\nFailures: %d | Retries: %d | NPC: %d\nCurrent run: %s | Gate: %s",
-        dur(elapsed), AutoFarm.Stats.Completed, AutoFarm.Stats.Attempts,
-        AutoFarm.Stats.Failed, AutoFarm.Stats.Retries, AutoFarm.Stats.NPCAttacks,
-        dur(runElapsed), AutoFarm.GateText or "--"
-    )
-    ErrorLabel.Text = "Last error: " .. tostring(AutoFarm.LastError)
-
-    -- sync toggle visuals with actual state
-    if AutoFarm.Running and not LP10UI.toggles.autoFarm then
-        autoFarmSet(true, false)
-        LP10UI.toggles.autoFarm = true
-    elseif not AutoFarm.Running and LP10UI.toggles.autoFarm then
-        autoFarmSet(false, false)
-        LP10UI.toggles.autoFarm = false
-    end
-end
-
-task.spawn(function()
-    while not library.Unloaded do
-        task.wait(0.5)
-        LP10UI.update()
-        if AutoFarm.Running and AutoFarm:GetContext() == "Game"
-            and os.clock() - AutoFarm.LastPersistAt >= 10
-        then
-            AutoFarm:Persist()
-        end
-    end
-end)
-
--- ============================================================================
--- SECTION F: TELEPORT EVENT HOOKS
--- ============================================================================
-AutomationPlayer.OnTeleport:Connect(function(state)
-    if not AutoFarm.Running then return end
-    if state == Enum.TeleportState.Started or state == Enum.TeleportState.InProgress then
-        if not AutoFarm.Teleporting then
-            AutoFarm.Stats.Teleports += 1
-        end
-        AutoFarm.Teleporting = true
-        AutoFarm:SetPhase("Teleporting", "Moving to next server")
-        AutoFarm:Persist()
-    end
-end)
-
-game:GetService("TeleportService").TeleportInitFailed:Connect(
-    function(failedPlayer, result, message, targetPlaceId, teleportOptions)
-        if failedPlayer ~= AutomationPlayer then return end
-        AutoFarm:HandleTeleportFailure(result, message, targetPlaceId, teleportOptions)
-    end
-)
-
--- ============================================================================
--- SECTION G: INITIAL LOAD
--- ============================================================================
-AutoFarm:LoadState()
-
-if LP10UI.refs.delayBox then LP10UI.refs.delayBox.Text = tostring(AutoFarm.Config.LobbyDelay) end
-if LP10UI.refs.gateBox then LP10UI.refs.gateBox.Text = tostring(AutoFarm.Config.GateTimeout) end
-if LP10UI.refs.retryBox then LP10UI.refs.retryBox.Text = tostring(AutoFarm.Config.RetryDelay) end
-safeGateSet(AutoFarm.Config.SafeGateWait, false)
-autoReplaySet(AutoFarm.Config.AutoReplay, false)
-LP10UI.toggles.safeGateWait = AutoFarm.Config.SafeGateWait
-LP10UI.toggles.autoReplay = AutoFarm.Config.AutoReplay
-
-AutoFarm.StateReady = true
-LP10UI.update()
-
-if AutoFarm.ResumeRequested then
-    task.defer(function()
-        autoFarmSet(true, true)
-    end)
-else
-    AutoFarm:Persist()
-end
-
-print("LP10 HUB: RUNAWAYS AutoFarm (Full Port) loaded | by LPOLVO")
+    self.QueueStatus
