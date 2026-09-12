@@ -959,11 +959,16 @@ function AutoFarm:QueueTeleport(reason, expectedPlaceId)
             .. "%s\n"
             .. "end\n"
             .. "end",
-        self.LobbyPlaceId, self.GamePlaceId,
-        "Players", "TeleportService",
-        self.TransitionKey, self.EnabledKey,
-        transitionToken, transitionToken, transitionToken,
-        snapshot, loader
+        self.LobbyPlaceId,
+        self.GamePlaceId,
+        "Players",
+        "TeleportService",
+        self.TransitionKey,
+        self.EnabledKey,
+        transitionToken,
+        transitionToken,
+        snapshot,
+        loader
     )
 
     local ok, message = pcall(queueFunction, payload)
