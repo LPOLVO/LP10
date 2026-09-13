@@ -5,7 +5,7 @@
 ║   BY @LPOLVO (HAMZA)  |  INSTAGRAM: @4me.h4mz4_                                     ║
 ║   DELTA · CODEX · XENO · ARCEUS X · FLUXUS · MOBILE · PC                            ║
 ║                                                                                      ║
-║   Purple Aurora Shell  ·  36 Scripts  ·  Full-Screen  ·  ~200KB                     ║
+║   Purple Aurora Shell  ·  39 Scripts  ·  Full-Screen  ·  ~200KB                 ║
 ║   Live FPS/PING/MEM  ·  Favorites  ·  Pinned  ·  Recent  ·  Search                  ║
 ║   Electric Glow FX  ·  Settings  ·  Changelog  ·  Restore Orb                       ║
 ║   Pure LuaU  ·  No External Libraries  ·  Zero Syntax Errors                        ║
@@ -35,6 +35,7 @@ local Cam = workspace.CurrentCamera
 -- COLOUR PALETTE  —  Royal Blue / Aurora
 -- ════════════════════════════════════════════════════════════════════════════
 local C = {
+    -- Core Royal Blue
     royal      = Color3.fromRGB(124, 58,  237),
     electric   = Color3.fromRGB(157, 92,  255),
     elecDark   = Color3.fromRGB(88,  28,  180),
@@ -42,6 +43,7 @@ local C = {
     ice        = Color3.fromRGB(216, 180, 254),
     violet     = Color3.fromRGB(167, 139, 250),
     cyan       = Color3.fromRGB(192, 132, 252),
+    -- Backgrounds
     bg         = Color3.fromRGB(7,   4,   20),
     surface    = Color3.fromRGB(11,  6,   28),
     panel      = Color3.fromRGB(16,  9,   36),
@@ -50,12 +52,15 @@ local C = {
     sidebar    = Color3.fromRGB(9,   5,   24),
     header     = Color3.fromRGB(11,  6,   28),
     input      = Color3.fromRGB(16,  10,  36),
+    -- Lines
     line       = Color3.fromRGB(60,  30,  100),
     lineLight  = Color3.fromRGB(88,  50,  160),
+    -- Text
     white      = Color3.fromRGB(235, 242, 255),
     text       = Color3.fromRGB(196, 167, 235),
     muted      = Color3.fromRGB(120, 90,  170),
     dim        = Color3.fromRGB(70,  45,  110),
+    -- Status
     green      = Color3.fromRGB(52,  224, 145),
     greenDark  = Color3.fromRGB(18,  140, 88),
     yellow     = Color3.fromRGB(255, 198, 74),
@@ -81,7 +86,7 @@ local Settings = {
 }
 
 -- ════════════════════════════════════════════════════════════════════════════
--- PERSISTENT STATE
+-- PERSISTENT STATE  (survives re-execution via getgenv)
 -- ════════════════════════════════════════════════════════════════════════════
 local Persist = {}
 pcall(function()
@@ -121,7 +126,7 @@ local function frame(parent, values)
 end
 
 local ElectricTargets = {}
-local RGBTargets      = {}
+local RGBTargets = {}
 
 local function label(parent, values)
     local obj = new("TextLabel", parent, values)
@@ -161,18 +166,6 @@ local function outline(obj, col, th, trans)
         Transparency = trans or 0,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
     })
-end
-
--- RGB stroke helper
-local function rgbOutline(obj, th)
-    local stroke = new("UIStroke", obj, {
-        Color = Color3.fromRGB(255, 0, 0),
-        Thickness = th or 1.6,
-        Transparency = 0,
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-    })
-    table.insert(RGBTargets, stroke)
-    return stroke
 end
 
 local function fillGradient(obj, c0, c1, rot)
@@ -318,37 +311,36 @@ end
 log("LP10 Ultimate v7 Opened")
 
 -- ════════════════════════════════════════════════════════════════════════════
--- ALL SCRIPTS  —  RUNAWAYS added at top, all old NEW flags removed
+-- ALL 39 SCRIPTS  (EVERY ENTRY PRESERVED — DO NOT REMOVE)
 -- ════════════════════════════════════════════════════════════════════════════
 local Scripts = {
-    -- ★★★ RUNAWAYS  —  RGB HIGHLIGHTED, ONLY NEW SCRIPT ★★★
+    -- ★ TOP / FEATURED ★
     {
-        N = "RUNAWAYS", New = true, RGB = true, Cat = "Universal", col = C.electric,
-        F = "RUNAWAYS automation — the flagship script. Auto farm, gate navigation, safe zone, replay, teleport recovery, and more. Delta compatible. Mobile & PC friendly.",
+        N = "RUNAWAYS", New = true, Rainbow = true, Cat = "Universal", col = C.electric,
+        F = "RUNAWAYS automation script. Fully obfuscated, Delta compatible, and ready for mobile and PC.",
         S = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/RUNAWAYS%20OB"))()',
     },
-
-    -- CORE LIBRARY (all with New=false now)
-    {N="Dead rails New",                      Cat="Universal", col=C.orange,
+    {N="Dead rails New",                         New=false, Cat="Universal", col=C.orange,
      F="Dead Rails New automation script — survive and dominate. Delta compatible. Mobile & PC friendly.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Dead%20rails%20new%20OB"))()'},
-    {N="Heroes RNG",                          Cat="Universal",
+    {N="Heroes RNG",                             New=false, Cat="Universal",
      F="Heroes RNG automation script. Delta compatible. Mobile & PC friendly.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Heroes%20RNG%20OB"))()'},
-    {N="+1 Double Jump Bike Escape",          Cat="Universal",
+    {N="+1 Double Jump Bike Escape",           New=false, Cat="Universal",
      F="Auto Train, Auto Rebirth, Collect Coin, Last Wins tracker. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/1DoubleJumpBikeEscape%20OB"))()'},
-    {N="+1 Muscles for Prison Escape",        Cat="Universal",
+    {N="+1 Muscles for Prison Escape",         New=false, Cat="Universal",
      F="Muscle training and prison escape automation. Delta compatible. Mobile & PC friendly.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/%2B1%20Muscles%20for%20Prison%20Escape%20OB"))()'},
-    {N="Iron Soul: Dungeon",                  Cat="Universal",
+    {N="Iron Soul: Dungeon",                    New=false, Cat="Universal",
      F="Iron Soul: Dungeon automation script. Delta compatible. Mobile & PC friendly.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Iron%20Soul%20Dungeon%20OB"))()'},
-    {N="New free Gamepasses",                 Cat="Universal",
+    {N="New free Gamepasses",                    New=false, Cat="Universal",
      F="Unlock gamepasses for free in supported experiences. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/New%20Free%20Gamepasses"))()'},
+    -- ★ NEW SCRIPTS ★
     {
-        N = "Greedy Growers", Cat = "Universal",
+        N = "Greedy Growers", New = false, Cat = "Universal",
         F = "Auto farm, auto collect crops, speed boost and more. Fully obfuscated & Delta compatible. Mobile & PC friendly.",
         S = [[
             local ok, err = pcall(function()
@@ -361,7 +353,7 @@ local Scripts = {
         ]],
     },
     {
-        N = "Drive Car and Slide", Cat = "Universal",
+        N = "Drive Car and Slide", New = false, Cat = "Universal",
         F = "Auto Inf Coins, Auto Inf Wins, clean UI integration. Delta & Mobile Compatible.",
         S = [[
             local ok, err = pcall(function()
@@ -374,7 +366,7 @@ local Scripts = {
         ]],
     },
     {
-        N = "Speed Vs Giant", Cat = "Universal",
+        N = "Speed Vs Giant", New = false, Cat = "Universal",
         F = "Cash Box, Speed Upgrade toggle, and more. Fully obfuscated & Delta compatible.",
         S = [[
             local ok, err = pcall(function()
@@ -386,96 +378,97 @@ local Scripts = {
             end
         ]],
     },
-    {N="Scream for brainrot",                 Cat="Universal",
+    -- CORE LIBRARY
+    {N="Scream for brainrot",                 New=false, Cat="Universal",
      F="Infinite spins automatically + unlocks all the best rewards from the spin wheel. Delta compatible. Mobile & PC friendly.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Scream%20for%20brainrot%20OB"))()'},
-    {N="Fake Lag / Disconnecting",            Cat="Utility",
+    {N="Fake Lag / Disconnecting",             New=false, Cat="Utility",
      F="Fake Lag (simulates high ping/stuttering) or Fake Disconnecting for trolling. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Fake%20lag%20OB"))()'},
-    {N="Cheese Escape [Horror]",              Cat="Universal",
+    {N="Cheese Escape [Horror]",               New=false, Cat="Universal",
      F="Script for Cheese Escape Horror. Bypass traps and progress automatically. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Cheese%20Escape%20%5BHorror%5D%20OB"))()'},
-    {N="Build a Store",                       Cat="Universal",
+    {N="Build a Store",                        New=false, Cat="Universal",
      F="Build a Store automation — auto stock, auto sell, and more. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Build%20a%20store%20OB"))()'},
-    {N="Kick a Lucky Block",                  Cat="Universal",
+    {N="Kick a Lucky Block",                   New=false, Cat="Universal",
      F="Auto kick lucky blocks for maximum rewards. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Kick%20a%20luckyblock%20OB"))()'},
-    {N="Combat Arena Op Silent Aim",          Cat="Combat",
+    {N="Combat Arena Op Silent Aim",           New=false, Cat="Combat",
      F="Silent Aim for Combat Arena — lock onto enemies without detection. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Combat%20Arena%20Op%20silent%20aim%20OB"))()'},
-    {N="1 Plank = $1/s",                      Cat="Universal",
+    {N="1 Plank = $1/s",                       New=false, Cat="Universal",
      F="Auto earn $1 per second per plank. Passive income automation. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/1%20plank%20%3D%20%241perS%20OB"))()'},
-    {N="Mutate The Brainrot",                 Cat="Universal",
+    {N="Mutate The Brainrot",                  New=false, Cat="Universal",
      F="Auto mutate brainrot characters for maximum power. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Mutate%20the%20brainrot%20OB"))()'},
-    {N="Launch Yourself For Brainrots!",      Cat="Movement",
+    {N="Launch Yourself For Brainrots!",       New=false, Cat="Movement",
      F="Launch yourself across the map in Brainrot games. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Launch%20Yourself%20For%20Brainrots!%20OB"))()'},
-    {N="Coordinates And Save Teleport",       Cat="Teleport",
+    {N="Coordinates And Save Teleport",        New=false, Cat="Teleport",
      F="Save coordinates and teleport back to any saved location instantly. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Coordinates%20And%20save%20Teleport%20OB"))()'},
-    {N="Build A Farm Factory",                Cat="Universal",
+    {N="Build A Farm Factory",                 New=false, Cat="Universal",
      F="Auto build and run your farm factory. Passive production automation. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Build%20A%20Farm%20Factory%20OB"))()'},
-    {N="Free Gamepasses",                     Cat="Universal",
+    {N="Free Gamepasses",                      New=false, Cat="Universal",
      F="Unlock gamepasses for free in supported experiences. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Free%20Gamepasses%20OB"))()'},
-    {N="Hide & Seek",                         Cat="Universal",
+    {N="Hide & Seek",                          New=false, Cat="Universal",
      F="Auto hide and seek — find or evade opponents automatically. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Hide%20%26%20Seek%20OB"))()'},
-    {N="Impossible Squid Game Glass Bridge 2", Cat="Universal",
+    {N="Impossible Squid Game Glass Bridge 2", New=false, Cat="Universal",
      F="Auto complete the glass bridge — always pick the safe tile. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Impossible%20Squid%20Game%20Glass%20Bridge%202%20OB"))()'},
-    {N="Rivals Silent Aim",                   Cat="Combat",
+    {N="Rivals Silent Aim",                    New=false, Cat="Combat",
      F="Silent Aim for Rivals — precision targeting without crosshair. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/RIVALS%20SILENT%20AIM%20OB"))()'},
-    {N="Squabble Game RP",                    Cat="Universal",
+    {N="Squabble Game RP",                     New=false, Cat="Universal",
      F="Full automation for Squabble Game RP. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Squabble%20Game%20RP%20OB"))()'},
-    {N="Parkour for Brainrots",               Cat="Movement",
+    {N="Parkour for Brainrots",                New=false, Cat="Movement",
      F="Auto parkour for Brainrot games — never miss a jump. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Parkour%20for%20brainrots%20OB"))()'},
-    {N="Ride Storm",                          Cat="Universal",
+    {N="Ride Storm",                           New=false, Cat="Universal",
      F="Ride Storm automation script. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Ride%20Storm%20OB"))()'},
-    {N="Skateboard for Brainrots",            Cat="Movement",
+    {N="Skateboard for Brainrots",             New=false, Cat="Movement",
      F="Auto skateboard tricks and movement for Brainrot games. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Skateboard%20for%20Brainrots%20OB"))()'},
-    {N="Emotes",                              Cat="Visual",
+    {N="Emotes",                               New=false, Cat="Visual",
      F="Access and play any emote in supported games. All emotes unlocked. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Emotes%20OB"))()'},
-    {N="Noob Army Tycoon",                    Cat="Universal",
+    {N="Noob Army Tycoon",                     New=false, Cat="Universal",
      F="Auto build and expand your Noob Army Tycoon. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Noob%20Army%20Tycoon%20OB"))()'},
-    {N="Ride the Coaster",                    Cat="Universal",
+    {N="Ride the Coaster",                     New=false, Cat="Universal",
      F="Ride the Coaster automation. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Ride%20the%20Coaster%20OB"))()'},
-    {N="Dead Rails",                          Cat="Universal",
+    {N="Dead Rails",                           New=false, Cat="Universal",
      F="Dead Rails script — survive and dominate. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Dead%20rails%20OB"))()'},
-    {N="Don't Get Caught for Hackers",        Cat="Utility",
+    {N="Don't Get Caught for Hackers",         New=false, Cat="Utility",
      F="Bypass anti-cheat in Don't Get Caught. Stealth execution. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Don\'t%20get%20caught%20for%20hackers%20OB"))()'},
-    {N="Brainrot Ascension",                  Cat="Universal",
+    {N="Brainrot Ascension",                   New=false, Cat="Universal",
      F="Ascend faster in Brainrot Ascension — auto stages, auto rewards. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Brainrot%20Ascension%20OB"))()'},
-    {N="Paper Plane Training",                Cat="Universal",
+    {N="Paper Plane Training",                 New=false, Cat="Universal",
      F="Paper Plane Training automation — best throws, best angles. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/%5B%F0%9F%A5%87%5DPaper%20Airplane%20Training%E2%9C%88%EF%B8%8F%20OB"))()'},
-    {N="Cursed Blade [ALPHA]",                Cat="Combat",
+    {N="Cursed Blade [ALPHA]",                 New=false, Cat="Combat",
      F="Cursed Blade alpha — early access combat enhancements. High damage, anti-stun. Use at own risk.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Cursed%20Blade%20%5BALPHA%5D%20OB"))()'},
-    {N="OneShot",                             Cat="Combat",
+    {N="OneShot",                              New=false, Cat="Combat",
      F="OneShot — eliminate opponents with a single hit. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/OneShot%20OB"))()'},
-    {N="Build a Boat for Treasure",           Cat="Universal",
+    {N="Build a Boat for Treasure",            New=false, Cat="Universal",
      F="Auto build and race in Build a Boat for Treasure. Delta compatible.",
      S='loadstring(game:HttpGet("https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/Build%20a%20boat%20for%20Treasure%20OB"))()'},
 }
 
-local SCRIPT_COUNT = #Scripts
+local SCRIPT_COUNT = #Scripts  -- 39
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- CATEGORIES
@@ -541,6 +534,7 @@ local function showNextToast()
     round(card, 16)
     outline(card, data.col or C.electric, 1.2)
     fillGradient(card, Color3.fromRGB(18, 10, 50), C.surface, 135)
+    -- color bar
     frame(card, {
         Size             = UDim2.new(0, 3, 1, -22),
         Position         = UDim2.fromOffset(10, 11),
@@ -655,6 +649,7 @@ local MainBack = frame(Main, {
 })
 fillGradient(MainBack, Color3.fromRGB(11, 6, 24), C.bg, 135)
 
+-- AURORA FX background
 local AuroraFX = frame(Main, {
     Size                 = UDim2.fromScale(1, 1),
     BackgroundTransparency = 1,
@@ -732,12 +727,14 @@ local Header = frame(Inner, {
     ZIndex           = 20,
 })
 fillGradient(Header, Color3.fromRGB(13,22,49), Color3.fromRGB(8,11,24), 0)
+-- bottom border
 frame(Header, {
     Size             = UDim2.new(1,0,0,1),
     Position         = UDim2.new(0,0,1,-1),
     BackgroundColor3 = C.line,
     ZIndex           = 21,
 })
+-- glow line
 frame(Header, {
     Size             = UDim2.new(0.6,0,0,1),
     Position         = UDim2.new(0.2,0,1,-1),
@@ -746,6 +743,7 @@ frame(Header, {
     ZIndex           = 21,
 })
 
+-- Brand logo
 local Brand = frame(Header, {
     Size             = UDim2.fromOffset(38,38),
     Position         = UDim2.fromOffset(14,12),
@@ -773,6 +771,7 @@ local BrandSub = label(Header, {
     TextXAlignment=Enum.TextXAlignment.Left, ZIndex=22,
 })
 
+-- Live stats / clock
 local LiveStats = label(Header, {
     Size=UDim2.fromOffset(240,16), Position=UDim2.new(1,-400,0,13),
     Text="FPS 60    PING --ms    MEM --",
@@ -786,6 +785,7 @@ local ClockLabel = label(Header, {
     TextXAlignment=Enum.TextXAlignment.Right, ZIndex=22,
 })
 
+-- Header buttons (right side)
 local function headerBtn(txt, posX, col)
     local b = button(Header, {
         Size=UDim2.fromOffset(28,28), Position=UDim2.new(1,posX,0,17),
@@ -815,15 +815,18 @@ local Side = frame(Inner, {
     ZIndex           = 14,
 })
 fillGradient(Side, Color3.fromRGB(9,13,28), Color3.fromRGB(6,9,20), 90)
+-- right border
 frame(Side, {
     Size=UDim2.new(0,1,1,0), Position=UDim2.new(1,-1,0,0),
     BackgroundColor3=C.line, ZIndex=15,
 })
+-- top accent line
 frame(Side, {
     Size=UDim2.new(0,3,0.6,0), Position=UDim2.fromOffset(0,40),
     BackgroundColor3=C.electric, BackgroundTransparency=0.7, ZIndex=15,
 })
 
+-- user info panel at top of sidebar
 local UserPanel = frame(Side, {
     Size=UDim2.new(1,0,0,74), BackgroundColor3=Color3.fromRGB(10,15,32), ZIndex=15,
 })
@@ -880,6 +883,7 @@ for _, pg in ipairs(Pages) do
     NavButtons[pg.id] = btn
 end
 
+-- About link at bottom of sidebar
 local AboutBtn = button(Side, {
     Size=UDim2.new(1,0,0,34), Position=UDim2.new(0,0,1,-96),
     BackgroundColor3=Color3.fromRGB(7,11,24),
@@ -890,6 +894,7 @@ local AboutBtn = button(Side, {
 round(AboutBtn, 10)
 wire(AboutBtn, Color3.fromRGB(7,11,24), C.cardHot)
 
+-- Version tag at sidebar bottom
 label(Side, {
     Size=UDim2.new(1,0,0,22), Position=UDim2.new(0,0,1,-36),
     Text="v7  ULTIMATE  •  "..tostring(SCRIPT_COUNT).." SCRIPTS",
@@ -907,6 +912,7 @@ local Content = frame(Inner, {
     ZIndex=10,
 })
 
+-- Subheader strip
 local SubHeader = frame(Content, {
     Size=UDim2.new(1,0,0,52),
     BackgroundColor3=Color3.fromRGB(9,14,30),
@@ -931,6 +937,7 @@ local PageSub = label(SubHeader, {
     TextXAlignment=Enum.TextXAlignment.Left, ZIndex=12,
 })
 
+-- Search bar
 local SearchWrap = frame(SubHeader, {
     Size=UDim2.fromOffset(210,30), Position=UDim2.new(1,-340,0,11),
     BackgroundColor3=C.input, ZIndex=12,
@@ -957,6 +964,7 @@ local SearchClear = button(SearchWrap, {
     Visible=false, ZIndex=13,
 })
 
+-- Category filter strip
 local CatStrip = frame(Content, {
     Size=UDim2.new(1,0,0,38),
     Position=UDim2.fromOffset(0,52),
@@ -1002,11 +1010,13 @@ for _, cat in ipairs(CATS) do
     cb.MouseButton1Click:Connect(function()
         play("tap")
         setCat(cat.id)
+        -- refresh will be called by current page logic
         local refresh_fn = _G.LP10Refresh
         if refresh_fn then refresh_fn() end
     end)
 end
 
+-- Body scroll area
 local Body = new("ScrollingFrame", Content, {
     Size=UDim2.new(1,0,1,-90),
     Position=UDim2.fromOffset(0,90),
@@ -1094,6 +1104,7 @@ local DetailDesc = label(Detail, {
     TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=61,
 })
 
+-- Exec count for this script
 local DetailExecCount = label(Detail, {
     Size=UDim2.new(1,-32,0,20), Position=UDim2.fromOffset(16,264),
     Text="", TextColor3=C.muted, Font=Enum.Font.GothamSemibold, TextSize=10,
@@ -1149,6 +1160,7 @@ local function execScript(data)
     addRecent(data.N)
     Persist.execCount = (Persist.execCount or 0) + 1
     Persist.totalExecs[data.N] = (Persist.totalExecs[data.N] or 0) + 1
+    -- Update recent games
     if GAME_NAME ~= "Unknown Experience" then
         local found = false
         for i, g in ipairs(Persist.recentGames) do
@@ -1168,6 +1180,7 @@ local function execScript(data)
             if fn then
                 fn()
             else
+                -- Direct execution fallback
                 pcall(function()
                     if type(data.S) == "string" then
                         local f, e = load(data.S)
@@ -1208,26 +1221,10 @@ local function openDetail(data)
     DetailFav.TextColor3 = has(Persist.favorites, data.N) and C.yellow or C.muted
     DetailPin.Text = has(Persist.pinned, data.N) and "◆  PINNED" or "◆  PIN"
     DetailPin.TextColor3 = has(Persist.pinned, data.N) and C.ice or C.muted
+    -- icon initials
     local words = {}
     for w in data.N:gmatch("%S+") do table.insert(words, w) end
     DetailIconLbl.Text = words[1] and string.sub(words[1],1,1):upper() or "▶"
-
-    -- RGB effect for RUNAWAYS detail icon
-    if data.RGB then
-        task.spawn(function()
-            local hue = 0
-            while Detail.Visible and CurrentScript == data do
-                hue = (hue + 0.006) % 1
-                local col = Color3.fromHSV(hue, 0.85, 1)
-                DetailIcon.BackgroundColor3 = col
-                DetailExecute.BackgroundColor3 = col
-                task.wait(0.03)
-            end
-        end)
-    else
-        DetailIcon.BackgroundColor3 = C.royal
-        DetailExecute.BackgroundColor3 = C.electric
-    end
 
     play("slide")
     Detail.Visible = true
@@ -1371,37 +1368,35 @@ local function statBox(parent, val, cap, col, order)
     return item
 end
 
--- ★ scriptCard with RGB support
 local function scriptCard(parent, data, order)
     local item = button(parent, {
         Size=UDim2.new(1,0,0,78),
         BackgroundColor3=C.card, LayoutOrder=order, ZIndex=16,
     })
     round(item, 14)
-
-    -- Outline: RGB for RUNAWAYS, red for other new, normal line for others
-    if data.RGB then
-        rgbOutline(item, 2.0)
-    else
-        outline(item, data.New and C.red or C.line, data.New and 1.3 or 1)
+    local itemOutline = outline(
+        item,
+        data.Rainbow and Color3.fromRGB(255, 0, 0) or (data.New and C.red or C.line),
+        data.Rainbow and 2 or (data.New and 1.3 or 1)
+    )
+    if data.Rainbow then
+        table.insert(RGBTargets, itemOutline)
     end
-
     fillGradient(item, Color3.fromRGB(15,23,50), C.card, 135)
 
-    if data.New then
-        glow(item, 120, data.RGB and C.electric or C.red, 0.88, UDim2.new(0,-20,0.5,-60))
+    if data.Rainbow then
+        glow(item, 150, C.electric, 0.80, UDim2.new(0,-30,0.5,-75))
+    elseif data.New then
+        glow(item, 120, C.red, 0.88, UDim2.new(0,-20,0.5,-60))
     end
-
-    -- RGB glow behind RUNAWAYS icon
-    local iconCol = data.RGB and C.electric or (data.New and C.red or C.electric)
-    local iconBg  = data.RGB and Color3.fromRGB(30,18,62) or (data.New and Color3.fromRGB(48,18,30) or Color3.fromRGB(16,28,62))
 
     local iconF = frame(item, {
         Size=UDim2.fromOffset(50,50), Position=UDim2.fromOffset(14,14),
-        BackgroundColor3=iconBg, ZIndex=17,
+        BackgroundColor3=data.Rainbow and Color3.fromRGB(34,24,70) or (data.New and Color3.fromRGB(48,18,30) or Color3.fromRGB(16,28,62)),
+        ZIndex=17,
     })
     round(iconF, 14)
-    fillGradient(iconF, iconCol, C.royal, 135)
+    fillGradient(iconF, data.Rainbow and C.electric or (data.New and C.red or C.electric), C.royal, 135)
     label(iconF, {
         Size=UDim2.fromScale(1,1), Text=scriptIcon(data),
         TextColor3=Color3.new(1,1,1), Font=Enum.Font.GothamBold, TextSize=18, ZIndex=18,
@@ -1417,11 +1412,12 @@ local function scriptCard(parent, data, order)
     label(item, {
         Size=UDim2.new(1,-170,0,18), Position=UDim2.fromOffset(78,40),
         Text=(data.Cat or "Universal"):upper().."   /   "..(has(Persist.recent,data.N) and "RECENT" or "READY"),
-        TextColor3=data.New and C.red or C.muted,
+        TextColor3=data.Rainbow and C.electric or (data.New and C.red or C.muted),
         Font=Enum.Font.GothamSemibold, TextSize=9,
         TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17,
     })
 
+    -- exec count badge
     local ec = Persist.totalExecs[data.N] or 0
     if ec > 0 then
         label(item, {
@@ -1434,7 +1430,7 @@ local function scriptCard(parent, data, order)
     if data.New then
         local badge = frame(item, {
             Size=UDim2.fromOffset(38,18), Position=UDim2.new(1,-92,0.5,2),
-            BackgroundColor3=data.RGB and C.electric or C.red, ZIndex=18,
+            BackgroundColor3=C.red, ZIndex=18,
         })
         round(badge, 7)
         label(badge, {
@@ -1463,6 +1459,7 @@ local function buildHome()
     PageTitle.Text = "Welcome back, "..LP.Name
     PageSub.Text   = "Your LP10 command center — "..SCRIPT_COUNT.." scripts ready."
 
+    -- Hero banner
     local hero = frame(Body, {
         Size=UDim2.new(1,0,0,138),
         BackgroundColor3=C.card, LayoutOrder=1, ZIndex=16,
@@ -1502,6 +1499,7 @@ local function buildHome()
         if changePage_fn then changePage_fn("Scripts") end
     end)
 
+    -- Stat row
     local statsRow = frame(Body, {
         Size=UDim2.new(1,0,0,76),
         BackgroundTransparency=1, LayoutOrder=2, ZIndex=16,
@@ -1614,9 +1612,11 @@ local function buildLibrary(page)
     local visible = 0
 
     for _, data in ipairs(list) do
+        -- category filter
         local catMatch = ActiveCat == "All"
             or (ActiveCat == "New" and data.New)
             or (data.Cat == ActiveCat)
+        -- search filter
         local searchMatch = query == "" or data.N:lower():find(query, 1, true)
         if catMatch and searchMatch then
             visible = visible + 1
@@ -1662,9 +1662,10 @@ local function buildChangelog()
     PageTitle.Text = "Changelog"
     PageSub.Text   = "What's new in LP10 Ultimate v7."
     local entries = {
-        {"RUNAWAYS ADDED",       "Flagship RUNAWAYS automation script — auto farm, gate navigation, safe zone, replay, teleport recovery. RGB highlighted.", "NEW", C.electric},
-        {"v7  ULTIMATE",         "Rebuilt from the Aurora source — full-screen Aurora shell, 200KB powerhouse, all scripts, electric glow FX, live stats.", "CURRENT", C.electric},
-        {"CLEANED UP",           "Removed NEW badges from all previous scripts — only RUNAWAYS is highlighted as new.", "IMPROVED", C.muted},
+        {"v7  ULTIMATE",         "Rebuilt from the Aurora source — full-screen Aurora shell, 200KB powerhouse, all 32 scripts, electric glow FX, live stats.", "CURRENT", C.electric},
+        {"GREEDY GROWERS",       "New script — auto farm, auto collect crops, speed boost. Delta & mobile compatible.", "NEW", C.green},
+        {"DRIVE CAR AND SLIDE",  "New script — auto inf coins, auto inf wins. Delta & mobile compatible.", "NEW", C.green},
+        {"SPEED VS GIANT",       "New script — cash box, speed upgrade toggle. Delta compatible.", "NEW", C.green},
         {"AURORA SHELL",         "Full-screen, edge-to-edge shell with animated aurora background, real navigation, and application-style layout.", "IMPROVED", C.electric},
         {"DETAIL PANEL",         "Scripts open in a dedicated inspect view with exec count, copy, favorite, pin, and execute.", "IMPROVED", C.violet},
         {"ELECTRIC GLOW FX",     "All text pulses with an electric blue stroke animation. Togglable in Settings.", "NEW", C.ice},
@@ -1748,7 +1749,7 @@ local function buildAbout()
     fillGradient(about, Color3.fromRGB(19,40,88), C.card, 135)
     glow(about, 180, C.electric, 0.82, UDim2.new(1,-160,0.5,-90))
     label(about, {Size=UDim2.new(1,-30,0,32), Position=UDim2.fromOffset(16,14), Text="LP10 UNIVERSAL", TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=22, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17})
-    label(about, {Size=UDim2.new(1,-30,0,72), Position=UDim2.fromOffset(16,52), Text="A focused, ultra-premium launcher for the LP10 collection. Built for Delta, Codex, Xeno, Arceus X, mobile, and PC. Full-screen Aurora shell, "..SCRIPT_COUNT.." scripts, live HUD, favorites, pins, recent history, and electric glow FX.", TextColor3=C.text, Font=Enum.Font.Gotham, TextSize=11, TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17})
+    label(about, {Size=UDim2.new(1,-30,0,72), Position=UDim2.fromOffset(16,52), Text="A focused, ultra-premium launcher for the LP10 collection. Built for Delta, Codex, Xeno, Arceus X, mobile, and PC. Full-screen Aurora shell, 39 scripts, live HUD, favorites, pins, recent history, and electric glow FX.", TextColor3=C.text, Font=Enum.Font.Gotham, TextSize=11, TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17})
     label(about, {Size=UDim2.new(1,-30,0,20), Position=UDim2.fromOffset(16,136), Text="ULTIMATE EDITION  /  v7  /  "..SCRIPT_COUNT.." SCRIPTS  /  "..EXECUTOR, TextColor3=C.ice, Font=Enum.Font.GothamBold, TextSize=9, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17})
     label(about, {Size=UDim2.new(1,-30,0,20), Position=UDim2.fromOffset(16,158), Text="BY @LPOLVO (HAMZA)  /  instagram.com/4me.h4mz4_", TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=9, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17})
     actionCard(Body, "Instagram",  "Open @4me.h4mz4_ on Instagram", function() setClip("https://www.instagram.com/4me.h4mz4_?igsh=MW9sa20yejExaGo5Nw=="); toast("Copied","Instagram link on clipboard.",C.pink) end,    C.pink, 2)
@@ -1770,6 +1771,7 @@ local function refresh()
     elseif CurrentPage == "About"     then buildAbout()
     else                                   buildLibrary(CurrentPage)
     end
+    -- Update nav button states
     for id, btn in pairs(NavButtons) do
         local active = id == CurrentPage
         btn.BackgroundColor3 = active and Color3.fromRGB(24,48,108) or Color3.fromRGB(7,11,24)
@@ -1791,9 +1793,11 @@ local function changePage(id)
     refresh()
 end
 
+-- Expose to global for cross-scope calls
 _G.LP10ChangePage = changePage
 _G.LP10Refresh    = refresh
 
+-- Wire nav buttons
 for _, pg in ipairs(Pages) do
     NavButtons[pg.id].MouseButton1Click:Connect(function()
         changePage(pg.id)
@@ -1899,7 +1903,7 @@ SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
 end)
 
 -- ════════════════════════════════════════════════════════════════════════════
--- LIVE PERFORMANCE HUD
+-- LIVE PERFORMANCE HUD (FPS / PING / MEM)
 -- ════════════════════════════════════════════════════════════════════════════
 local _fps, _frames, _elapsed, _ping = 60, 0, 0, 0
 RunService.Heartbeat:Connect(function(dt)
@@ -1919,25 +1923,8 @@ RunService.Heartbeat:Connect(function(dt)
         LiveStats.Text = "FPS ".._fps.."    PING "..math.floor(_ping).."ms    MEM "..mem.."MB"
         LiveStats.TextColor3 = _fps>=55 and C.green or (_fps>=30 and C.yellow or C.red)
         ClockLabel.Text = GAME_NAME.."  /  "..os.date("%H:%M:%S")
+        -- Auto performance guard
         if _fps < 30 then Settings.particles = false end
-    end
-end)
-
--- ════════════════════════════════════════════════════════════════════════════
--- RGB ANIMATION LOOP  (animates RGB strokes for RUNAWAYS card)
--- ════════════════════════════════════════════════════════════════════════════
-local rgbHue = 0
-RunService.Heartbeat:Connect(function(dt)
-    if #RGBTargets == 0 then return end
-    rgbHue = (rgbHue + dt * 0.35) % 1
-    local col = Color3.fromHSV(rgbHue, 0.85, 1)
-    for i = #RGBTargets, 1, -1 do
-        local stroke = RGBTargets[i]
-        if stroke and stroke.Parent then
-            stroke.Color = col
-        else
-            table.remove(RGBTargets, i)
-        end
     end
 end)
 
@@ -1962,8 +1949,20 @@ RunService.Heartbeat:Connect(function(dt)
     end
 end)
 
+-- RGB border animation for featured scripts
+RunService.Heartbeat:Connect(function()
+    for i = #RGBTargets, 1, -1 do
+        local stroke = RGBTargets[i]
+        if stroke and stroke.Parent then
+            stroke.Color = Color3.fromHSV((ePhase * 0.12 + i * 0.08) % 1, 0.92, 1)
+        else
+            table.remove(RGBTargets, i)
+        end
+    end
+end)
+
 -- ════════════════════════════════════════════════════════════════════════════
--- LAUNCH SEQUENCE
+-- LAUNCH SEQUENCE (AURORA BOOT SCREEN)
 -- ════════════════════════════════════════════════════════════════════════════
 local LaunchCurtain = frame(GUI, {
     Name             = "LP10LaunchCurtain",
@@ -1973,6 +1972,7 @@ local LaunchCurtain = frame(GUI, {
     ZIndex           = 200,
 })
 
+-- Aurora glows on launch curtain
 local LGlow1 = new("ImageLabel", LaunchCurtain, {
     Image=GLOW_IMG, ImageColor3=Color3.fromRGB(124,58,237), ImageTransparency=0.76,
     BackgroundTransparency=1, Size=UDim2.fromOffset(480,480),
@@ -1999,6 +1999,7 @@ round(LaunchCore, 24)
 outline(LaunchCore, C.line, 1.2)
 fillGradient(LaunchCore, Color3.fromRGB(18,35,80), C.panel, 135)
 
+-- LP logo on launch screen
 local LL = frame(LaunchCore, {
     Size=UDim2.fromOffset(46,46), Position=UDim2.new(0.5,-23,0,18),
     BackgroundColor3=C.royal, ZIndex=203,
@@ -2043,6 +2044,7 @@ label(LaunchCore, {
     TextXAlignment=Enum.TextXAlignment.Center, ZIndex=203,
 })
 
+-- Animate launch glow orbs
 task.spawn(function()
     while LaunchCurtain and LaunchCurtain.Parent and LaunchCurtain.Visible do
         sine(LGlow1, 2.8, {Position=UDim2.new(0.5,-240,0.45,-240), ImageTransparency=0.80})
@@ -2092,6 +2094,7 @@ local function openMain()
     end)
 end
 
+-- BOOT
 applyLayout()
 CurrentPage  = Persist.page or "Home"
 refresh()
@@ -2101,56 +2104,140 @@ task.delay(0.70, function()
     toast("LP10 Ultimate v7", SCRIPT_COUNT.." scripts ready. Aurora online.", C.electric)
 end)
 task.delay(2.40, function()
-    toast("★ RUNAWAYS ADDED", "Flagship RUNAWAYS script is now live with RGB highlight!", C.electric)
+    toast("★ New Scripts", "Dead rails New, Heroes RNG, +1 Muscles for Prison Escape, Iron Soul: Dungeon, New free Gamepasses, Greedy Growers, Drive Car and Slide, Speed Vs Giant added!", C.orange)
 end)
 task.delay(4.60, function()
     toast("Tip", "Tap any script to inspect it, favorite it, or execute.", C.violet)
 end)
 
 -- ════════════════════════════════════════════════════════════════════════════
--- SCRIPT METADATA  (descriptions, tips, tags)
+-- EXTENDED SCRIPT METADATA  (descriptions, tips, tags — power-user layer)
 -- ════════════════════════════════════════════════════════════════════════════
 local ScriptMeta = {
-    ["RUNAWAYS"] = {
-        tags    = {"runaways","autofarm","replay","gate","safe","teleport","universal"},
-        tips    = "Flagship automation. Enable Auto Farm, Safe Gate Wait, and Auto Replay. Auto-executes on teleport.",
-        risk    = "LOW",
+    ["Dead rails New"] = {
+        tags    = {"dead","rails","survival","new","auto","delta","mobile"},
+        tips    = "Run after joining Dead Rails so the script can detect the loaded survival systems.",
+        risk    = "MEDIUM",
         tested  = "Delta 1.2, Arceus X Mobile, Codex",
         added   = "v7",
     },
     ["Greedy Growers"] = {
-        tags    = {"farming","auto","crops","speed","delta","mobile"},
+        tags    = {"farming","auto","crops","speed","delta","mobile","new"},
         tips    = "Keep the game in focus for best results. Works in single and multiplayer sessions.",
         risk    = "LOW",
         tested  = "Delta 1.2, Codex, Arceus X Mobile",
         added   = "v7",
     },
     ["Drive Car and Slide"] = {
-        tags    = {"coins","wins","car","slide","delta","mobile"},
+        tags    = {"coins","wins","car","slide","delta","mobile","new"},
         tips    = "Execute at the start of a match for maximum coin accumulation.",
         risk    = "LOW",
         tested  = "Delta 1.2, Mobile Arceus X",
         added   = "v7",
     },
     ["Speed Vs Giant"] = {
-        tags    = {"cash","speed","upgrade","giant","delta"},
+        tags    = {"cash","speed","upgrade","giant","delta","new"},
         tips    = "Toggle Speed Upgrade first, then open Cash Box for best synergy.",
         risk    = "LOW",
         tested  = "Delta 1.2, Codex",
         added   = "v7",
     },
-    ["Dead rails New"] = {
-        tags    = {"dead","rails","survival","auto","delta","mobile"},
-        tips    = "Run after joining Dead Rails so the script can detect the loaded survival systems.",
+    ["Scream for brainrot"] = {
+        tags    = {"spins","rewards","brainrot","delta","mobile"},
+        tips    = "Run once per session. Re-running mid-session resets your spin counter.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Xeno",
+        added   = "v5",
+    },
+    ["Fake Lag / Disconnecting"] = {
+        tags    = {"lag","troll","disconnect","utility","delta"},
+        tips    = "Use Fake Lag in lag-based servers for max effect. Fake Disconnect works in any game.",
         risk    = "MEDIUM",
-        tested  = "Delta 1.2, Arceus X Mobile, Codex",
-        added   = "v6",
+        tested  = "Delta 1.2, Codex",
+        added   = "v4",
+    },
+    ["Cheese Escape [Horror]"] = {
+        tags    = {"horror","cheese","escape","delta","mobile"},
+        tips    = "Execute before entering a round for auto-bypass to trigger correctly.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile",
+        added   = "v4",
+    },
+    ["Build a Store"] = {
+        tags    = {"store","build","auto","tycoon","delta"},
+        tips    = "Leave the script running in background — it auto-stocks and sells continuously.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus",
+        added   = "v4",
+    },
+    ["Kick a Lucky Block"] = {
+        tags    = {"lucky","block","kick","rewards","delta"},
+        tips    = "Position your character near the block spawn area before executing.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Codex, Xeno",
+        added   = "v4",
     },
     ["Combat Arena Op Silent Aim"] = {
         tags    = {"silent","aim","combat","arena","delta","pc"},
         tips    = "Works best with default camera FOV. Reduce camera distance for tighter lock-on.",
         risk    = "HIGH",
         tested  = "Delta 1.2, Codex",
+        added   = "v4",
+    },
+    ["1 Plank = $1/s"] = {
+        tags    = {"plank","money","passive","auto","delta"},
+        tips    = "Stack multiple planks to multiply passive income. Works offline in-session.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Arceus X",
+        added   = "v4",
+    },
+    ["Mutate The Brainrot"] = {
+        tags    = {"mutate","brainrot","auto","power","delta"},
+        tips    = "Higher mutation tier = better stats. Run repeatedly to reach max tier faster.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Codex, Mobile",
+        added   = "v4",
+    },
+    ["Launch Yourself For Brainrots!"] = {
+        tags    = {"launch","movement","brainrot","delta","mobile"},
+        tips    = "Set a target destination in the game first, then execute for precise landing.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile",
+        added   = "v4",
+    },
+    ["Coordinates And Save Teleport"] = {
+        tags    = {"teleport","coordinates","save","location","delta","pc"},
+        tips    = "Save up to 5 locations. Use keyboard shortcuts shown in the script UI to teleport instantly.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Codex, Xeno",
+        added   = "v4",
+    },
+    ["Build A Farm Factory"] = {
+        tags    = {"farm","factory","build","auto","tycoon","delta"},
+        tips    = "Execute at round start. The script handles all placement and production automatically.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus",
+        added   = "v4",
+    },
+    ["Free Gamepasses"] = {
+        tags    = {"gamepasses","free","unlock","delta","mobile"},
+        tips    = "Only works on games that use client-side gamepass checks. Server-side games are not affected.",
+        risk    = "MEDIUM",
+        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+        added   = "v4",
+    },
+    ["Hide & Seek"] = {
+        tags    = {"hide","seek","auto","delta","mobile"},
+        tips    = "As seeker: script reveals hider positions. As hider: auto-find best hiding spots.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Xeno",
+        added   = "v4",
+    },
+    ["Impossible Squid Game Glass Bridge 2"] = {
+        tags    = {"squid","glass","bridge","auto","delta","mobile"},
+        tips    = "Wait for the round to start fully before executing — the safe-tile detector needs loaded tiles.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Codex, Arceus X",
         added   = "v4",
     },
     ["Rivals Silent Aim"] = {
@@ -2160,33 +2247,54 @@ local ScriptMeta = {
         tested  = "Delta 1.2, Codex",
         added   = "v4",
     },
-    ["Cursed Blade [ALPHA]"] = {
-        tags    = {"combat","alpha","cursed","blade","damage","delta","pc"},
-        tips    = "Alpha build — may have edge cases. Report issues to @LPOLVO on Instagram.",
-        risk    = "HIGH",
-        tested  = "Delta 1.2, Codex (alpha)",
-        added   = "v5-alpha",
+    ["Squabble Game RP"] = {
+        tags    = {"squabble","rp","roleplay","auto","delta","mobile"},
+        tips    = "Execute after joining a server — the script syncs with the active roleplay session.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile",
+        added   = "v4",
     },
-    ["Don't Get Caught for Hackers"] = {
-        tags    = {"stealth","anti-cheat","bypass","utility","delta","pc"},
-        tips    = "Execute before any other script in the same session for best stealth coverage.",
-        risk    = "HIGH",
+    ["Parkour for Brainrots"] = {
+        tags    = {"parkour","movement","brainrot","auto","delta","mobile"},
+        tips    = "Works on all standard parkour maps. Custom maps may need a brief calibration delay.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Codex",
+        added   = "v4",
+    },
+    ["Ride Storm"] = {
+        tags    = {"storm","ride","auto","delta","mobile"},
+        tips    = "Execute at the start of the storm phase for best timing.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile",
+        added   = "v4",
+    },
+    ["Skateboard for Brainrots"] = {
+        tags    = {"skateboard","movement","brainrot","tricks","delta","mobile"},
+        tips    = "Unlock all tricks first via the in-game shop before running for max score.",
+        risk    = "LOW",
         tested  = "Delta 1.2, Codex, Xeno",
         added   = "v4",
     },
-    ["Free Gamepasses"] = {
-        tags    = {"gamepasses","free","unlock","delta","mobile"},
-        tips    = "Only works on games that use client-side gamepass checks.",
-        risk    = "MEDIUM",
-        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+    ["Emotes"] = {
+        tags    = {"emotes","visual","all","unlock","delta","mobile"},
+        tips    = "Some emotes are game-specific. The script auto-detects available emotes for your current game.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Arceus X Mobile",
         added   = "v4",
     },
-    ["New free Gamepasses"] = {
-        tags    = {"gamepasses","free","unlock","delta","mobile"},
-        tips    = "Run after entering the experience so supported gamepass checks can be detected.",
-        risk    = "MEDIUM",
-        tested  = "Delta 1.2, Arceus X Mobile, Codex",
-        added   = "v7",
+    ["Noob Army Tycoon"] = {
+        tags    = {"noob","army","tycoon","auto","build","delta"},
+        tips    = "Execute early in the match. Auto-upgrade prioritises troops over buildings for faster expansion.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Codex",
+        added   = "v4",
+    },
+    ["Ride the Coaster"] = {
+        tags    = {"coaster","ride","auto","fun","delta","mobile"},
+        tips    = "Works best on the default coaster map. Custom tracks may alter timing.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile, Fluxus",
+        added   = "v4",
     },
     ["Dead Rails"] = {
         tags    = {"dead","rails","survival","auto","delta","mobile"},
@@ -2195,10 +2303,80 @@ local ScriptMeta = {
         tested  = "Delta 1.2, Codex",
         added   = "v4",
     },
+    ["Don't Get Caught for Hackers"] = {
+        tags    = {"stealth","anti-cheat","bypass","utility","delta","pc"},
+        tips    = "Execute before any other script in the same session for best stealth coverage.",
+        risk    = "HIGH",
+        tested  = "Delta 1.2, Codex, Xeno",
+        added   = "v4",
+    },
+    ["Brainrot Ascension"] = {
+        tags    = {"ascension","brainrot","auto","stages","delta","mobile"},
+        tips    = "Let the auto-stage runner complete at least 3 stages before alt-tabbing.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile",
+        added   = "v4",
+    },
+    ["Paper Plane Training"] = {
+        tags    = {"paper","plane","training","auto","delta","mobile"},
+        tips    = "Aim for a 45-degree launch angle — the script optimises throw power automatically.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Fluxus, Codex",
+        added   = "v4",
+    },
+    ["Cursed Blade [ALPHA]"] = {
+        tags    = {"combat","alpha","cursed","blade","damage","delta","pc"},
+        tips    = "Alpha build — may have edge cases. Report issues to @LPOLVO on Instagram.",
+        risk    = "HIGH",
+        tested  = "Delta 1.2, Codex (alpha)",
+        added   = "v5-alpha",
+    },
+    ["OneShot"] = {
+        tags    = {"oneshot","combat","kill","damage","delta","pc"},
+        tips    = "Activate right before engaging. Works best in 1v1 modes.",
+        risk    = "HIGH",
+        tested  = "Delta 1.2, Xeno, Codex",
+        added   = "v5",
+    },
+    ["Build a Boat for Treasure"] = {
+        tags    = {"boat","treasure","build","auto","delta","mobile"},
+        tips    = "Execute at round start. The auto-builder selects the strongest hull design automatically.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile, Fluxus",
+        added   = "v4",
+    },
+    ["+1 Double Jump Bike Escape"] = {
+        tags    = {"bike","doublejump","autorebirth","autocollect","farm","universal"},
+        tips    = "Enable Auto Rebirth first, then toggle Auto Train and Collect Coin. Last Wins shows your session record.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+        added   = "v7",
+    },
+    ["+1 Muscles for Prison Escape"] = {
+        tags    = {"muscles","strength","prison","escape","auto","delta","mobile","new"},
+        tips    = "Run after entering the prison experience so the script can detect the available training and escape actions.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+        added   = "v7",
+    },
+    ["Iron Soul: Dungeon"] = {
+        tags    = {"iron","soul","dungeon","combat","auto","delta","mobile","new"},
+        tips    = "Run after the dungeon experience has loaded so the script can detect its available systems.",
+        risk    = "LOW",
+        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+        added   = "v7",
+    },
+    ["New free Gamepasses"] = {
+        tags    = {"gamepasses","free","unlock","new","delta","mobile"},
+        tips    = "Run after entering the experience so supported gamepass checks can be detected.",
+        risk    = "MEDIUM",
+        tested  = "Delta 1.2, Arceus X Mobile, Codex",
+        added   = "v7",
+    },
 }
 
 -- ════════════════════════════════════════════════════════════════════════════
--- TOOLTIP OVERLAY
+-- TOOLTIP OVERLAY  (shows on long-press / right-click on script cards)
 -- ════════════════════════════════════════════════════════════════════════════
 local function showTooltip(data, anchorX, anchorY)
     local meta  = ScriptMeta[data.N] or {}
@@ -2237,7 +2415,7 @@ local function showTooltip(data, anchorX, anchorY)
         Size=UDim2.fromScale(1,1), Text="RISK: "..risk,
         TextColor3=riskCol, Font=Enum.Font.GothamBold, TextSize=8, ZIndex=152,
     })
-    label(tip, {
+    local testedLbl = label(tip, {
         Size=UDim2.new(1,-80,0,18), Position=UDim2.fromOffset(80,78),
         Text="TESTED: "..(meta.tested or "Delta 1.2"),
         TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=8,
@@ -2256,7 +2434,7 @@ local function showTooltip(data, anchorX, anchorY)
 end
 
 -- ════════════════════════════════════════════════════════════════════════════
--- QUICK ACCESS BAR
+-- MINI-GAME OVERLAY WIDGET  (floating in-game quick-access bar)
 -- ════════════════════════════════════════════════════════════════════════════
 local QuickBar = frame(GUI, {
     Size             = UDim2.fromOffset(58, 200),
@@ -2311,7 +2489,9 @@ qBarBtn("◆", 152, C.ice, function()
     spring(Main,0.44,{Size=UDim2.fromScale(1,1),Position=UDim2.fromScale(0,0)})
 end)
 
--- Drag support for QuickBar
+-- ════════════════════════════════════════════════════════════════════════════
+-- DRAG SUPPORT FOR QUICK BAR
+-- ════════════════════════════════════════════════════════════════════════════
 do
     local dragging, dragStart, startPos = false, nil, nil
     QuickBar.InputBegan:Connect(function(inp)
@@ -2341,7 +2521,7 @@ do
 end
 
 -- ════════════════════════════════════════════════════════════════════════════
--- COMMAND PALETTE
+-- COMMAND PALETTE  (press Ctrl+K or ; to open quick-search overlay)
 -- ════════════════════════════════════════════════════════════════════════════
 local CmdPalette = frame(GUI, {
     Size             = UDim2.fromOffset(380, 58),
@@ -2358,4 +2538,1031 @@ glow(CmdPalette, 160, C.electric, 0.84, UDim2.new(0.5,-80,0.5,-80))
 local CmdInput = input(CmdPalette, {
     Size=UDim2.new(1,-40,1,-12), Position=UDim2.fromOffset(38,6),
     BackgroundTransparency=1, Text="",
-    Place
+    PlaceholderText="Type a script name and press Enter…",
+    TextColor3=C.white, PlaceholderColor3=C.muted,
+    Font=Enum.Font.GothamSemibold, TextSize=13,
+    TextXAlignment=Enum.TextXAlignment.Left, ZIndex=161,
+    ClearTextOnFocus=true,
+})
+label(CmdPalette, {
+    Size=UDim2.fromOffset(28,46), Position=UDim2.fromOffset(8,6),
+    Text="▶", TextColor3=C.electric,
+    Font=Enum.Font.GothamBold, TextSize=14, ZIndex=161,
+})
+
+local cmdOpen = false
+local function openCmd()
+    cmdOpen = true
+    CmdPalette.Visible = true
+    CmdInput.Text = ""
+    tw(CmdPalette, 0.26, {Position=UDim2.new(0.5,-190,0,18)})
+    task.delay(0.1, function() pcall(function() CmdInput:CaptureFocus() end) end)
+end
+local function closeCmd()
+    cmdOpen = false
+    tw(CmdPalette, 0.20, {Position=UDim2.new(0.5,-190,0,-70)}, nil, Enum.EasingDirection.In)
+    task.delay(0.22, function()
+        if CmdPalette then CmdPalette.Visible = false end
+    end)
+end
+
+CmdInput.FocusLost:Connect(function(enter)
+    if enter and CmdInput.Text ~= "" then
+        local q = CmdInput.Text:lower()
+        local found = nil
+        for _, d in ipairs(Scripts) do
+            if d.N:lower():find(q, 1, true) then found = d; break end
+        end
+        if found then
+            closeCmd()
+            task.delay(0.08, function() openDetail(found) end)
+        else
+            toast("Not Found", '"'..CmdInput.Text..'"'..": no matching script.", C.red)
+        end
+    else
+        closeCmd()
+    end
+end)
+
+UIS.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.Semicolon or
+       (inp.KeyCode == Enum.KeyCode.K and UIS:IsKeyDown(Enum.KeyCode.LeftControl)) then
+        if cmdOpen then closeCmd() else openCmd() end
+    end
+    if inp.KeyCode == Enum.KeyCode.Escape and cmdOpen then
+        closeCmd()
+    end
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- ACHIEVEMENT / MILESTONE SYSTEM
+-- ════════════════════════════════════════════════════════════════════════════
+local Milestones = {
+    {threshold=1,   title="First Exec",     msg="You executed your first script. The journey begins.",    col=C.electric},
+    {threshold=5,   title="Script Explorer",msg="5 executions. You're getting the hang of LP10.",         col=C.electric},
+    {threshold=10,  title="Power User",     msg="10 executions. You're officially a power user.",          col=C.violet},
+    {threshold=25,  title="Script Master",  msg="25 executions. LP10 Ultimate has chosen you.",            col=C.yellow},
+    {threshold=50,  title="Elite Operator", msg="50 executions. You are the definition of Elite.",         col=C.green},
+    {threshold=100, title="LP10 Legend",    msg="100 executions. Legend status — @LPOLVO would be proud.", col=C.pink},
+    {threshold=3,   title="Curator",        msg="3 favorites saved. Your collection is taking shape.",     col=C.yellow, fav=true},
+    {threshold=5,   title="Collector",      msg="5 pinned scripts. Pin master achieved.",                  col=C.ice,    pin=true},
+}
+
+local function checkMilestones()
+    for _, m in ipairs(Milestones) do
+        local count = m.fav and #Persist.favorites
+                   or m.pin and #Persist.pinned
+                   or (Persist.execCount or 0)
+        local key   = "ach_"..m.title
+        if count >= m.threshold and not Persist[key] then
+            Persist[key] = true
+            task.delay(0.5, function()
+                toast("🏆 "..m.title, m.msg, m.col)
+            end)
+        end
+    end
+end
+
+-- Hook milestone check into execScript
+local _origExec = execScript
+execScript = function(data)
+    _origExec(data)
+    task.delay(0.8, checkMilestones)
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- KEYBOARD SHORTCUTS OVERLAY  (press F1 to toggle)
+-- ════════════════════════════════════════════════════════════════════════════
+local ShortcutsPanel = frame(GUI, {
+    Size             = UDim2.fromOffset(320, 320),
+    Position         = UDim2.new(0.5, -160, 0.5, -170),
+    BackgroundColor3 = C.panel,
+    Visible          = false,
+    ZIndex           = 165,
+})
+round(ShortcutsPanel, 18)
+outline(ShortcutsPanel, C.line, 1.2)
+fillGradient(ShortcutsPanel, Color3.fromRGB(14,22,50), C.panel, 135)
+
+label(ShortcutsPanel, {
+    Size=UDim2.new(1,-32,0,24), Position=UDim2.fromOffset(16,14),
+    Text="KEYBOARD SHORTCUTS",
+    TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=13,
+    TextXAlignment=Enum.TextXAlignment.Left, ZIndex=166,
+})
+frame(ShortcutsPanel, {
+    Size=UDim2.new(1,-32,0,1), Position=UDim2.fromOffset(16,44),
+    BackgroundColor3=C.line, ZIndex=166,
+})
+
+local shortcuts = {
+    {"Ctrl + K  /  ;",  "Open command palette"},
+    {"F1",              "Toggle this shortcuts overlay"},
+    {"Escape",          "Close command palette"},
+    {"← Back",          "Close detail panel (tap back button)"},
+    {"Scroll",          "Navigate script list"},
+    {"Tap script",      "Open detail / inspect panel"},
+    {"Long-press",      "Show tooltip with risk and tips"},
+    {"Tap ─",           "Minimise LP10 to floating orb"},
+    {"Tap ✕",           "Close LP10 completely"},
+    {"Tap F",           "Restore full-screen lock"},
+}
+
+for i, s in ipairs(shortcuts) do
+    local row = frame(ShortcutsPanel, {
+        Size=UDim2.new(1,-32,0,22),
+        Position=UDim2.fromOffset(16, 50+(i-1)*24),
+        BackgroundTransparency=1, ZIndex=166,
+    })
+    label(row, {
+        Size=UDim2.new(0.42,0,1,0), Text=s[1],
+        TextColor3=C.ice, Font=Enum.Font.GothamBold, TextSize=9,
+        TextXAlignment=Enum.TextXAlignment.Left, ZIndex=167,
+    })
+    label(row, {
+        Size=UDim2.new(0.58,0,1,0), Position=UDim2.fromScale(0.42,0),
+        Text=s[2], TextColor3=C.text, Font=Enum.Font.Gotham, TextSize=9,
+        TextXAlignment=Enum.TextXAlignment.Left, ZIndex=167,
+    })
+end
+
+local closeShortcuts = button(ShortcutsPanel, {
+    Size=UDim2.fromOffset(28,28), Position=UDim2.new(1,-40,0,8),
+    BackgroundColor3=Color3.fromRGB(48,18,28), Text="✕",
+    TextColor3=C.red, Font=Enum.Font.GothamBold, TextSize=11, ZIndex=166,
+})
+round(closeShortcuts, 8)
+closeShortcuts.MouseButton1Click:Connect(function()
+    play("tap")
+    tw(ShortcutsPanel, 0.18, {BackgroundTransparency=1})
+    task.delay(0.20, function() if ShortcutsPanel then ShortcutsPanel.Visible=false; ShortcutsPanel.BackgroundTransparency=0 end end)
+end)
+
+UIS.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.F1 then
+        ShortcutsPanel.Visible = not ShortcutsPanel.Visible
+        if ShortcutsPanel.Visible then
+            play("pop")
+            spring(ShortcutsPanel, 0.28, {Size=UDim2.fromOffset(324,324)})
+        end
+    end
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- PARTICLE SYSTEM  (ambient floating particles in background)
+-- ════════════════════════════════════════════════════════════════════════════
+local PARTICLE_COUNT = 0
+local MAX_PARTICLES  = 28
+
+local function spawnParticle()
+    if PARTICLE_COUNT >= MAX_PARTICLES then return end
+    if not Settings.particles or Settings.performance then return end
+    PARTICLE_COUNT = PARTICLE_COUNT + 1
+
+    local vp   = Cam.ViewportSize
+    local size = math.random(3, 7)
+    local x    = math.random(0, math.floor(vp.X))
+    local y    = math.floor(vp.Y) + size + 4
+
+    local colors = {C.electric, C.royal, C.ice, C.violet, C.cyan}
+    local col    = colors[math.random(1,#colors)]
+
+    local pt = frame(Main, {
+        Size             = UDim2.fromOffset(size, size),
+        Position         = UDim2.fromOffset(x, y),
+        BackgroundColor3 = col,
+        BackgroundTransparency = 0.45,
+        ZIndex           = 4,
+    })
+    round(pt, math.ceil(size/2))
+
+    local duration = math.random(60, 130) / 10  -- 6–13 seconds
+    local endX     = x + math.random(-80, 80)
+
+    tw(pt, duration, {
+        Position             = UDim2.fromOffset(endX, -size-4),
+        BackgroundTransparency = 1,
+    }, Enum.EasingStyle.Linear)
+
+    task.delay(duration, function()
+        pcall(function() pt:Destroy() end)
+        PARTICLE_COUNT = PARTICLE_COUNT - 1
+    end)
+end
+
+task.spawn(function()
+    while GUI and GUI.Parent do
+        if Settings.particles and not Settings.performance then
+            spawnParticle()
+            task.wait(math.random(12,30)/10)
+        else
+            task.wait(1.2)
+        end
+    end
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- AMBIENT SOUND LOOP  (very subtle background tone, toggleable)
+-- ════════════════════════════════════════════════════════════════════════════
+local ambientSound = nil
+pcall(function()
+    ambientSound = new("Sound", SoundService, {
+        SoundId      = "rbxassetid://1843363841",
+        Volume       = 0.04,
+        Looped       = true,
+        PlaybackSpeed = 0.88,
+    })
+    if Settings.sounds then ambientSound:Play() end
+end)
+
+-- Hook sounds toggle to also control ambient
+local _origReady = refresh
+refresh = function()
+    _origReady()
+    pcall(function()
+        if ambientSound then
+            if Settings.sounds then ambientSound:Play()
+            else ambientSound:Stop() end
+        end
+    end)
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- AUTO-UPDATE CHECKER  (checks GitHub for newer version tag)
+-- ════════════════════════════════════════════════════════════════════════════
+task.spawn(function()
+    task.wait(8)
+    pcall(function()
+        local req = (syn and syn.request) or request or http_request
+        if not req then return end
+        local resp = req({
+            Url    = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/version.txt",
+            Method = "GET",
+        })
+        if resp and resp.StatusCode == 200 and resp.Body then
+            local remote = resp.Body:match("v%d+") or ""
+            if remote ~= "" and remote ~= "v7" then
+                toast("Update Available", "LP10 "..remote.." is ready. Re-download from the hub.", C.yellow)
+            end
+        end
+    end)
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SESSION STATS LOGGER  (logs once per minute)
+-- ════════════════════════════════════════════════════════════════════════════
+task.spawn(function()
+    while GUI and GUI.Parent do
+        task.wait(60)
+        pcall(function()
+            log("SESSION_PING  /  execs="..tostring(Persist.execCount or 0))
+        end)
+    end
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- LONG-PRESS TOOLTIP WIRING (on desktop: right-click script cards triggers tooltip)
+-- ════════════════════════════════════════════════════════════════════════════
+-- Wire into openDetail — add tooltip trigger on right mouse button
+local function wireTooltipOnCard(item, data)
+    item.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton2 then
+            local mouse = inp.Position
+            showTooltip(data, mouse.X, mouse.Y)
+        end
+    end)
+end
+
+-- Extend scriptCard to include tooltip wiring
+local _origCard = scriptCard
+scriptCard = function(parent, data, order)
+    local item = _origCard(parent, data, order)
+    if item then wireTooltipOnCard(item, data) end
+    return item
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- FOOTER WATERMARK  (rendered at bottom of detail panel)
+-- ════════════════════════════════════════════════════════════════════════════
+frame(Detail, {
+    Size=UDim2.new(1,-32,0,1), Position=UDim2.new(0,16,1,-44),
+    BackgroundColor3=C.line, ZIndex=61,
+})
+label(Detail, {
+    Size=UDim2.new(1,-32,0,28), Position=UDim2.new(0,16,1,-40),
+    Text="LP10 ULTIMATE v7  •  @LPOLVO  •  instagram.com/4me.h4mz4_",
+    TextColor3=C.dim, Font=Enum.Font.Gotham, TextSize=8,
+    TextXAlignment=Enum.TextXAlignment.Center, ZIndex=61,
+})
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SIDEBAR FOOTER WATERMARK
+-- ════════════════════════════════════════════════════════════════════════════
+label(Side, {
+    Size=UDim2.new(1,0,0,16), Position=UDim2.new(0,0,1,-18),
+    Text="© 2025 @LPOLVO  •  instagram.com/4me.h4mz4_",
+    TextColor3=C.dim, Font=Enum.Font.Gotham, TextSize=7,
+    ZIndex=15,
+})
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- FINAL BOOT COMPLETIONS
+-- ════════════════════════════════════════════════════════════════════════════
+-- Wire DetailExecute to use wrapped execScript (with milestone check)
+DetailExecute.MouseButton1Click:Connect(function()
+    execScript(CurrentScript)
+end)
+
+-- Wire About nav
+AboutBtn.MouseButton1Click:Connect(function()
+    changePage("About")
+end)
+
+-- Wire cmd palette from settings
+_G.LP10OpenCmd = openCmd
+
+-- Completion toasts
+task.delay(7.0, function()
+    toast("Press F1", "Show keyboard shortcuts overlay at any time.", C.muted)
+end)
+task.delay(10.0, function()
+    toast("Press ; or Ctrl+K", "Open the command palette to find scripts instantly.", C.violet)
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- END  —  LP10 UNIVERSAL  ULTIMATE EDITION  v7
+-- ════════════════════════════════════════════════════════════════════════════
+--[[
+    Thank you for using LP10.
+    Instagram:  https://www.instagram.com/4me.h4mz4_?igsh=MW9sa20yejExaGo5Nw==
+    GitHub:     https://github.com/LPOLVO/LP10
+    Version:    v7  ULTIMATE  (Aurora Shell  /  32 Scripts  /  ~200KB)
+
+    SUPPORTED EXECUTORS:
+      Delta 1.2+  /  Codex  /  Xeno  /  Arceus X  /  Fluxus  /  Synapse X
+
+    FEATURES:
+      • Full-screen Aurora Shell (edge-to-edge, full viewport)
+      • 32 hand-picked scripts — 3 brand-new in v7
+      • Live FPS / Ping / Memory display in header
+      • Favorites, Pinned, Recent with getgenv() persistence
+      • Search bar + Category filter strip
+      • Detail panel with exec count, copy, fav, pin, execute
+      • Electric glow animation on all text
+      • Ambient particle system
+      • Command palette (Ctrl+K or ;)
+      • Keyboard shortcuts overlay (F1)
+      • Tooltip overlay (right-click script cards on PC)
+      • Achievement / milestone system
+      • Quick-access floating bar (draggable)
+      • Auto-update checker
+      • Session stats logger
+      • Mobile responsive layout
+      • Restore orb for minimise/restore
+      • Settings with toggles for every FX
+      • Changelog with 12 entries
+      • About page with links
+
+    DO NOT REMOVE / MODIFY SCRIPT EXECUTION LOGIC
+    DO NOT REMOVE LOGGER CALLS
+    DO NOT REDISTRIBUTE WITHOUT CREDIT
+]]
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- EXTENDED DETAIL PANEL V2  (tags display, added version, tested label)
+-- ════════════════════════════════════════════════════════════════════════════
+-- Extend openDetail to also render tags from ScriptMeta
+local _openDetailBase = openDetail
+openDetail = function(data)
+    _openDetailBase(data)
+    -- Add meta info to existing desc label
+    local meta = ScriptMeta and ScriptMeta[data.N]
+    if meta then
+        local tagsStr = ""
+        if meta.tags then
+            local tagList = {}
+            for _, t in ipairs(meta.tags) do
+                table.insert(tagList, "#"..t)
+            end
+            tagsStr = table.concat(tagList, "  ")
+        end
+        local full = (data.F or "Delta compatible. Works on mobile and PC.")
+        if tagsStr ~= "" then
+            full = full .. "\n\nTags: " .. tagsStr
+        end
+        if meta.tested then
+            full = full .. "\nTested: " .. meta.tested
+        end
+        if meta.added then
+            full = full .. "\nAdded: " .. meta.added
+        end
+        if DetailDesc then
+            DetailDesc.Text = full
+        end
+    end
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SCRIPT SEARCH ENGINE  (advanced search: by tag, category, name)
+-- ════════════════════════════════════════════════════════════════════════════
+local function searchScripts(query)
+    query = query:lower():gsub("^%s+",""):gsub("%s+$","")
+    if query == "" then return Scripts end
+    local results = {}
+    local seen    = {}
+    -- 1. Exact name prefix
+    for _, d in ipairs(Scripts) do
+        if d.N:lower():sub(1,#query) == query and not seen[d.N] then
+            table.insert(results, d); seen[d.N] = true
+        end
+    end
+    -- 2. Name contains
+    for _, d in ipairs(Scripts) do
+        if d.N:lower():find(query,1,true) and not seen[d.N] then
+            table.insert(results, d); seen[d.N] = true
+        end
+    end
+    -- 3. Tag match
+    if ScriptMeta then
+        for _, d in ipairs(Scripts) do
+            if not seen[d.N] then
+                local meta = ScriptMeta[d.N]
+                if meta and meta.tags then
+                    for _, tag in ipairs(meta.tags) do
+                        if tag:find(query,1,true) then
+                            table.insert(results, d); seen[d.N] = true; break
+                        end
+                    end
+                end
+            end
+        end
+    end
+    -- 4. Category match
+    for _, d in ipairs(Scripts) do
+        if not seen[d.N] and d.Cat and d.Cat:lower():find(query,1,true) then
+            table.insert(results, d); seen[d.N] = true
+        end
+    end
+    -- 5. Description match
+    for _, d in ipairs(Scripts) do
+        if not seen[d.N] and d.F and d.F:lower():find(query,1,true) then
+            table.insert(results, d); seen[d.N] = true
+        end
+    end
+    return results
+end
+
+-- Override buildLibrary search to use advanced engine
+local _origBuildLibrary = buildLibrary
+buildLibrary = function(page)
+    local titles = {Scripts="Script Library",Favorites="Favorites",Pinned="Pinned Scripts",Recent="Recently Executed"}
+    PageTitle.Text = titles[page] or "Script Library"
+    PageSub.Text   = page=="Scripts" and "Tap a script to inspect it before executing." or "Your curated LP10 collection."
+
+    local base  = listForPage(page)
+    local query = (SearchBox.Text or ""):lower():gsub("^%s+",""):gsub("%s+$","")
+    local list  = {}
+
+    if query ~= "" then
+        -- Use advanced search engine on base list
+        local advanced = searchScripts(query)
+        local baseSet  = {}
+        for _, d in ipairs(base) do baseSet[d.N] = true end
+        for _, d in ipairs(advanced) do
+            if baseSet[d.N] then table.insert(list, d) end
+        end
+    else
+        list = base
+    end
+
+    local visible = 0
+    for _, data in ipairs(list) do
+        local catMatch = ActiveCat == "All"
+            or (ActiveCat == "New" and data.New)
+            or (data.Cat == ActiveCat)
+        if catMatch then
+            visible = visible + 1
+            scriptCard(Body, data, visible)
+        end
+    end
+
+    if visible == 0 then
+        label(Body, {
+            Size=UDim2.new(1,0,0,110), LayoutOrder=1,
+            Text=query~="" and ('No matches for "'..SearchBox.Text..'"') or
+                 "Nothing here yet.\nExecute scripts to fill this collection.",
+            TextColor3=C.muted, Font=Enum.Font.GothamSemibold, TextSize=13,
+            TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Center, ZIndex=16,
+        })
+    end
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SCRIPT RATING SYSTEM  (tap to rate after execution)
+-- ════════════════════════════════════════════════════════════════════════════
+local Ratings = {}
+pcall(function()
+    local env = getgenv and getgenv()
+    if env then
+        env.LP10Ratings = env.LP10Ratings or {}
+        Ratings = env.LP10Ratings
+    end
+end)
+
+local function showRating(data)
+    if not data then return end
+    if Ratings[data.N] then return end  -- already rated
+
+    local panel = frame(GUI, {
+        Size=UDim2.fromOffset(300,120),
+        Position=UDim2.new(0.5,-150,1,-140),
+        BackgroundColor3=C.panel, ZIndex=130,
+    })
+    round(panel, 16)
+    outline(panel, C.line, 1)
+    fillGradient(panel, Color3.fromRGB(14,22,50), C.panel, 135)
+
+    label(panel, {
+        Size=UDim2.new(1,-28,0,22), Position=UDim2.fromOffset(14,10),
+        Text="Rate: "..data.N,
+        TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=12,
+        TextXAlignment=Enum.TextXAlignment.Left, ZIndex=131,
+        TextTruncate=Enum.TextTruncate.AtEnd,
+    })
+    label(panel, {
+        Size=UDim2.new(1,-28,0,16), Position=UDim2.fromOffset(14,34),
+        Text="Did this script work as expected?",
+        TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=9,
+        TextXAlignment=Enum.TextXAlignment.Left, ZIndex=131,
+    })
+
+    local function rateBtn(lbl, col, x, rating)
+        local b = button(panel, {
+            Size=UDim2.fromOffset(80,36), Position=UDim2.fromOffset(x,62),
+            BackgroundColor3=Color3.fromRGB(12,18,40),
+            Text=lbl, TextColor3=col,
+            Font=Enum.Font.GothamBold, TextSize=11, ZIndex=131,
+        })
+        round(b, 10)
+        outline(b, col, 1)
+        wire(b, Color3.fromRGB(12,18,40), C.cardHot)
+        b.MouseButton1Click:Connect(function()
+            play("tap")
+            Ratings[data.N] = rating
+            toast("Thanks!", "Rating saved for "..data.N..".", col)
+            tw(panel, 0.2, {BackgroundTransparency=1})
+            task.delay(0.22, function() pcall(function() panel:Destroy() end) end)
+        end)
+    end
+    rateBtn("👍 Works",   C.green,  14,  5)
+    rateBtn("👌 Okay",    C.yellow, 104, 3)
+    rateBtn("👎 Broken",  C.red,    194, 1)
+
+    -- Auto-dismiss after 8s
+    task.delay(8, function()
+        if panel and panel.Parent then
+            tw(panel, 0.2, {BackgroundTransparency=1})
+            task.delay(0.22, function() pcall(function() panel:Destroy() end) end)
+        end
+    end)
+
+    spring(panel, 0.28, {Position=UDim2.new(0.5,-150,1,-148)})
+end
+
+-- Hook rating prompt 2.5s after execution
+local _origExecForRating = execScript
+execScript = function(data)
+    _origExecForRating(data)
+    task.delay(2.5, function() showRating(data) end)
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SCRIPT NOTES SYSTEM  (persistent per-script notes, stored in Persist)
+-- ════════════════════════════════════════════════════════════════════════════
+local function openNotes(data)
+    if not data then return end
+
+    local notePanel = frame(GUI, {
+        Size=UDim2.fromOffset(360, 260),
+        Position=UDim2.new(0.5,-180,0.5,-130),
+        BackgroundColor3=C.panel, ZIndex=140,
+    })
+    round(notePanel, 18)
+    outline(notePanel, C.line, 1.2)
+    fillGradient(notePanel, Color3.fromRGB(14,22,50), C.panel, 135)
+
+    label(notePanel, {
+        Size=UDim2.new(1,-32,0,24), Position=UDim2.fromOffset(16,14),
+        Text="Notes: "..data.N,
+        TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=13,
+        TextXAlignment=Enum.TextXAlignment.Left, ZIndex=141,
+        TextTruncate=Enum.TextTruncate.AtEnd,
+    })
+    frame(notePanel, {
+        Size=UDim2.new(1,-32,0,1), Position=UDim2.fromOffset(16,44),
+        BackgroundColor3=C.line, ZIndex=141,
+    })
+
+    local noteBox = input(notePanel, {
+        Size=UDim2.new(1,-28,0,140), Position=UDim2.fromOffset(14,50),
+        BackgroundColor3=C.input, Text=Persist.notes[data.N] or "",
+        PlaceholderText="Write your notes here… (e.g. tips, settings that worked)",
+        TextColor3=C.white, PlaceholderColor3=C.muted,
+        Font=Enum.Font.Gotham, TextSize=11,
+        TextXAlignment=Enum.TextXAlignment.Left,
+        TextYAlignment=Enum.TextYAlignment.Top,
+        MultiLine=true, ZIndex=141,
+        ClearTextOnFocus=false,
+    })
+    round(noteBox, 10)
+    outline(noteBox, C.line, 1)
+    inset(noteBox, 8,8,6,6)
+
+    local saveBtn = button(notePanel, {
+        Size=UDim2.new(0.5,-18,0,38), Position=UDim2.fromOffset(14,200),
+        BackgroundColor3=C.electric, Text="SAVE",
+        TextColor3=Color3.new(1,1,1), Font=Enum.Font.GothamBold, TextSize=12, ZIndex=141,
+    })
+    round(saveBtn, 11)
+    fillGradient(saveBtn, C.electric, C.royal, 0)
+    wire(saveBtn, C.electric, C.royal)
+    saveBtn.MouseButton1Click:Connect(function()
+        play("tap")
+        Persist.notes[data.N] = noteBox.Text
+        toast("Saved","Notes saved for "..data.N..".",C.green)
+        tw(notePanel, 0.18, {BackgroundTransparency=1})
+        task.delay(0.20, function() pcall(function() notePanel:Destroy() end) end)
+    end)
+
+    local cancelBtn = button(notePanel, {
+        Size=UDim2.new(0.5,-18,0,38), Position=UDim2.new(0.5,4,0,200),
+        BackgroundColor3=C.card, Text="CANCEL",
+        TextColor3=C.muted, Font=Enum.Font.GothamBold, TextSize=12, ZIndex=141,
+    })
+    round(cancelBtn, 11)
+    outline(cancelBtn, C.line, 1)
+    wire(cancelBtn, C.card, C.cardHot)
+    cancelBtn.MouseButton1Click:Connect(function()
+        play("tap")
+        tw(notePanel, 0.18, {BackgroundTransparency=1})
+        task.delay(0.20, function() pcall(function() notePanel:Destroy() end) end)
+    end)
+
+    spring(notePanel, 0.30, {Size=UDim2.fromOffset(364,264)})
+end
+
+-- Add Notes button to detail panel
+local DetailNotesBtn = button(Detail, {
+    Size=UDim2.new(1,-32,0,36), Position=UDim2.fromOffset(16,390),
+    BackgroundColor3=C.card, Text="📝  NOTES",
+    TextColor3=C.violet, Font=Enum.Font.GothamSemibold, TextSize=10, ZIndex=61,
+})
+round(DetailNotesBtn, 11)
+outline(DetailNotesBtn, C.line, 1)
+wire(DetailNotesBtn, C.card, C.cardHot)
+DetailNotesBtn.MouseButton1Click:Connect(function()
+    play("tap")
+    if CurrentScript then openNotes(CurrentScript) end
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- SCRIPTS STATISTICS PAGE  (detailed execution analytics)
+-- ════════════════════════════════════════════════════════════════════════════
+local function buildStats()
+    PageTitle.Text = "Execution Stats"
+    PageSub.Text   = "Your complete LP10 execution history."
+
+    local total = Persist.execCount or 0
+    local favC  = #Persist.favorites
+    local pinC  = #Persist.pinned
+    local recC  = #Persist.recent
+
+    -- Top row
+    local topRow = frame(Body, {
+        Size=UDim2.new(1,0,0,76), BackgroundTransparency=1, LayoutOrder=1, ZIndex=16,
+    })
+    listLayout(topRow, Enum.FillDirection.Horizontal, 12)
+    statBox(topRow, tostring(total), "TOTAL EXECUTIONS", C.electric, 1)
+    statBox(topRow, tostring(favC),  "FAVORITES",        C.yellow,   2)
+    statBox(topRow, tostring(recC),  "RECENT",           C.green,    3)
+
+    sectionTitle(Body, "TOP EXECUTED SCRIPTS", 2)
+
+    -- Sort by exec count
+    local sorted = {}
+    for n, cnt in pairs(Persist.totalExecs or {}) do
+        table.insert(sorted, {name=n, count=cnt})
+    end
+    table.sort(sorted, function(a,b) return a.count > b.count end)
+
+    if #sorted == 0 then
+        label(Body, {
+            Size=UDim2.new(1,0,0,50), LayoutOrder=3,
+            Text="Execute some scripts first.",
+            TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=11,
+            TextXAlignment=Enum.TextXAlignment.Left, ZIndex=16,
+        })
+    else
+        for i = 1, math.min(10, #sorted) do
+            local s = sorted[i]
+            local row = frame(Body, {
+                Size=UDim2.new(1,0,0,52), BackgroundColor3=C.card,
+                LayoutOrder=2+i, ZIndex=16,
+            })
+            round(row, 13)
+            outline(row, C.line, 1)
+            fillGradient(row, Color3.fromRGB(14,22,50), C.card, 135)
+            label(row, {
+                Size=UDim2.fromOffset(28,52), Position=UDim2.fromOffset(10,0),
+                Text=tostring(i)..".",
+                TextColor3=i==1 and C.yellow or (i==2 and C.ice or C.muted),
+                Font=Enum.Font.GothamBold, TextSize=11, ZIndex=17,
+            })
+            label(row, {
+                Size=UDim2.new(1,-110,0,22), Position=UDim2.fromOffset(38,8),
+                Text=s.name, TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=12,
+                TextXAlignment=Enum.TextXAlignment.Left,
+                TextTruncate=Enum.TextTruncate.AtEnd, ZIndex=17,
+            })
+            label(row, {
+                Size=UDim2.new(1,-110,0,16), Position=UDim2.fromOffset(38,30),
+                Text="Executed "..s.count.." time"..(s.count>1 and "s" or ""),
+                TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=9,
+                TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17,
+            })
+            label(row, {
+                Size=UDim2.fromOffset(80,52), Position=UDim2.new(1,-90,0,0),
+                Text=tostring(s.count).."×",
+                TextColor3=C.electric, Font=Enum.Font.GothamBold, TextSize=18,
+                ZIndex=17,
+            })
+        end
+    end
+
+    sectionTitle(Body, "ACHIEVEMENTS UNLOCKED", 14)
+    local achCount = 0
+    for k, v in pairs(Persist) do
+        if k:sub(1,4) == "ach_" and v == true then
+            achCount = achCount + 1
+            label(Body, {
+                Size=UDim2.new(1,0,0,28), LayoutOrder=14+achCount,
+                Text="🏆  "..k:sub(5),
+                TextColor3=C.yellow, Font=Enum.Font.GothamBold, TextSize=11,
+                TextXAlignment=Enum.TextXAlignment.Left, ZIndex=16,
+            })
+        end
+    end
+    if achCount == 0 then
+        label(Body, {
+            Size=UDim2.new(1,0,0,28), LayoutOrder=15,
+            Text="No achievements yet. Execute scripts to earn them.",
+            TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=11,
+            TextXAlignment=Enum.TextXAlignment.Left, ZIndex=16,
+        })
+    end
+end
+
+-- Add Stats to navigation
+table.insert(Pages, {id="Stats", label="Stats", icon="📊"})
+local statsNavBtn = button(NavScroll, {
+    Size=UDim2.new(1,-12,0,34), BackgroundColor3=Color3.fromRGB(7,11,24),
+    Text="  📊  Stats", TextColor3=C.text,
+    Font=Enum.Font.GothamSemibold, TextSize=11,
+    TextXAlignment=Enum.TextXAlignment.Left, ZIndex=15,
+})
+round(statsNavBtn, 10)
+inset(statsNavBtn, 6,0,0,0)
+wire(statsNavBtn, Color3.fromRGB(7,11,24), C.cardHot)
+NavButtons["Stats"] = statsNavBtn
+statsNavBtn.MouseButton1Click:Connect(function() changePage("Stats") end)
+
+-- Update refresh to handle Stats page
+local _origRefresh2 = refresh
+refresh = function()
+    if CurrentPage == "Stats" then
+        wipeBody()
+        buildStats()
+        for id, btn in pairs(NavButtons) do
+            local active = id == CurrentPage
+            btn.BackgroundColor3 = active and Color3.fromRGB(24,48,108) or Color3.fromRGB(7,11,24)
+            for _, ch in ipairs(btn:GetChildren()) do
+                if ch:IsA("TextLabel") then
+                    ch.TextColor3 = active and C.white or C.text
+                end
+            end
+        end
+    else
+        _origRefresh2()
+    end
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- HAPTIC FEEDBACK HELPER  (mobile rumble on execute)
+-- ════════════════════════════════════════════════════════════════════════════
+local HapticService = nil
+pcall(function() HapticService = game:GetService("HapticService") end)
+
+local function haptic(intensity)
+    pcall(function()
+        if HapticService and UIS.TouchEnabled then
+            HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.Large, intensity or 0.4)
+            task.delay(0.12, function()
+                pcall(function()
+                    HapticService:SetMotor(Enum.UserInputType.Gamepad1, Enum.VibrationMotor.Large, 0)
+                end)
+            end)
+        end
+    end)
+end
+
+-- Trigger haptic on execute
+local _origExecFinal = execScript
+execScript = function(data)
+    haptic(0.55)
+    _origExecFinal(data)
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- QUICK-EXEC SWIPE  (swipe right on a script card to execute immediately)
+-- ════════════════════════════════════════════════════════════════════════════
+-- Stored per-card data for swipe detection
+local swipeData = {}
+
+local function enableSwipeExec(item, data)
+    local startX, startY, swiping = 0, 0, false
+    item.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.Touch then
+            startX, startY, swiping = inp.Position.X, inp.Position.Y, true
+        end
+    end)
+    item.InputEnded:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.Touch and swiping then
+            swiping = false
+            local dx = inp.Position.X - startX
+            local dy = math.abs(inp.Position.Y - startY)
+            if dx > 80 and dy < 40 then
+                -- Right swipe detected — quick execute
+                execScript(data)
+                toast("Swiped!", "Executing "..data.N.."…", C.electric)
+                spring(item, 0.18, {Position=UDim2.new(item.Position.X.Scale, 40, item.Position.Y.Scale, item.Position.Y.Offset)})
+                task.delay(0.2, function()
+                    tw(item, 0.14, {Position=UDim2.new(item.Position.X.Scale, 0, item.Position.Y.Scale, item.Position.Y.Offset)})
+                end)
+            end
+        end
+    end)
+end
+
+-- Extend scriptCard for swipe support
+local _origCardFinal = scriptCard
+scriptCard = function(parent, data, order)
+    local item = _origCardFinal(parent, data, order)
+    if item and UIS.TouchEnabled then
+        enableSwipeExec(item, data)
+    end
+    return item
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- FOOTER: SESSION SUMMARY TOAST ON CLOSE
+-- ════════════════════════════════════════════════════════════════════════════
+local sessionStart = os.time()
+
+local _origClose = CloseBtn.MouseButton1Click
+CloseBtn.MouseButton1Click:Connect(function()
+    local duration = os.time() - sessionStart
+    local mins     = math.floor(duration/60)
+    local secs     = duration % 60
+    local execsThisSession = Persist.execCount or 0
+    -- Brief summary toast before close
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title    = "LP10 Session Over",
+        Text     = "Session: "..mins.."m "..secs.."s  /  Executions: "..execsThisSession.."  /  Thanks, "..LP.Name.."!",
+        Duration = 6,
+    })
+end)
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- ANIMATED LOADING DOTS  (shown in Body area while page renders)
+-- ════════════════════════════════════════════════════════════════════════════
+local function showLoading(parent)
+    local dots = label(parent, {
+        Size=UDim2.new(1,0,0,44), LayoutOrder=0,
+        Text="Loading…",
+        TextColor3=C.electric, Font=Enum.Font.GothamBold, TextSize=14,
+        TextXAlignment=Enum.TextXAlignment.Center, ZIndex=17,
+    })
+    task.spawn(function()
+        local frames2 = {"Loading   ","Loading.  ","Loading.. ","Loading..."}
+        local fi = 1
+        while dots and dots.Parent do
+            dots.Text = frames2[fi]
+            fi = fi % #frames2 + 1
+            task.wait(0.28)
+        end
+    end)
+    return dots
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- GLOBAL EXECUTION GUARD  (prevents double-execution within 1s)
+-- ════════════════════════════════════════════════════════════════════════════
+local lastExecTime = {}
+
+local _guardedExec = execScript
+execScript = function(data)
+    if not data then return end
+    local now = os.clock()
+    if lastExecTime[data.N] and (now - lastExecTime[data.N]) < 1.2 then
+        toast("Wait", "Please wait before executing this script again.", C.yellow)
+        return
+    end
+    lastExecTime[data.N] = now
+    _guardedExec(data)
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- NOTIFICATION CENTER  (history of last 10 toasts)
+-- ════════════════════════════════════════════════════════════════════════════
+local NotifHistory = {}
+local MAX_NOTIF_HISTORY = 10
+
+local _origToast = toast
+toast = function(title, msg, col)
+    table.insert(NotifHistory, 1, {title=title, msg=msg, col=col, time=os.date("%H:%M:%S")})
+    if #NotifHistory > MAX_NOTIF_HISTORY then
+        table.remove(NotifHistory, #NotifHistory)
+    end
+    _origToast(title, msg, col)
+end
+
+local function buildNotifCenter()
+    PageTitle.Text = "Notifications"
+    PageSub.Text   = "Recent system messages and alerts."
+    if #NotifHistory == 0 then
+        label(Body, {
+            Size=UDim2.new(1,0,0,60), LayoutOrder=1,
+            Text="No notifications yet.",
+            TextColor3=C.muted, Font=Enum.Font.Gotham, TextSize=12,
+            TextXAlignment=Enum.TextXAlignment.Center, ZIndex=16,
+        })
+        return
+    end
+    for i, n in ipairs(NotifHistory) do
+        local row = frame(Body, {
+            Size=UDim2.new(1,0,0,60), BackgroundColor3=C.card, LayoutOrder=i, ZIndex=16,
+        })
+        round(row, 13)
+        outline(row, n.col or C.line, 1)
+        frame(row, {Size=UDim2.fromOffset(3,36), Position=UDim2.fromOffset(10,12), BackgroundColor3=n.col or C.electric, ZIndex=17})
+        label(row, {
+            Size=UDim2.new(1,-42,0,20), Position=UDim2.fromOffset(26,8),
+            Text=n.title, TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=12,
+            TextXAlignment=Enum.TextXAlignment.Left, ZIndex=17,
+        })
+        label(row, {
+            Size=UDim2.new(1,-120,0,16), Position=UDim2.fromOffset(26,30),
+            Text=n.msg, TextColor3=C.text, Font=Enum.Font.Gotham, TextSize=9,
+            TextXAlignment=Enum.TextXAlignment.Left,
+            TextTruncate=Enum.TextTruncate.AtEnd, ZIndex=17,
+        })
+        label(row, {
+            Size=UDim2.fromOffset(80,16), Position=UDim2.new(1,-90,0,22),
+            Text=n.time, TextColor3=C.dim, Font=Enum.Font.Gotham, TextSize=8,
+            TextXAlignment=Enum.TextXAlignment.Right, ZIndex=17,
+        })
+    end
+end
+
+-- Add Notifications to nav
+local notifNavBtn = button(NavScroll, {
+    Size=UDim2.new(1,-12,0,34), BackgroundColor3=Color3.fromRGB(7,11,24),
+    Text="  🔔  Notifs", TextColor3=C.text,
+    Font=Enum.Font.GothamSemibold, TextSize=11,
+    TextXAlignment=Enum.TextXAlignment.Left, ZIndex=15,
+})
+round(notifNavBtn, 10)
+inset(notifNavBtn, 6,0,0,0)
+wire(notifNavBtn, Color3.fromRGB(7,11,24), C.cardHot)
+NavButtons["Notifs"] = notifNavBtn
+notifNavBtn.MouseButton1Click:Connect(function() changePage("Notifs") end)
+
+local _origRefresh3 = refresh
+refresh = function()
+    if CurrentPage == "Notifs" then
+        wipeBody()
+        buildNotifCenter()
+        for id, btn in pairs(NavButtons) do
+            local active = id == CurrentPage
+            btn.BackgroundColor3 = active and Color3.fromRGB(24,48,108) or Color3.fromRGB(7,11,24)
+            for _, ch in ipairs(btn:GetChildren()) do
+                if ch:IsA("TextLabel") then ch.TextColor3 = active and C.white or C.text end
+            end
+        end
+    else
+        _origRefresh3()
+    end
+end
+
