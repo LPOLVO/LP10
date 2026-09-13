@@ -14,7 +14,7 @@ local Config = {
     Secret          = "2009", -- This makes the script ONLY run from the key script. Even if they copy the original obfuscated script to bypass the key, they won't be able to!
     
     -- [3] Scripts & Links
-    MainScriptURL   = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/RUNAWAYS%20OB", -- The raw URL of your main script
+    MainScriptURL   = "https://raw.githubusercontent.com/LPOLVO/LP10-UNIVERSAL-/refs/heads/main/Universal", -- The raw URL of your main script
     
     -- [4] Social Media Settings (Set to true to show, false to hide)
     ShowDiscord     = true,
@@ -280,7 +280,7 @@ local function CreateGUI()
 
     local MainFrame = Instance.new("Frame", ScreenGui)
     MainFrame.Name = "KeyCard"
-    MainFrame.Size = UDim2.new(0.92, 0, 0, 460)
+    MainFrame.Size = UDim2.new(0.88, 0, 0, 460)
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.Position = UDim2.fromScale(0.5, 0.5)
     MainFrame.BackgroundColor3 = Color3.fromRGB(11, 6, 28)
@@ -290,6 +290,19 @@ local function CreateGUI()
     MainFrame.ClipsDescendants = true
     MainFrame.ZIndex = 10
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
+
+    -- Keep the card comfortable on short landscape phone screens.
+    local MainScale = Instance.new("UIScale", MainFrame)
+    local function applyResponsiveScale()
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize or Vector2.new(800, 600)
+        local scale = math.clamp(viewport.Y / 520, 0.78, 0.93)
+        MainScale.Scale = scale
+    end
+    applyResponsiveScale()
+    if workspace.CurrentCamera then
+        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(applyResponsiveScale)
+    end
     
     local mainStroke = Instance.new("UIStroke", MainFrame)
     mainStroke.Thickness = 1.5
@@ -364,7 +377,7 @@ local function CreateGUI()
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         TweenService:Create(MainFrame, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Size = UDim2.new(0.92, 0, 0, 0),
+            Size = UDim2.new(0.88, 0, 0, 0),
             BackgroundTransparency = 1,
         }):Play()
         task.delay(0.24, function()
@@ -666,7 +679,7 @@ local function CreateGUI()
     Footer.ZIndex = 12
 
     -- Dynamically adjust main frame height based on active elements
-    MainFrame.Size = UDim2.new(0.92, 0, 0, currentYOffset + 184)
+    MainFrame.Size = UDim2.new(0.88, 0, 0, currentYOffset + 184)
 
     -- Logic
     local verifying = false
