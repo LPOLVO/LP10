@@ -14,7 +14,7 @@ local Config = {
     Secret          = "2009", -- This makes the script ONLY run from the key script. Even if they copy the original obfuscated script to bypass the key, they won't be able to!
     
     -- [3] Scripts & Links
-    MainScriptURL   = "https://raw.githubusercontent.com/LPOLVO/LP10-UNIVERSAL-/refs/heads/main/Universal", -- The raw URL of your main script
+    MainScriptURL   = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/RUNAWAYS%20OB", -- The raw URL of your main script
     
     -- [4] Social Media Settings (Set to true to show, false to hide)
     ShowDiscord     = true,
@@ -329,7 +329,7 @@ local function CreateGUI()
 
     local HeaderGlow = Instance.new("Frame", MainFrame)
     HeaderGlow.Size = UDim2.new(1, 0, 0, 3)
-    HeaderGlow.Position = UDim2.fromOffset(0, 49)
+    HeaderGlow.Position = UDim2.fromOffset(0, 58)
     HeaderGlow.BackgroundColor3 = Color3.fromRGB(157, 92, 255)
     HeaderGlow.BorderSizePixel = 0
     HeaderGlow.ZIndex = 14
@@ -356,7 +356,7 @@ local function CreateGUI()
     -- Close Button
     local CloseBtn = Instance.new("TextButton", MainFrame)
     CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(1, -35, 0, 10)
+    CloseBtn.Position = UDim2.new(1, -35, 0, 17)
     CloseBtn.BackgroundTransparency = 1
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = Color3.fromRGB(196, 167, 235)
@@ -387,7 +387,7 @@ local function CreateGUI()
 
     local Title = Instance.new("TextLabel", MainFrame)
     Title.Size = UDim2.new(1, -46, 0, 30)
-    Title.Position = UDim2.fromOffset(18, 10)
+    Title.Position = UDim2.fromOffset(18, 17)
     Title.Text = "LP10  /  "..Config.HubName
     Title.BackgroundTransparency = 1
     Title.TextColor3 = Color3.fromRGB(235, 242, 255)
@@ -398,7 +398,7 @@ local function CreateGUI()
 
     local PromoText = Instance.new("TextLabel", MainFrame)
     PromoText.Size = UDim2.new(1, -36, 0, 24)
-    PromoText.Position = UDim2.fromOffset(18, 38)
+    PromoText.Position = UDim2.fromOffset(18, 47)
     PromoText.BackgroundTransparency = 1
     PromoText.Text = string.upper(Config.HubDescription)
     PromoText.TextColor3 = Color3.fromRGB(196, 167, 235)
@@ -410,7 +410,7 @@ local function CreateGUI()
 
     local SecurePill = Instance.new("TextLabel", MainFrame)
     SecurePill.Size = UDim2.fromOffset(132, 20)
-    SecurePill.Position = UDim2.new(1, -154, 0, 40)
+    SecurePill.Position = UDim2.new(1, -154, 0, 49)
     SecurePill.BackgroundColor3 = Color3.fromRGB(18, 42, 45)
     SecurePill.Text = "[ON]  SECURE GATEWAY"
     SecurePill.TextColor3 = Color3.fromRGB(52, 224, 145)
