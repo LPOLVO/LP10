@@ -17,12 +17,10 @@ local Config = {
 local Scripts = {
     {
         N = "RUNAWAYS",
-        F = "Full AutoFarm, gate handling, safe-zone recovery, replay and teleport recovery.",
+        F = "RUNAWAYS automation with Auto Farm, Safe Gate Wait and Auto Replay.",
         Cat = "Automation",
         New = true,
         S = [===[
-local LP10SelfEnv = getgenv and getgenv() or _G
-local LP10AutomationSource = [===[
 
 -- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM
 -- This version ports the ACTUAL AutoFarm logic from the open-source RUNAWAYS.lua
@@ -35,155 +33,131 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 
--- [ 1. CONFIGURATION ]
+-- [ 1. PURPLE PANEL BOOTSTRAP ]
+local library = { Unloaded = false }
+
+local RunawaysEnv = getgenv and getgenv() or _G
+if RunawaysEnv.LP10RunawaysAutomationLoaded
+    and RunawaysEnv.LP10RunawaysPanel
+    and RunawaysEnv.LP10RunawaysPanel.Parent
+then
+    RunawaysEnv.LP10RunawaysPanel.Enabled = true
+    return
+end
+
 local Config = {
     HubName = "LP10 HUB",
     AccentColor = Color3.fromRGB(124, 58, 237),
-    BgColor = Color3.fromRGB(15, 15, 15),
-    MinSize = Vector2.new(180, 130),
-    MaxSize = Vector2.new(480, 400)
+    AccentLight = Color3.fromRGB(157, 92, 255),
+    BgColor = Color3.fromRGB(10, 6, 22),
+    PanelColor = Color3.fromRGB(18, 10, 38),
 }
 
-local LP10BootstrapEnv = getgenv and getgenv() or _G
-if LP10BootstrapEnv.LP10AutomationGui and LP10BootstrapEnv.LP10AutomationGui.Parent then
-    pcall(function() LP10BootstrapEnv.LP10AutomationGui:Destroy() end)
-end
+local Parent = CoreGui
+pcall(function()
+    if gethui then Parent = gethui() end
+end)
+
+local ExistingPanel = Parent:FindFirstChild("LP10_RunawaysPanel")
+if ExistingPanel then ExistingPanel:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "LP10_Final_Edition"
-ScreenGui.Parent = CoreGui
+ScreenGui.Name = "LP10_RunawaysPanel"
+ScreenGui.Parent = Parent
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
-LP10BootstrapEnv.LP10AutomationGui = ScreenGui
+RunawaysEnv.LP10RunawaysPanel = ScreenGui
 
--- [ 2. DRAGGING FUNCTION ]
 local function EnableDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if not _G.IsResizing then
-                dragging = true
-                dragStart = input.Position
-                startPos = frame.Position
-                input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
-                end)
-            end
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
         end
     end)
     frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
     end)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
 end
 
--- [ 3. FLOATING TOGGLE BUTTON ]
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "LP_Toggle"
-ToggleBtn.Parent = ScreenGui
-ToggleBtn.BackgroundColor3 = Config.BgColor
-ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
-ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
-ToggleBtn.AutoButtonColor = false
-ToggleBtn.Text = ""
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
-local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
-ToggleStroke.Color = Config.AccentColor
-ToggleStroke.Thickness = 2
-
-local LP_Label = Instance.new("TextLabel", ToggleBtn)
-LP_Label.Size = UDim2.new(1, 0, 1, 0)
-LP_Label.BackgroundTransparency = 1
-LP_Label.Text = "LP"
-LP_Label.Font = Enum.Font.FredokaOne
-LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-LP_Label.TextScaled = true
-local UIGradient = Instance.new("UIGradient", LP_Label)
-UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(157, 92, 255))})
-Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 10)
-
--- [ 4. MAIN FRAME ]
 local Main = Instance.new("Frame")
-Main.Name = "MainFrame"
+Main.Name = "RunawaysAutomation"
 Main.Parent = ScreenGui
 Main.BackgroundColor3 = Config.BgColor
-Main.Position = UDim2.new(0.5, -130, 0.5, -170)
-Main.Size = UDim2.new(0, 260, 0, 340)
-Main.Visible = false
+Main.Position = UDim2.new(0.5, -155, 0.5, -215)
+Main.Size = UDim2.fromOffset(310, 430)
 Main.Active = true
 Main.ClipsDescendants = true
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Config.AccentColor
-MainStroke.Thickness = 2
+MainStroke.Color = Config.AccentLight
+MainStroke.Thickness = 1.4
+MainStroke.Transparency = 0.08
+local MainGradient = Instance.new("UIGradient", Main)
+MainGradient.Color = ColorSequence.new(Config.PanelColor, Config.BgColor)
+MainGradient.Rotation = 135
 
 local Header = Instance.new("TextLabel", Main)
-Header.Size = UDim2.new(1, 0, 0, 34)
+Header.Size = UDim2.new(1, -58, 0, 30)
+Header.Position = UDim2.fromOffset(14, 8)
 Header.BackgroundTransparency = 1
-Header.Font = Enum.Font.GothamBold
-Header.Text = "ðŸ’Ž " .. Config.HubName
-Header.TextColor3 = Config.AccentColor
-Header.TextSize = 14
+Header.Font = Enum.Font.GothamBlack
+Header.Text = "RUNAWAYS"
+Header.TextColor3 = Color3.fromRGB(239, 235, 255)
+Header.TextSize = 15
+Header.TextXAlignment = Enum.TextXAlignment.Left
 
--- [ 5. RESIZE SYSTEM ]
-local ResizeHandle = Instance.new("TextButton", Main)
-ResizeHandle.Name = "ResizeHandle"
-ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
-ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
-ResizeHandle.BackgroundTransparency = 1
-ResizeHandle.Text = "â—¢"
-ResizeHandle.TextColor3 = Config.AccentColor
-ResizeHandle.TextSize = 15
+local SubHeader = Instance.new("TextLabel", Main)
+SubHeader.Size = UDim2.new(1, -28, 0, 14)
+SubHeader.Position = UDim2.fromOffset(14, 34)
+SubHeader.BackgroundTransparency = 1
+SubHeader.Font = Enum.Font.GothamSemibold
+SubHeader.Text = "AUTOMATION"
+SubHeader.TextColor3 = Color3.fromRGB(145, 119, 184)
+SubHeader.TextSize = 8
+SubHeader.TextXAlignment = Enum.TextXAlignment.Left
 
-local currentSize = Main.Size
-
-ResizeHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        _G.IsResizing = true
-        local dragStart = input.Position
-        local startSize = Main.Size
-        local connection
-        connection = UserInputService.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                local delta = input.Position - dragStart
-                local newX = math.clamp(startSize.X.Offset + delta.X, Config.MinSize.X, Config.MaxSize.X)
-                local newY = math.clamp(startSize.Y.Offset + delta.Y, Config.MinSize.Y, Config.MaxSize.Y)
-                Main.Size = UDim2.new(0, newX, 0, newY)
-                currentSize = Main.Size
-            end
-        end)
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                _G.IsResizing = false
-                connection:Disconnect()
-            end
-        end)
-    end
+local Close = Instance.new("TextButton", Main)
+Close.Size = UDim2.fromOffset(28, 28)
+Close.Position = UDim2.new(1, -38, 0, 7)
+Close.BackgroundTransparency = 1
+Close.AutoButtonColor = false
+Close.Text = "X"
+Close.TextColor3 = Color3.fromRGB(216, 180, 254)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 17
+Close.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
 end)
+
+local HeaderLine = Instance.new("Frame", Main)
+HeaderLine.Size = UDim2.new(1, 0, 0, 2)
+HeaderLine.Position = UDim2.fromOffset(0, 57)
+HeaderLine.BackgroundColor3 = Config.AccentColor
+HeaderLine.BorderSizePixel = 0
+local HeaderGradient = Instance.new("UIGradient", HeaderLine)
+HeaderGradient.Color = ColorSequence.new(Config.AccentColor, Color3.fromRGB(216, 180, 254))
+HeaderGradient.Rotation = 0
 
 EnableDraggable(Main)
-EnableDraggable(ToggleBtn)
 
-local isOpen = true
-Main.Visible = true
-ToggleBtn.MouseButton1Click:Connect(function()
-    isOpen = not isOpen
-    if isOpen then
-        Main.Visible = true
-        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
-    else
-        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
-            if not isOpen then Main.Visible = false end
-        end)
-    end
-end)
-
-print("LP10 HUB: Royal Blue Edition Loading...")
+print("LP10 HUB: Purple RUNAWAYS panel loading...")
 
 -- ============================================================================
 -- SECTION A: FLOW CLIENT + GLOBALS
@@ -194,7 +168,7 @@ while not AutomationPlayer do
     AutomationPlayer = Players.LocalPlayer
 end
 
-local env = getgenv and getgenv() or _G
+local env = RunawaysEnv
 
 local flow
 pcall(function()
@@ -2533,7 +2507,8 @@ function AutoFarm:Stop(silent)
 end
 
 -- ============================================================================
--- SECTION D: LP10 UI PANEL (AutoFarm Wired In)
+-- ============================================================================
+-- SECTION D: PURPLE RUNAWAYS CONTROLS
 -- ============================================================================
 LP10UI = {
     toggles = {
@@ -2544,21 +2519,37 @@ LP10UI = {
     refs = {},
 }
 
+local C = {
+    card = Color3.fromRGB(22, 12, 46),
+    cardHot = Color3.fromRGB(35, 18, 69),
+    purple = Color3.fromRGB(124, 58, 237),
+    electric = Color3.fromRGB(157, 92, 255),
+    light = Color3.fromRGB(216, 180, 254),
+    text = Color3.fromRGB(239, 235, 255),
+    muted = Color3.fromRGB(145, 119, 184),
+    red = Color3.fromRGB(255, 83, 105),
+}
+
 local AutomationPanel = Instance.new("ScrollingFrame")
 AutomationPanel.Name = "AutomationPanel"
 AutomationPanel.Parent = Main
-AutomationPanel.Position = UDim2.new(0, 8, 0, 40)
-AutomationPanel.Size = UDim2.new(1, -16, 1, -56)
+AutomationPanel.Position = UDim2.fromOffset(10, 70)
+AutomationPanel.Size = UDim2.new(1, -20, 1, -96)
 AutomationPanel.BackgroundTransparency = 1
 AutomationPanel.BorderSizePixel = 0
-AutomationPanel.ScrollBarThickness = 4
-AutomationPanel.ScrollBarImageColor3 = Config.AccentColor
+AutomationPanel.ScrollBarThickness = 3
+AutomationPanel.ScrollBarImageColor3 = C.electric
 AutomationPanel.CanvasSize = UDim2.new()
 AutomationPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+AutomationPanel.ScrollingDirection = Enum.ScrollingDirection.Y
 
 local Layout = Instance.new("UIListLayout", AutomationPanel)
-Layout.Padding = UDim.new(0, 5)
+Layout.Padding = UDim.new(0, 6)
 Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function round(instance, radius)
+    Instance.new("UICorner", instance).CornerRadius = UDim.new(0, radius or 8)
+end
 
 local function makeLabel(text, height, color)
     local label = Instance.new("TextLabel")
@@ -2566,8 +2557,8 @@ local function makeLabel(text, height, color)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.Gotham
     label.Text = text
-    label.TextColor3 = color or Color3.fromRGB(235, 235, 235)
-    label.TextSize = 12
+    label.TextColor3 = color or C.text
+    label.TextSize = 10
     label.TextWrapped = true
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.TextYAlignment = Enum.TextYAlignment.Center
@@ -2577,48 +2568,54 @@ end
 
 local function makeToggle(text, default, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -4, 0, 26)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.Size = UDim2.new(1, -4, 0, 28)
+    btn.BackgroundColor3 = C.card
     btn.AutoButtonColor = false
     btn.Font = Enum.Font.GothamBold
-    btn.TextColor3 = Color3.fromRGB(245, 245, 245)
-    btn.TextSize = 12
+    btn.TextColor3 = C.text
+    btn.TextSize = 10
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = AutomationPanel
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    round(btn, 7)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = C.purple
+    stroke.Thickness = 0.8
+    stroke.Transparency = 0.45
 
     local state = default == true
     local function render()
         btn.Text = "  " .. text .. "    [" .. (state and "ON" or "OFF") .. "]"
-        btn.BackgroundColor3 = state and Color3.fromRGB(20, 92, 145) or Color3.fromRGB(25, 25, 25)
+        btn.BackgroundColor3 = state and C.cardHot or C.card
+        stroke.Color = state and C.electric or C.purple
     end
     render()
 
-    local setter
-    setter = function(newState, fire)
+    local setter = function(newState, fire)
         state = newState == true
         render()
         if fire and callback then callback(state) end
     end
-
-    btn.MouseButton1Click:Connect(function()
-        setter(not state, true)
-    end)
+    btn.MouseButton1Click:Connect(function() setter(not state, true) end)
     return btn, setter
 end
 
 local function makeNumber(text, default, minV, maxV, callback)
     local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -4, 0, 26)
-    box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    box.Size = UDim2.new(1, -4, 0, 27)
+    box.BackgroundColor3 = C.card
     box.Font = Enum.Font.Gotham
     box.PlaceholderText = text
     box.Text = tostring(default)
-    box.TextColor3 = Color3.fromRGB(245, 245, 245)
-    box.TextSize = 12
+    box.TextColor3 = C.text
+    box.PlaceholderColor3 = C.muted
+    box.TextSize = 10
     box.ClearTextOnFocus = false
     box.Parent = AutomationPanel
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    round(box, 7)
+    local stroke = Instance.new("UIStroke", box)
+    stroke.Color = C.purple
+    stroke.Thickness = 0.8
+    stroke.Transparency = 0.45
     box.FocusLost:Connect(function()
         local v = math.clamp(tonumber(box.Text) or default, minV, maxV)
         box.Text = tostring(v)
@@ -2627,7 +2624,7 @@ local function makeNumber(text, default, minV, maxV, callback)
     return box
 end
 
-makeLabel("AUTOMATION", 22, Config.AccentColor)
+makeLabel("AUTOMATION", 20, C.electric)
 
 local autoFarmBtn, autoFarmSet = makeToggle("Auto Farm", false, function(v)
     LP10UI.toggles.autoFarm = v
@@ -2651,21 +2648,21 @@ local autoReplayBtn, autoReplaySet = makeToggle("Auto Replay", true, function(v)
 end)
 LP10UI.refs.autoReplayBtn = autoReplayBtn
 
-makeLabel("Delay Between Runs", 16, Color3.fromRGB(170, 170, 170))
+makeLabel("Delay Between Runs", 15, C.muted)
 local delayBox = makeNumber("Seconds", 3, 0, 30, function(v)
     AutoFarm.Config.LobbyDelay = v
     if AutoFarm.StateReady then AutoFarm:Persist() end
 end)
 LP10UI.refs.delayBox = delayBox
 
-makeLabel("Gate Timeout", 16, Color3.fromRGB(170, 170, 170))
+makeLabel("Gate Timeout", 15, C.muted)
 local gateBox = makeNumber("Seconds", 165, 125, 240, function(v)
     AutoFarm.Config.GateTimeout = v
     if AutoFarm.StateReady then AutoFarm:Persist() end
 end)
 LP10UI.refs.gateBox = gateBox
 
-makeLabel("Retry Delay", 16, Color3.fromRGB(170, 170, 170))
+makeLabel("Retry Delay", 15, C.muted)
 local retryBox = makeNumber("Seconds", 10, 3, 30, function(v)
     AutoFarm.Config.RetryDelay = v
     if AutoFarm.StateReady then AutoFarm:Persist() end
@@ -2673,40 +2670,47 @@ end)
 LP10UI.refs.retryBox = retryBox
 
 local StatusLabel = makeLabel("Status: Idle\nReady", 36)
-local StatsLabel = makeLabel("Session: 00:00:00 | Runs: 0/0\nFailures: 0 | Retries: 0 | NPC: 0\nCurrent run: 00:00:00 | Gate: --", 50, Color3.fromRGB(180, 210, 230))
+local StatsLabel = makeLabel("Session: 00:00:00 | Runs: 0/0\nFailures: 0 | Retries: 0 | NPC: 0\nCurrent run: 00:00:00 | Gate: --", 50, C.light)
 local ErrorLabel = makeLabel("Last error: None", 24, Color3.fromRGB(255, 145, 145))
 LP10UI.refs.status = StatusLabel
 LP10UI.refs.stats = StatsLabel
 LP10UI.refs.error = ErrorLabel
 
 local resetBtn = Instance.new("TextButton")
-resetBtn.Size = UDim2.new(1, -4, 0, 26)
-resetBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+resetBtn.Size = UDim2.new(1, -4, 0, 28)
+resetBtn.BackgroundColor3 = C.card
+resetBtn.AutoButtonColor = false
 resetBtn.Font = Enum.Font.GothamBold
 resetBtn.Text = "Reset Statistics"
-resetBtn.TextColor3 = Color3.fromRGB(245, 245, 245)
-resetBtn.TextSize = 12
+resetBtn.TextColor3 = C.text
+resetBtn.TextSize = 10
 resetBtn.Parent = AutomationPanel
-Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
+round(resetBtn, 7)
+local resetStroke = Instance.new("UIStroke", resetBtn)
+resetStroke.Color = C.purple
+resetStroke.Thickness = 0.8
+resetStroke.Transparency = 0.45
 resetBtn.MouseButton1Click:Connect(function()
     AutoFarm:ResetStats()
     LP10UI.update()
 end)
 
-local Footer = Instance.new("TextLabel")
+local Footer = Instance.new("TextLabel", Main)
 Footer.Name = "LPOLVOFooter"
-Footer.Parent = Main
-Footer.Position = UDim2.new(0, 8, 1, -18)
-Footer.Size = UDim2.new(1, -16, 0, 14)
+Footer.Position = UDim2.new(0, 10, 1, -22)
+Footer.Size = UDim2.new(1, -20, 0, 14)
 Footer.BackgroundTransparency = 1
 Footer.Font = Enum.Font.Gotham
 Footer.Text = "by LPOLVO"
-Footer.TextColor3 = Config.AccentColor
-Footer.TextSize = 10
+Footer.TextColor3 = C.electric
+Footer.TextSize = 9
 Footer.TextXAlignment = Enum.TextXAlignment.Right
 
+Close.MouseEnter:Connect(function() Close.TextColor3 = C.red end)
+Close.MouseLeave:Connect(function() Close.TextColor3 = C.light end)
+
 -- ============================================================================
--- SECTION E: LIVE SYNC LOOP
+
 -- ============================================================================
 local function dur(v)
     v = math.max(0, math.floor(tonumber(v) or 0))
@@ -2794,26 +2798,14 @@ else
     AutoFarm:Persist()
 end
 
-print("LP10 HUB: RUNAWAYS AutoFarm (Full Port) loaded | by LPOLVO")
-
-]===]
-
-LP10SelfEnv.LP10RunawaysAutomationSource = LP10AutomationSource
-pcall(function()
-    game:GetService("TeleportService"):SetTeleportSetting(
-        "LP10_AUTOMATION_SOURCE",
-        LP10AutomationSource
-    )
-end)
-
-local LP10Run = loadstring(LP10AutomationSource)
-if LP10Run then
-    LP10Run()
-end
+RunawaysEnv.LP10RunawaysAutomationLoaded = true
+print("LP10 HUB: RUNAWAYS AutoFarm (Purple Port) loaded | by LPOLVO")
 
 ]===],
     },
+
 }
+
 local C = {
     panel = Color3.fromRGB(10, 6, 22),
     panelLight = Color3.fromRGB(18, 10, 38),
@@ -3192,8 +3184,11 @@ local function ScriptCard(data, order)
         Run.Text = "LOAD"
         task.spawn(function()
             local ok, err = pcall(function()
-                local fn = loadstring(data.S)
-                if fn then fn() end
+                local fn, compileError = loadstring(data.S)
+                if type(fn) ~= "function" then
+                    error(compileError or "loadstring returned no function")
+                end
+                fn()
             end)
             if Run and Run.Parent then
                 Run.Text = ok and "DONE" or "ERROR"
@@ -3290,4 +3285,4 @@ _G.LP10CompactLibrary = Library
 Refresh()
 SetOpen(Config.StartOpen)
 
-print("LP10 Compact Purple Library loaded.")ed.")
+print("LP10 Compact Purple Library loaded.")
