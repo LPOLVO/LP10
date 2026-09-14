@@ -1,3 +1,26 @@
+-- [[ LP10 HUB | COMPACT PURPLE LIBRARY ]]
+-- Small clean window. No fullscreen background. Ready for script entries.
+
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local Config = {
+    HubName = "LP10 HUB",
+    MapName = "RUNAWAYS",
+    GuiName = "LP10_CompactLibrary",
+    StartOpen = false,
+}
+
+-- Add your protected script entries here.
+local Scripts = {
+    {
+        N = "RUNAWAYS",
+        F = "RUNAWAYS automation with Auto Farm, Safe Gate Wait and Auto Replay.",
+        Cat = "Automation",
+        New = true,
+        S = [===[
 
 -- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM
 -- This version ports the ACTUAL AutoFarm logic from the open-source RUNAWAYS.lua
@@ -2837,3 +2860,519 @@ end
 
 RunawaysEnv.LP10RunawaysAutomationLoaded = true
 print("LP10 HUB: RUNAWAYS AutoFarm (Purple Port) loaded | by LPOLVO")
+
+]===],
+    },
+
+}
+
+local C = {
+    panel = Color3.fromRGB(10, 6, 22),
+    panelLight = Color3.fromRGB(18, 10, 38),
+    card = Color3.fromRGB(22, 12, 46),
+    cardHot = Color3.fromRGB(35, 18, 69),
+    purple = Color3.fromRGB(124, 58, 237),
+    electric = Color3.fromRGB(157, 92, 255),
+    light = Color3.fromRGB(216, 180, 254),
+    text = Color3.fromRGB(239, 235, 255),
+    muted = Color3.fromRGB(145, 119, 184),
+    green = Color3.fromRGB(52, 224, 145),
+    yellow = Color3.fromRGB(255, 198, 74),
+    red = Color3.fromRGB(255, 83, 105),
+}
+
+local function New(className, parent, properties)
+    local object = Instance.new(className)
+    object.Parent = parent
+    for key, value in pairs(properties or {}) do
+        object[key] = value
+    end
+    return object
+end
+
+local function Corner(parent, radius)
+    return New("UICorner", parent, {
+        CornerRadius = UDim.new(0, radius or 10),
+    })
+end
+
+local function Stroke(parent, color, thickness, transparency)
+    return New("UIStroke", parent, {
+        Color = color,
+        Thickness = thickness or 1,
+        Transparency = transparency or 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    })
+end
+
+local function Gradient(parent, first, second, rotation)
+    return New("UIGradient", parent, {
+        Color = ColorSequence.new(first, second),
+        Rotation = rotation or 90,
+    })
+end
+
+local function Play(object, duration, properties, style, direction)
+    return TweenService:Create(
+        object,
+        TweenInfo.new(
+            duration,
+            style or Enum.EasingStyle.Quart,
+            direction or Enum.EasingDirection.Out
+        ),
+        properties
+    )
+end
+
+local function Draggable(handle, target)
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPosition
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPosition = target.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            target.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+local Parent = CoreGui
+pcall(function()
+    if gethui then Parent = gethui() end
+end)
+
+local Existing = Parent:FindFirstChild(Config.GuiName)
+if Existing then Existing:Destroy() end
+
+local ScreenGui = New("ScreenGui", Parent, {
+    Name = Config.GuiName,
+    ResetOnSpawn = false,
+    IgnoreGuiInset = true,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
+
+-- Only the small toggle and the small library window are created.
+local Toggle = New("TextButton", ScreenGui, {
+    Name = "LP10Toggle",
+    Size = UDim2.fromOffset(48, 48),
+    Position = UDim2.new(0.07, 0, 0.18, 0),
+    BackgroundColor3 = C.panel,
+    AutoButtonColor = false,
+    Text = "",
+    ZIndex = 30,
+})
+Corner(Toggle, 17)
+local ToggleStroke = Stroke(Toggle, C.electric, 1.6, 0.04)
+Gradient(Toggle, C.cardHot, C.panel, 135)
+
+New("TextLabel", Toggle, {
+    Size = UDim2.new(1, 0, 0, 26),
+    Position = UDim2.fromOffset(0, 8),
+    BackgroundTransparency = 1,
+    Text = "LP",
+    TextColor3 = C.text,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 17,
+    ZIndex = 31,
+})
+
+local ToggleState = New("TextLabel", Toggle, {
+    Size = UDim2.new(1, 0, 0, 12),
+    Position = UDim2.new(0, 0, 1, -16),
+    BackgroundTransparency = 1,
+    Text = "OPEN",
+    TextColor3 = C.light,
+    Font = Enum.Font.GothamBold,
+    TextSize = 7,
+    ZIndex = 31,
+})
+
+local Main = New("Frame", ScreenGui, {
+    Name = "CompactLibrary",
+    Size = UDim2.fromOffset(290, 350),
+    Position = UDim2.new(0.5, -145, 0.5, -175),
+    BackgroundColor3 = C.panel,
+    BorderSizePixel = 0,
+    Active = true,
+    ClipsDescendants = true,
+    Visible = Config.StartOpen,
+    ZIndex = 10,
+})
+Corner(Main, 15)
+local MainStroke = Stroke(Main, C.electric, 1.25, 0.10)
+Gradient(Main, C.panelLight, C.panel, 135)
+
+local MainScale = New("UIScale", Main, {Scale = 1})
+local function Responsive()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    MainScale.Scale = math.clamp(math.min(viewport.X / 330, viewport.Y / 410), 0.68, 1)
+end
+Responsive()
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(Responsive)
+end
+
+local Header = New("TextLabel", Main, {
+    Size = UDim2.new(1, -60, 0, 26),
+    Position = UDim2.fromOffset(14, 10),
+    BackgroundTransparency = 1,
+    Text = Config.HubName,
+    TextColor3 = C.text,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 15,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 20,
+})
+
+local SubHeader = New("TextLabel", Main, {
+    Size = UDim2.new(1, -32, 0, 15),
+    Position = UDim2.fromOffset(14, 33),
+    BackgroundTransparency = 1,
+    Text = string.upper(Config.MapName),
+    TextColor3 = C.muted,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 8,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 20,
+})
+
+local Close = New("TextButton", Main, {
+    Size = UDim2.fromOffset(28, 28),
+    Position = UDim2.new(1, -38, 0, 7),
+    BackgroundTransparency = 1,
+    AutoButtonColor = false,
+    Text = "X",
+    TextColor3 = C.light,
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    ZIndex = 21,
+})
+
+local HeaderLine = New("Frame", Main, {
+    Size = UDim2.new(1, 0, 0, 2),
+    Position = UDim2.fromOffset(0, 57),
+    BackgroundColor3 = C.purple,
+    BorderSizePixel = 0,
+    ZIndex = 20,
+})
+local HeaderLineGradient = Gradient(HeaderLine, C.purple, C.light, 0)
+
+local List = New("ScrollingFrame", Main, {
+    Name = "ScriptList",
+    Size = UDim2.new(1, -24, 0, 248),
+    Position = UDim2.fromOffset(12, 70),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = C.electric,
+    ScrollingDirection = Enum.ScrollingDirection.Y,
+    ZIndex = 20,
+})
+local ListLayout = New("UIListLayout", List, {
+    Padding = UDim.new(0, 7),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+})
+New("UIPadding", List, {
+    PaddingBottom = UDim.new(0, 6),
+})
+
+local Footer = New("TextLabel", Main, {
+    Size = UDim2.new(1, -24, 0, 18),
+    Position = UDim2.new(0, 12, 1, -25),
+    BackgroundTransparency = 1,
+    Text = "0 SCRIPTS  /  LP10",
+    TextColor3 = C.muted,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 8,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    ZIndex = 20,
+})
+
+local Refresh
+
+local function EmptyState()
+    local card = New("Frame", List, {
+        Size = UDim2.new(1, -5, 0, 100),
+        BackgroundColor3 = C.card,
+        BorderSizePixel = 0,
+        LayoutOrder = 1,
+        ZIndex = 21,
+    })
+    Corner(card, 12)
+    Stroke(card, C.purple, 0.9, 0.48)
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -20, 0, 24),
+        Position = UDim2.fromOffset(10, 22),
+        BackgroundTransparency = 1,
+        Text = "LIBRARY READY",
+        TextColor3 = C.light,
+        Font = Enum.Font.GothamBlack,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 22,
+    })
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -20, 0, 28),
+        Position = UDim2.fromOffset(10, 51),
+        BackgroundTransparency = 1,
+        Text = "Add scripts inside the Scripts table.",
+        TextColor3 = C.muted,
+        Font = Enum.Font.Gotham,
+        TextSize = 9,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 22,
+    })
+end
+
+local function ScriptCard(data, order)
+    local card = New("Frame", List, {
+        Size = UDim2.new(1, -5, 0, 70),
+        BackgroundColor3 = C.card,
+        BorderSizePixel = 0,
+        LayoutOrder = order,
+        ZIndex = 21,
+    })
+    Corner(card, 11)
+    local cardStroke = Stroke(card, C.purple, 0.8, 0.55)
+    Gradient(card, C.cardHot, C.card, 135)
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -100, 0, 20),
+        Position = UDim2.fromOffset(12, 9),
+        BackgroundTransparency = 1,
+        Text = tostring(data.N or "Unnamed Script"),
+        TextColor3 = C.text,
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 22,
+    })
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -100, 0, 22),
+        Position = UDim2.fromOffset(12, 31),
+        BackgroundTransparency = 1,
+        Text = tostring(data.F or data.Cat or "Ready to execute."),
+        TextColor3 = C.muted,
+        Font = Enum.Font.Gotham,
+        TextSize = 8,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        ZIndex = 22,
+    })
+
+    if data.New then
+        local badge = New("TextLabel", card, {
+            Size = UDim2.fromOffset(32, 15),
+            Position = UDim2.new(1, -112, 0, 10),
+            BackgroundColor3 = C.purple,
+            Text = "NEW",
+            TextColor3 = C.text,
+            Font = Enum.Font.GothamBlack,
+            TextSize = 6,
+            ZIndex = 23,
+        })
+        Corner(badge, 5)
+    end
+
+    local Run = New("TextButton", card, {
+        Size = UDim2.fromOffset(62, 25),
+        Position = UDim2.new(1, -72, 0.5, -12),
+        BackgroundColor3 = C.purple,
+        AutoButtonColor = false,
+        Text = "RUN",
+        TextColor3 = C.text,
+        Font = Enum.Font.GothamBlack,
+        TextSize = 8,
+        ZIndex = 23,
+    })
+    Corner(Run, 8)
+    Stroke(Run, C.light, 0.7, 0.35)
+
+    Run.MouseEnter:Connect(function()
+        Play(Run, 0.14, {BackgroundColor3 = C.electric}):Play()
+        Play(cardStroke, 0.14, {Transparency = 0.16}):Play()
+    end)
+    Run.MouseLeave:Connect(function()
+        Play(Run, 0.14, {BackgroundColor3 = C.purple}):Play()
+        Play(cardStroke, 0.14, {Transparency = 0.55}):Play()
+    end)
+    Run.MouseButton1Click:Connect(function()
+        if type(data.S) ~= "string" or data.S == "" then
+            Run.Text = "EMPTY"
+            task.delay(0.9, function()
+                if Run and Run.Parent then Run.Text = "RUN" end
+            end)
+            return
+        end
+
+        Run.Text = "LOAD"
+        task.spawn(function()
+            local ok, err = pcall(function()
+                local fn, compileError = loadstring(data.S)
+                if type(fn) ~= "function" then
+                    error(compileError or "loadstring returned no function")
+                end
+                fn()
+            end)
+            if Run and Run.Parent then
+                Run.Text = ok and "DONE" or "ERROR"
+                task.delay(1.1, function()
+                    if Run and Run.Parent then Run.Text = "RUN" end
+                end)
+            end
+            if not ok then warn("[LP10] "..tostring(err)) end
+        end)
+    end)
+end
+
+Refresh = function()
+    for _, child in ipairs(List:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    if #Scripts == 0 then
+        EmptyState()
+    else
+        for index, data in ipairs(Scripts) do
+            ScriptCard(data, index)
+        end
+    end
+    Footer.Text = tostring(#Scripts).." SCRIPTS  /  LP10"
+end
+
+local function SetOpen(open)
+    Main.Visible = open
+    ToggleState.Text = open and "CLOSE" or "OPEN"
+    if open then
+        MainScale.Scale = 0.92
+        Play(MainScale, 0.20, {Scale = 1}, Enum.EasingStyle.Back):Play()
+    end
+end
+
+Close.MouseEnter:Connect(function()
+    Play(Close, 0.14, {TextColor3 = C.red}):Play()
+end)
+Close.MouseLeave:Connect(function()
+    Play(Close, 0.14, {TextColor3 = C.light}):Play()
+end)
+Close.MouseButton1Click:Connect(function()
+    SetOpen(false)
+end)
+
+Toggle.MouseEnter:Connect(function()
+    Play(Toggle, 0.14, {BackgroundColor3 = C.cardHot}):Play()
+end)
+Toggle.MouseLeave:Connect(function()
+    Play(Toggle, 0.14, {BackgroundColor3 = C.panel}):Play()
+end)
+Toggle.MouseButton1Click:Connect(function()
+    SetOpen(not Main.Visible)
+end)
+
+Draggable(Main, Main)
+Draggable(Toggle, Toggle)
+
+local phase = 0
+RunService.Heartbeat:Connect(function(delta)
+    if not ScreenGui or not ScreenGui.Parent then return end
+    phase = (phase + delta * 0.08) % 1
+    MainStroke.Color = Color3.fromHSV(phase, 0.70, 1)
+    ToggleStroke.Color = Color3.fromHSV((phase + 0.14) % 1, 0.70, 1)
+    HeaderLineGradient.Offset = Vector2.new(math.sin(os.clock() * 0.8) * 0.7, 0)
+end)
+
+local Library = {}
+
+function Library.AddScript(data)
+    if type(data) ~= "table" or not data.N then return false end
+    table.insert(Scripts, data)
+    Refresh()
+    return true
+end
+
+function Library.SetScripts(list)
+    if type(list) ~= "table" then return false end
+    Scripts = list
+    Refresh()
+    return true
+end
+
+function Library.Open()
+    SetOpen(true)
+end
+
+function Library.Close()
+    SetOpen(false)
+end
+
+_G.LP10CompactLibrary = Library
+Refresh()
+SetOpen(Config.StartOpen)
+
+-- RUNAWAYS opens directly on library load; the card remains available as a manual reload.
+task.defer(function()
+    local data = Scripts[1]
+    if type(data) ~= "table" or type(data.S) ~= "string" then return end
+    Toggle.Visible = false
+    -- Keep the purple automation source available to the teleport/replay loader.
+    pcall(function()
+        game:GetService("TeleportService"):SetTeleportSetting(
+            "LP10_AUTOMATION_SOURCE",
+            data.S
+        )
+    end)
+    if type(writefile) == "function" then
+        pcall(function()
+            if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
+                if type(makefolder) == "function" then makefolder("MyScriptHub") end
+            end
+            writefile("MyScriptHub/LP10_Automation.lua", data.S)
+        end)
+    end
+    local ok, err = pcall(function()
+        local fn, compileError = loadstring(data.S)
+        if type(fn) ~= "function" then
+            error(compileError or "loadstring returned no function")
+        end
+        fn()
+    end)
+    if not ok then warn("[LP10] RUNAWAYS auto-load failed: " .. tostring(err)) end
+end)
+
+print("LP10 Compact Purple Library loaded.")
