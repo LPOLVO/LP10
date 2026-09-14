@@ -20,7 +20,13 @@ if RunawaysEnv.LP10RunawaysAutomationLoaded
 then
     RunawaysEnv.LP10RunawaysPanel.Enabled = true
     local oldMain = RunawaysEnv.LP10RunawaysPanel:FindFirstChild("RunawaysAutomation", true)
-    if oldMain then oldMain.Visible = true end
+    if oldMain then oldMain.Visible = false end
+    local oldToggle = RunawaysEnv.LP10RunawaysPanel:FindFirstChild("RunawaysToggle", true)
+    if oldToggle then
+        oldToggle.Visible = true
+        local state = oldToggle:FindFirstChild("ToggleState")
+        if state then state.Text = "OPEN" end
+    end
     return
 end
 
@@ -35,6 +41,16 @@ local Config = {
 local Parent = CoreGui
 pcall(function()
     if gethui then Parent = gethui() end
+end)
+
+-- Remove any interface left by the old blue RUNAWAYS loader.
+pcall(function()
+    local oldGui = RunawaysEnv.LP10AutomationGui
+    if oldGui then oldGui:Destroy() end
+end)
+pcall(function()
+    local oldGui = Parent:FindFirstChild("LP10_Final_Edition")
+    if oldGui then oldGui:Destroy() end
 end)
 
 local ExistingPanel = Parent:FindFirstChild("LP10_RunawaysPanel")
@@ -81,6 +97,7 @@ Main.Parent = ScreenGui
 Main.BackgroundColor3 = Config.BgColor
 Main.Position = UDim2.new(0.5, -145, 0.5, -190)
 Main.Size = UDim2.fromOffset(290, 380)
+Main.Visible = false
 Main.Active = true
 Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
@@ -147,7 +164,7 @@ local ToggleState = Instance.new("TextLabel", ToggleBtn)
 ToggleState.Size = UDim2.new(1, 0, 0, 12)
 ToggleState.Position = UDim2.new(0, 0, 1, -16)
 ToggleState.BackgroundTransparency = 1
-ToggleState.Text = "CLOSE"
+ToggleState.Text = "OPEN"
 ToggleState.TextColor3 = Color3.fromRGB(216, 180, 254)
 ToggleState.Font = Enum.Font.GothamBold
 ToggleState.TextSize = 7
