@@ -8,7 +8,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local Config = {
     HubName = "LP10 HUB",
-    MapName = "YOUR MAP NAME",
+    MapName = "RUNAWAYS",
     GuiName = "LP10_CompactLibrary",
     StartOpen = false,
 }
@@ -17,15 +17,13 @@ local Config = {
 local Scripts = {
     {
         N = "RUNAWAYS",
-        F = "RUNAWAYS automation script with full AutoFarm and teleport recovery.",
-        Cat = "Universal",
+        F = "Full AutoFarm, gate handling, safe-zone recovery, replay and teleport recovery.",
+        Cat = "Automation",
         New = true,
-        S = [====[
--- LP10 HUB | SELF-RELOADING WRAPPER
--- ÙŠØ®Ø²Ù‘Ù† Ø§Ù„Ø³ÙƒØ±Ø¨Øª ÙƒØ§Ù…Ù„Ø§Ù‹ ÙÙŠ getgenv + TeleportSetting + Ù…Ù„Ù
--- Ø­ØªÙ‰ ÙŠÙØ¹Ø§Ø¯ ØªØ´ØºÙŠÙ„Ù‡ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ø¨Ø¹Ø¯ Replay/Teleport Ù…Ø¹ ÙƒÙ„ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª.
+        S = [===[
 local LP10SelfEnv = getgenv and getgenv() or _G
 local LP10AutomationSource = [===[
+
 -- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM
 -- This version ports the ACTUAL AutoFarm logic from the open-source RUNAWAYS.lua
 -- including ReachGate, GetGatePassage, WaitForGate, SafeZone, TeleportRecovery.
@@ -40,7 +38,7 @@ local RunService = game:GetService("RunService")
 -- [ 1. CONFIGURATION ]
 local Config = {
     HubName = "LP10 HUB",
-    AccentColor = Color3.fromRGB(33, 150, 243),
+    AccentColor = Color3.fromRGB(124, 58, 237),
     BgColor = Color3.fromRGB(15, 15, 15),
     MinSize = Vector2.new(180, 130),
     MaxSize = Vector2.new(480, 400)
@@ -106,7 +104,7 @@ LP_Label.Font = Enum.Font.FredokaOne
 LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
 LP_Label.TextScaled = true
 local UIGradient = Instance.new("UIGradient", LP_Label)
-UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))})
+UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(157, 92, 255))})
 Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 10)
 
 -- [ 4. MAIN FRAME ]
@@ -2797,43 +2795,25 @@ else
 end
 
 print("LP10 HUB: RUNAWAYS AutoFarm (Full Port) loaded | by LPOLVO")
+
 ]===]
 
 LP10SelfEnv.LP10RunawaysAutomationSource = LP10AutomationSource
-
--- Ù†Ø­ÙØ¸ Ø§Ù„Ù…ØµØ¯Ø± ÙÙŠ TeleportSetting (ÙŠØ³ØªÙ…Ø± Ø¨ÙŠÙ† Ø§Ù„Ø³ÙŠØ±ÙØ±Ø§Øª)
 pcall(function()
-    game:GetService("TeleportService"):SetTeleportSetting("LP10_AUTOMATION_SOURCE", LP10AutomationSource)
+    game:GetService("TeleportService"):SetTeleportSetting(
+        "LP10_AUTOMATION_SOURCE",
+        LP10AutomationSource
+    )
 end)
 
--- Ù†Ø­ÙØ¸ Ø§Ù„Ù…ØµØ¯Ø± ÙÙŠ Ù…Ù„Ù ÙƒÙ†Ø³Ø®Ø© Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©
-if type(writefile) == "function" then
-    pcall(function()
-        if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
-            if type(makefolder) == "function" then makefolder("MyScriptHub") end
-        end
-        writefile("MyScriptHub/LP10_Automation.lua", LP10AutomationSource)
-    end)
-end
-
--- Ø§Ù„Ø¢Ù† Ù†Ø´ØºÙ‘Ù„ Ø§Ù„Ø³ÙƒØ±Ø¨Øª
 local LP10Run = loadstring(LP10AutomationSource)
-if type(LP10Run) == "function" then
+if LP10Run then
     LP10Run()
 end
-]====],
-    },
-    --[[
-    {
-        N = "Example Script",
-        F = "Short description.",
-        Cat = "Universal",
-        New = true,
-        S = 'loadstring(game:HttpGet("YOUR_PROTECTED_RAW_URL"))()',
-    },
-    ]]
-}
 
+]===],
+    },
+}
 local C = {
     panel = Color3.fromRGB(10, 6, 22),
     panelLight = Color3.fromRGB(18, 10, 38),
@@ -3310,4 +3290,4 @@ _G.LP10CompactLibrary = Library
 Refresh()
 SetOpen(Config.StartOpen)
 
-print("LP10 Compact Purple Library loaded.")
+print("LP10 Compact Purple Library loaded.")ed.")
