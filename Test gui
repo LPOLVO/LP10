@@ -1,782 +1,3313 @@
--- [[ LP10 HUB - UNIVERSAL SECURE KEY SYSTEM ]]
--- Developer: Hamza
--- Supports: PC & Mobile (Delta, Velocity, Fluxus, Hydrogen, etc.)
+-- [[ LP10 HUB | COMPACT PURPLE LIBRARY ]]
+-- Small clean window. No fullscreen background. Ready for script entries.
 
--------------------------------------------------------------------------------
---! CONFIGURATION ZONE
--------------------------------------------------------------------------------
-local Config = {
-    -- [1] PlatoBoost Settings
-    ServiceId       = 22984, -- Your PlatoBoost Service ID
-    PlatoSecret     = "0999f5a2-c754-4564-a7f4-bfc278f7d7bb", -- Your PlatoBoost Secret Key
-
-    -- [2] Anti-Bypass / Global Secret Variable
-    Secret          = "2009", -- This makes the script ONLY run from the key script. Even if they copy the original obfuscated script to bypass the key, they won't be able to!
-    
-    -- [3] Scripts & Links
-    MainScriptURL   = "https://raw.githubusercontent.com/LPOLVO/LP10/refs/heads/main/RUNAWAYS%20OB", -- The raw URL of your main script
-    
-    -- [4] Social Media Settings (Set to true to show, false to hide)
-    ShowDiscord     = true,
-    DiscordURL      = "https://discord.gg/Uqrkdrpwxr",
-    
-    ShowInstagram   = true,
-    InstagramURL    = "https://www.instagram.com/4me.h4mz4_?igsh=MW9sa20yejExaGo5Nw==",
-    
-    ShowYoutube     = true,
-    YoutubeURL      = "https://youtube.com/@lpolvoxd1?si=sz_Y8Rm0RTrb1r0-",
-
-    -- [5] File System
-    KeyFileName     = "LP10 Key", -- The name of the file where the valid key will be saved for auto-login
-
-    -- [6] GUI Management
-    OldGuiName      = "LP10", -- Name of the old GUI to destroy if it's already open
-    MainGuiName     = "LP10 HUB", -- Name of the main script's GUI to check if it's already executing
-
-    -- [7] Hub Information & UI Text
-    HubName         = "LP10 HUB KeySystem", -- The main title shown at the top of the GUI
-    HubDescription  = "Easy Linkvertise Key link" -- The text shown below the title
-}
-
--------------------------------------------------------------------------------
---! LIBRARIES (JSON & CRYPTOGRAPHY) - DO NOT MODIFY
--------------------------------------------------------------------------------
-local a=2^32;local b=a-1;local function c(d,e)local f,g=0,1;while d~=0 or e~=0 do local h,i=d%2,e%2;local j=(h+i)%2;f=f+j*g;d=math.floor(d/2)e=math.floor(e/2)g=g*2 end;return f%a end;local function k(d,e,l,...)local m;if e then d=d%a;e=e%a;m=c(d,e)if l then m=k(m,l,...)end;return m elseif d then return d%a else return 0 end end;local function n(d,e,l,...)local m;if e then d=d%a;e=e%a;m=(d+e-c(d,e))/2;if l then m=n(m,l,...)end;return m elseif d then return d%a else return b end end;local function o(p)return b-p end;local function q(d,r)if r<0 then return lshift(d,-r)end;return math.floor(d%2^32/2^r)end;local function s(p,r)if r>31 or r<-31 then return 0 end;return q(p%a,r)end;local function lshift(d,r)if r<0 then return s(d,-r)end;return d*2^r%2^32 end;local function t(p,r)p=p%a;r=r%32;local u=n(p,2^r-1)return s(p,r)+lshift(u,32-r)end;local v={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(x)return string.gsub(x,".",function(l)return string.format("%02x",string.byte(l))end)end;local function y(z,A)local x=""for B=1,A do local C=z%256;x=string.char(C)..x;z=(z-C)/256 end;return x end;local function D(x,B)local A=0;for B=B,B+3 do A=A*256+string.byte(x,B)end;return A end;local function E(F,G)local H=64-(G+9)%64;G=y(8*G,8)F=F.."\128"..string.rep("\0",H)..G;assert(#F%64==0)return F end;local function I(J)J[1]=0x6a09e667;J[2]=0xbb67ae85;J[3]=0x3c6ef372;J[4]=0xa54ff53a;J[5]=0x510e527f;J[6]=0x9b05688c;J[7]=0x1f83d9ab;J[8]=0x5be0cd19;return J end;local function K(F,B,J)local L={}for M=1,16 do L[M]=D(F,B+(M-1)*4)end;for M=17,64 do local N=L[M-15]local O=k(t(N,7),t(N,18),s(N,3))N=L[M-2]L[M]=(L[M-16]+O+L[M-7]+k(t(N,17),t(N,19),s(N,10)))%a end;local d,e,l,P,Q,R,S,T=J[1],J[2],J[3],J[4],J[5],J[6],J[7],J[8]for B=1,64 do local O=k(t(d,2),t(d,13),t(d,22))local U=k(n(d,e),n(d,l),n(e,l))local V=(O+U)%a;local W=k(t(Q,6),t(Q,11),t(Q,25))local X=k(n(Q,R),n(o(Q),S))local Y=(T+W+X+v[B]+L[B])%a;T=S;S=R;R=Q;Q=(P+Y)%a;P=l;l=e;e=d;d=(Y+V)%a end;J[1]=(J[1]+d)%a;J[2]=(J[2]+e)%a;J[3]=(J[3]+l)%a;J[4]=(J[4]+P)%a;J[5]=(J[5]+Q)%a;J[6]=(J[6]+R)%a;J[7]=(J[7]+S)%a;J[8]=(J[8]+T)%a end;local function Z(F)F=E(F,#F)local J=I({})for B=1,#F,64 do K(F,B,J)end;return w(y(J[1],4)..y(J[2],4)..y(J[3],4)..y(J[4],4)..y(J[5],4)..y(J[6],4)..y(J[7],4)..y(J[8],4))end;local e;local l={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local P={["/"]="/"}for Q,R in pairs(l)do P[R]=Q end;local S=function(T)return"\\"..(l[T]or string.format("u%04x",T:byte()))end;local B=function(M)return"null"end;local v=function(M,z)local _={}z=z or{}if z[M]then error("circular reference")end;z[M]=true;if rawget(M,1)~=nil or next(M)==nil then local A=0;for Q in pairs(M)do if type(Q)~="number"then error("invalid table: mixed or invalid key types")end;A=A+1 end;if A~=#M then error("invalid table: sparse array")end;for a0,R in ipairs(M)do table.insert(_,e(R,z))end;z[M]=nil;return"["..table.concat(_,",").."]"else for Q,R in pairs(M)do if type(Q)~="string"then error("invalid table: mixed or invalid key types")end;table.insert(_,e(Q,z)..":"..e(R,z))end;z[M]=nil;return"{"..table.concat(_,",").."}"end end;local g=function(M)return'"'..M:gsub('[%z\1-\31\\\"]',S)..'"'end;local a1=function(M)if M~=M or M<=-math.huge or M>=math.huge then error("unexpected number value '"..tostring(M).."'")end;return string.format("%.14g",M)end;local j={["nil"]=B,["table"]=v,["string"]=g,["number"]=a1,["boolean"]=tostring}e=function(M,z)local x=type(M)local a2=j[x]if a2 then return a2(M,z)end;error("unexpected type '"..x.."'")end;local a3=function(M)return e(M)end;local a4;local N=function(...)local _={}for a0=1,select("#",...)do _[select(a0,...)]=true end;return _ end;local L=N(" ","\t","\r","\n")local p=N(" ","\t","\r","\n","]","}",",")local a5=N("\\","/",'"',"b","f","n","r","t","u")local m=N("true","false","null")local a6={["true"]=true,["false"]=false,["null"]=nil}local a7=function(a8,a9,aa,ab)for a0=a9,#a8 do if aa[a8:sub(a0,a0)]~=ab then return a0 end end;return#a8+1 end;local ac=function(a8,a9,J)local ad=1;local ae=1;for a0=1,a9-1 do ae=ae+1;if a8:sub(a0,a0)=="\n"then ad=ad+1;ae=1 end end;error(string.format("%s at line %d col %d",J,ad,ae))end;local af=function(A)local a2=math.floor;if A<=0x7f then return string.char(A)elseif A<=0x7ff then return string.char(a2(A/64)+192,A%64+128)elseif A<=0xffff then return string.char(a2(A/4096)+224,a2(A%4096/64)+128,A%64+128)elseif A<=0x10ffff then return string.char(a2(A/262144)+240,a2(A%262144/4096)+128,a2(A%4096/64)+128,A%64+128)end;error(string.format("invalid unicode codepoint '%x'",A))end;local ag=function(ah)local ai=tonumber(ah:sub(1,4),16)local aj=tonumber(ah:sub(7,10),16)if aj then return af((ai-0xd800)*0x400+aj-0xdc00+0x10000)else return af(ai)end end;local ak=function(a8,a0)local _=""local al=a0+1;local Q=al;while al<=#a8 do local am=a8:byte(al)if am<32 then ac(a8,al,"control character in string")elseif am==92 then _=_..a8:sub(Q,al-1)al=al+1;local T=a8:sub(al,al)if T=="u"then local an=a8:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",al+1)or a8:match("^%x%x%x%x",al+1)or ac(a8,al-1,"invalid unicode escape in string")_=_..ag(an)al=al+#an else if not a5[T]then ac(a8,al-1,"invalid escape char '"..T.."' in string")end;_=_..P[T]end;Q=al+1 elseif am==34 then _=_..a8:sub(Q,al-1)return _,al+1 end;al=al+1 end;ac(a8,a0,"expected closing quote for string")end;local ao=function(a8,a0)local am=a7(a8,a0,p)local ah=a8:sub(a0,am-1)local A=tonumber(ah)if not A then ac(a8,a0,"invalid number '"..ah.."'")end;return A,am end;local ap=function(a8,a0)local am=a7(a8,a0,p)local aq=a8:sub(a0,am-1)if not m[aq]then ac(a8,a0,"invalid literal '"..aq.."'")end;return a6[aq],am end;local ar=function(a8,a0)local _={}local A=1;a0=a0+1;while 1 do local am;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="]"then a0=a0+1;break end;am,a0=a4(a8,a0)_[A]=am;A=A+1;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="]"then break end;if as~=","then ac(a8,a0,"expected ']' or ','")end end;return _,a0 end;local at=function(a8,a0)local _={}a0=a0+1;while 1 do local au,M;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="}"then a0=a0+1;break end;if a8:sub(a0,a0)~='"'then ac(a8,a0,"expected string for key")end;au,a0=a4(a8,a0)a0=a7(a8,a0,L,true)if a8:sub(a0,a0)~=":"then ac(a8,a0,"expected ':' after key")end;a0=a7(a8,a0+1,L,true)M,a0=a4(a8,a0)_[au]=M;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="}"then break end;if as~=","then ac(a8,a0,"expected '}' or ','")end end;return _,a0 end;local av={['"']=ak,["0"]=ao,["1"]=ao,["2"]=ao,["3"]=ao,["4"]=ao,["5"]=ao,["6"]=ao,["7"]=ao,["8"]=ao,["9"]=ao,["-"]=ao,["t"]=ap,["f"]=ap,["n"]=ap,["["]=ar,["{"]=at}a4=function(a8,a9)local as=a8:sub(a9,a9)local a2=av[as]if a2 then return a2(a8,a9)end;ac(a8,a9,"unexpected character '"..as.."'")end;local aw=function(a8)if type(a8)~="string"then error("expected argument of type string, got "..type(a8))end;local _,a9=a4(a8,a7(a8,1,L,true))a9=a7(a8,a9,L,true)if a9<=#a8 then ac(a8,a9,"trailing garbage")end;return _ end;
-local lEncode, lDecode, lDigest = a3, aw, Z;
-
--------------------------------------------------------------------------------
---! CORE FUNCTIONS (REQUESTS & VERIFICATION)
--------------------------------------------------------------------------------
-
-local useNonce = true -- Hidden from Config to avoid user confusion, but active for security
-
--- Safe request function for universal executor support
-local function safeRequest(options)
-    local req = request or http_request or syn_request or (http and http.request )
-    if not req then return nil, "HTTP requests not supported" end
-    local success, response = pcall(function() return req(options) end)
-    if success and response then return response else return nil, "Connection Error" end
-end
-
-local fSetClipboard = setclipboard or toclipboard or function() end
-local fStringChar, fToString, fOsTime, fMathRandom, fMathFloor = string.char, tostring, os.time, math.random, math.floor
-local fGetHwid = gethwid or function() return game:GetService("RbxAnalyticsService"):GetClientId() end
+local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 
-local cachedLink, cachedTime = "", 0
-local host = "https://api.platoboost.com"
+local Config = {
+    HubName = "LP10 HUB",
+    MapName = "YOUR MAP NAME",
+    GuiName = "LP10_CompactLibrary",
+    StartOpen = false,
+}
 
--- Check server connectivity
-local function checkConnectivity( )
-    local response = safeRequest({Url = host .. "/public/connectivity", Method = "GET"})
-    if not response or (response.StatusCode ~= 200 and response.StatusCode ~= 429) then
-        host = "https://api.platoboost.net"
-    end
+-- Add your protected script entries here.
+local Scripts = {
+    {
+        N = "RUNAWAYS",
+        F = "RUNAWAYS automation script with full AutoFarm and teleport recovery.",
+        Cat = "Universal",
+        New = true,
+        S = [====[
+-- LP10 HUB | SELF-RELOADING WRAPPER
+-- ÙŠØ®Ø²Ù‘Ù† Ø§Ù„Ø³ÙƒØ±Ø¨Øª ÙƒØ§Ù…Ù„Ø§Ù‹ ÙÙŠ getgenv + TeleportSetting + Ù…Ù„Ù
+-- Ø­ØªÙ‰ ÙŠÙØ¹Ø§Ø¯ ØªØ´ØºÙŠÙ„Ù‡ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ø¨Ø¹Ø¯ Replay/Teleport Ù…Ø¹ ÙƒÙ„ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª.
+local LP10SelfEnv = getgenv and getgenv() or _G
+local LP10AutomationSource = [===[
+-- LP10 HUB | RUNAWAYS AUTOMATION ONLY | FULL PORTED AUTOFARM
+-- This version ports the ACTUAL AutoFarm logic from the open-source RUNAWAYS.lua
+-- including ReachGate, GetGatePassage, WaitForGate, SafeZone, TeleportRecovery.
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
+local RunService = game:GetService("RunService")
+
+-- [ 1. CONFIGURATION ]
+local Config = {
+    HubName = "LP10 HUB",
+    AccentColor = Color3.fromRGB(33, 150, 243),
+    BgColor = Color3.fromRGB(15, 15, 15),
+    MinSize = Vector2.new(180, 130),
+    MaxSize = Vector2.new(480, 400)
+}
+
+local LP10BootstrapEnv = getgenv and getgenv() or _G
+if LP10BootstrapEnv.LP10AutomationGui and LP10BootstrapEnv.LP10AutomationGui.Parent then
+    pcall(function() LP10BootstrapEnv.LP10AutomationGui:Destroy() end)
 end
-checkConnectivity( )
 
-local function generateNonce()
-    local str = ""
-    for _ = 1, 16 do str = str .. fStringChar(fMathFloor(fMathRandom() * (122 - 97 + 1)) + 97) end
-    return str
-end
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LP10_Final_Edition"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+LP10BootstrapEnv.LP10AutomationGui = ScreenGui
 
--- Get player's key link
-local function cacheLink()
-    if cachedTime + (10*60) < fOsTime() then
-        local response, err = safeRequest({
-            Url = host .. "/public/start",
-            Method = "POST",
-            Body = lEncode({service = Config.ServiceId, identifier = lDigest(fGetHwid())}),
-            Headers = {["Content-Type"] = "application/json"}
-        })
-        if response and response.StatusCode == 200 then
-            local decoded = lDecode(response.Body)
-            if decoded.success then
-                cachedLink = decoded.data.url
-                cachedTime = fOsTime()
-                return true, cachedLink
+-- [ 2. DRAGGING FUNCTION ]
+local function EnableDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not _G.IsResizing then
+                dragging = true
+                dragStart = input.Position
+                startPos = frame.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
             end
         end
-        return false, err or "Server Unreachable"
-    end
-    return true, cachedLink
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
 end
 
--- Verify key on input
-local function redeemKey(key)
-    local nonce = generateNonce()
-    local body = {identifier = lDigest(fGetHwid()), key = key}
-    if useNonce then body.nonce = nonce end
-    
-    local response, err = safeRequest({
-        Url = host .. "/public/redeem/" .. fToString(Config.ServiceId),
-        Method = "POST",
-        Body = lEncode(body),
-        Headers = {["Content-Type"] = "application/json"}
-    })
-    
-    if response and response.StatusCode == 200 then
-        local decoded = lDecode(response.Body)
-        if decoded.success and decoded.data.valid then
-            if useNonce then
-                if decoded.data.hash == lDigest("true" .. "-" .. nonce .. "-" .. Config.PlatoSecret) then 
-                    if writefile then writefile(Config.KeyFileName, key) end
-                    return true, "Success" 
+-- [ 3. FLOATING TOGGLE BUTTON ]
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "LP_Toggle"
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.BackgroundColor3 = Config.BgColor
+ToggleBtn.Position = UDim2.new(0.1, 0, 0.1, 0)
+ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.Text = ""
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
+local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
+ToggleStroke.Color = Config.AccentColor
+ToggleStroke.Thickness = 2
+
+local LP_Label = Instance.new("TextLabel", ToggleBtn)
+LP_Label.Size = UDim2.new(1, 0, 1, 0)
+LP_Label.BackgroundTransparency = 1
+LP_Label.Text = "LP"
+LP_Label.Font = Enum.Font.FredokaOne
+LP_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+LP_Label.TextScaled = true
+local UIGradient = Instance.new("UIGradient", LP_Label)
+UIGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Config.AccentColor), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 200))})
+Instance.new("UIPadding", LP_Label).PaddingBottom = UDim.new(0, 10)
+
+-- [ 4. MAIN FRAME ]
+local Main = Instance.new("Frame")
+Main.Name = "MainFrame"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Config.BgColor
+Main.Position = UDim2.new(0.5, -130, 0.5, -170)
+Main.Size = UDim2.new(0, 260, 0, 340)
+Main.Visible = false
+Main.Active = true
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Config.AccentColor
+MainStroke.Thickness = 2
+
+local Header = Instance.new("TextLabel", Main)
+Header.Size = UDim2.new(1, 0, 0, 34)
+Header.BackgroundTransparency = 1
+Header.Font = Enum.Font.GothamBold
+Header.Text = "ðŸ’Ž " .. Config.HubName
+Header.TextColor3 = Config.AccentColor
+Header.TextSize = 14
+
+-- [ 5. RESIZE SYSTEM ]
+local ResizeHandle = Instance.new("TextButton", Main)
+ResizeHandle.Name = "ResizeHandle"
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundTransparency = 1
+ResizeHandle.Text = "â—¢"
+ResizeHandle.TextColor3 = Config.AccentColor
+ResizeHandle.TextSize = 15
+
+local currentSize = Main.Size
+
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        _G.IsResizing = true
+        local dragStart = input.Position
+        local startSize = Main.Size
+        local connection
+        connection = UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                local delta = input.Position - dragStart
+                local newX = math.clamp(startSize.X.Offset + delta.X, Config.MinSize.X, Config.MaxSize.X)
+                local newY = math.clamp(startSize.Y.Offset + delta.Y, Config.MinSize.Y, Config.MaxSize.Y)
+                Main.Size = UDim2.new(0, newX, 0, newY)
+                currentSize = Main.Size
+            end
+        end)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                _G.IsResizing = false
+                connection:Disconnect()
+            end
+        end)
+    end
+end)
+
+EnableDraggable(Main)
+EnableDraggable(ToggleBtn)
+
+local isOpen = true
+Main.Visible = true
+ToggleBtn.MouseButton1Click:Connect(function()
+    isOpen = not isOpen
+    if isOpen then
+        Main.Visible = true
+        Main:TweenSize(currentSize, "Out", "Back", 0.3, true)
+    else
+        Main:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Back", 0.3, true, function()
+            if not isOpen then Main.Visible = false end
+        end)
+    end
+end)
+
+print("LP10 HUB: Royal Blue Edition Loading...")
+
+-- ============================================================================
+-- SECTION A: FLOW CLIENT + GLOBALS
+-- ============================================================================
+local AutomationPlayer = Players.LocalPlayer
+while not AutomationPlayer do
+    task.wait()
+    AutomationPlayer = Players.LocalPlayer
+end
+
+local env = getgenv and getgenv() or _G
+
+local flow
+pcall(function()
+    flow = require(ReplicatedStorage:WaitForChild("FlowClient"))
+end)
+
+local function notify(msg)
+    print("[LP10] " .. tostring(msg))
+end
+
+-- ============================================================================
+-- SECTION B: TELEPORTS HELPERS (ported from RUNAWAYS.lua)
+-- These are essential for AutoFarm's gate navigation.
+-- ============================================================================
+local teleports = {
+    LastPosition = nil,
+    SavedPosition = nil,
+}
+
+function teleports:Stream(position)
+    pcall(function()
+        AutomationPlayer:RequestStreamAroundAsync(position, 5)
+    end)
+end
+
+function teleports:GetRoadNear(z)
+    local map = workspace:FindFirstChild("Map")
+    if not map then return end
+
+    local best
+    local bestDistance = math.huge
+    local bestArea = 0
+
+    for _, part in map:GetDescendants() do
+        local name = part.Name:lower()
+        local parentName = part.Parent and part.Parent.Name:lower()
+        if part:IsA("BasePart")
+            and (name == "road" or name == "sideroad" or parentName == "road")
+            and not name:find("pathfinding", 1, true)
+            and part.CanCollide
+            and part.Transparency < 0.95
+        then
+            local distance = math.max(math.abs(part.Position.Z - z) - math.max(part.Size.X, part.Size.Z) * 0.5, 0)
+            local area = part.Size.X * part.Size.Z
+            if distance < bestDistance or (distance == bestDistance and area > bestArea) then
+                best = part
+                bestDistance = distance
+                bestArea = area
+            end
+        end
+    end
+
+    if bestDistance <= 2000 then
+        return best
+    end
+end
+
+function teleports:GetEndPrompt()
+    local map = workspace:FindFirstChild("Map")
+    local buildings = map and map:FindFirstChild("Buildings")
+    local customs = buildings and buildings:FindFirstChild("CustomsFinal")
+    if not customs then return end
+
+    local customsBuilding = customs:FindFirstChild("CustomsBuilding")
+    local finalDoor = customsBuilding and customsBuilding:FindFirstChild("FinalDoor")
+    local command = finalDoor and finalDoor:FindFirstChild("Command")
+    local commandButton = command and command:FindFirstChild("CommandButton")
+    local holder = commandButton and commandButton:FindFirstChild("Prompt")
+    local prompt = holder and (holder:IsA("ProximityPrompt") and holder or holder:FindFirstChildOfClass("ProximityPrompt"))
+    if prompt then return prompt end
+
+    local ok, candidates = pcall(customs.QueryDescendants, customs, "ProximityPrompt")
+    if ok then
+        for _, candidate in candidates do
+            if candidate.ActionText == "Activate" and candidate:FindFirstAncestor("FinalDoor") then
+                return candidate
+            end
+        end
+    end
+end
+
+function teleports:GetEndAnchor(endZ, direction)
+    local character = AutomationPlayer.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local source = root and root.Position or Vector3.new(500, 2000, endZ)
+    local map = workspace:FindFirstChild("Map")
+    local buildings = map and map:FindFirstChild("Buildings")
+    local best = source
+    local bestDistance = math.huge
+
+    if buildings then
+        for _, building in buildings:GetChildren() do
+            if building:IsA("Model") then
+                local ok, pivot = pcall(building.GetPivot, building)
+                if ok then
+                    if building.Name == "CustomsFinal" then
+                        return pivot:PointToWorldSpace(Vector3.new(-44.4001, 4.65, -16.5))
+                    end
+                    local distance = math.abs(endZ - pivot.Position.Z)
+                    local side = (endZ - pivot.Position.Z) * direction
+                    if side >= -500 and distance < bestDistance then
+                        best = pivot.Position
+                        bestDistance = distance
+                    end
                 end
-                return false, "Integrity Check Failed"
             end
-            if writefile then writefile(Config.KeyFileName, key) end
-            return true, "Success"
         end
-        return false, decoded.message or "Invalid Key"
     end
-    return false, err or "Server Error"
+
+    return Vector3.new(best.X, best.Y + 30, endZ - direction * 35)
 end
 
--------------------------------------------------------------------------------
---! GUI & MAIN SCRIPT EXECUTION
--------------------------------------------------------------------------------
-
-local function StartMainScript()
-    local player = game:GetService("Players").LocalPlayer
-    local pGui = player:WaitForChild("PlayerGui")
-    
-    -- Destroy old GUI if it exists
-    if pGui:FindFirstChild(Config.OldGuiName) then 
-        pGui[Config.OldGuiName]:Destroy() 
-        task.wait(0.1)
+function teleports:GetEndPromptDestination(prompt, direction)
+    local holder = prompt and prompt.Parent
+    local holderCFrame
+    if holder and holder:IsA("Attachment") then
+        holderCFrame = holder.WorldCFrame
+    elseif holder and holder:IsA("BasePart") then
+        holderCFrame = holder.CFrame
     end
-    
-    -- Set secret global variable to bypass main script protection
-    _G[Config.Secret] = true 
-    
-    -- Execute main script
-    loadstring(game:HttpGet(Config.MainScriptURL))()
+    if not holderCFrame then return end
+
+    local outward = holderCFrame.LookVector
+    if outward.Z * direction > 0 then outward = -outward end
+    if math.abs(outward.Z) < 0.25 then outward = Vector3.new(0, 0, -direction) end
+
+    local position = holderCFrame.Position + outward * 4
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = AutomationPlayer.Character and { AutomationPlayer.Character } or {}
+
+    local result = workspace:Raycast(position + Vector3.yAxis * 20, Vector3.new(0, -60, 0), params)
+    if result then
+        position = Vector3.new(position.X, result.Position.Y + 3.25, position.Z)
+    end
+
+    return CFrame.lookAt(
+        position,
+        Vector3.new(holderCFrame.Position.X, position.Y, holderCFrame.Position.Z),
+        Vector3.yAxis
+    )
 end
 
-local function CreateGUI()
-    local player = game:GetService("Players").LocalPlayer
-    local coreGui = game:GetService("CoreGui")
-    local targetParent = pcall(function() return coreGui end) and coreGui or player:WaitForChild("PlayerGui")
-    
-    if targetParent:FindFirstChild("OYB_KeySystem") then targetParent.OYB_KeySystem:Destroy() end
+function teleports:GetEndZ()
+    local flowModule = ReplicatedStorage:FindFirstChild("FlowClient")
+    local gui = flowModule and flowModule:FindFirstChild("Gui")
+    local distanceModule = gui and gui:FindFirstChild("DistanceToBorderClient")
 
-    local ScreenGui = Instance.new("ScreenGui", targetParent)
-    ScreenGui.Name = "OYB_KeySystem"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.IgnoreGuiInset = true
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-    -- Purple Aurora background: intentionally kept independent from the key logic.
-    local Backdrop = Instance.new("Frame", ScreenGui)
-    Backdrop.Name = "AuroraBackdrop"
-    Backdrop.Size = UDim2.fromScale(1, 1)
-    Backdrop.BackgroundColor3 = Color3.fromRGB(5, 3, 16)
-    Backdrop.BorderSizePixel = 0
-    Backdrop.ZIndex = 1
-
-    local BackdropGradient = Instance.new("UIGradient", Backdrop)
-    BackdropGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(5, 3, 16)),
-        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(17, 7, 38)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(7, 4, 23)),
-    })
-    BackdropGradient.Rotation = 135
-
-    local function createAuroraOrb(name, size, position, color, transparency)
-        local orb = Instance.new("ImageLabel", Backdrop)
-        orb.Name = name
-        orb.Size = UDim2.fromOffset(size, size)
-        orb.Position = position
-        orb.BackgroundTransparency = 1
-        orb.Image = "rbxassetid://5028857084"
-        orb.ImageColor3 = color
-        orb.ImageTransparency = transparency
-        orb.ZIndex = 2
-        return orb
-    end
-
-    local AuroraOne = createAuroraOrb(
-        "AuroraOne", 420, UDim2.new(0.08, -210, 0.08, -210),
-        Color3.fromRGB(124, 58, 237), 0.68
-    )
-    local AuroraTwo = createAuroraOrb(
-        "AuroraTwo", 360, UDim2.new(0.92, -180, 0.86, -180),
-        Color3.fromRGB(88, 28, 180), 0.73
-    )
-    local AuroraThree = createAuroraOrb(
-        "AuroraThree", 260, UDim2.new(0.50, -130, 1.04, -130),
-        Color3.fromRGB(192, 132, 252), 0.82
-    )
-
-    local AuroraLine = Instance.new("Frame", Backdrop)
-    AuroraLine.Name = "AuroraLine"
-    AuroraLine.Size = UDim2.new(1.5, 0, 0, 1)
-    AuroraLine.Position = UDim2.new(-0.25, 0, 0.35, 0)
-    AuroraLine.Rotation = -17
-    AuroraLine.BackgroundColor3 = Color3.fromRGB(157, 92, 255)
-    AuroraLine.BackgroundTransparency = 0.78
-    AuroraLine.BorderSizePixel = 0
-    AuroraLine.ZIndex = 3
-
-    local AuroraLineTwo = AuroraLine:Clone()
-    AuroraLineTwo.Name = "AuroraLineTwo"
-    AuroraLineTwo.Position = UDim2.new(-0.25, 0, 0.68, 0)
-    AuroraLineTwo.Rotation = 12
-    AuroraLineTwo.BackgroundColor3 = Color3.fromRGB(192, 132, 252)
-    AuroraLineTwo.BackgroundTransparency = 0.86
-    AuroraLineTwo.Parent = Backdrop
-
-    task.spawn(function()
-        while ScreenGui and ScreenGui.Parent do
-            local info = TweenInfo.new(6.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-            TweenService:Create(AuroraOne, info, {
-                Position = UDim2.new(0.28, -210, 0.24, -210),
-                ImageTransparency = 0.78,
-            }):Play()
-            TweenService:Create(AuroraTwo, TweenInfo.new(7.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(0.72, -180, 0.70, -180),
-                ImageTransparency = 0.82,
-            }):Play()
-            TweenService:Create(AuroraThree, TweenInfo.new(5.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(0.40, -130, 0.84, -130),
-                ImageTransparency = 0.88,
-            }):Play()
-            TweenService:Create(AuroraLine, info, {
-                Position = UDim2.new(0.08, 0, 0.62, 0),
-                BackgroundTransparency = 0.90,
-            }):Play()
-            TweenService:Create(AuroraLineTwo, TweenInfo.new(5.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(0.12, 0, 0.28, 0),
-                BackgroundTransparency = 0.93,
-            }):Play()
-            task.wait(4.5)
-            if not ScreenGui or not ScreenGui.Parent then break end
-            TweenService:Create(AuroraOne, info, {
-                Position = UDim2.new(0.08, -210, 0.08, -210),
-                ImageTransparency = 0.68,
-            }):Play()
-            TweenService:Create(AuroraTwo, TweenInfo.new(7.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(0.92, -180, 0.86, -180),
-                ImageTransparency = 0.73,
-            }):Play()
-            TweenService:Create(AuroraThree, TweenInfo.new(5.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(0.50, -130, 1.04, -130),
-                ImageTransparency = 0.82,
-            }):Play()
-            TweenService:Create(AuroraLine, info, {
-                Position = UDim2.new(-0.25, 0, 0.35, 0),
-                BackgroundTransparency = 0.78,
-            }):Play()
-            TweenService:Create(AuroraLineTwo, TweenInfo.new(5.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.new(-0.25, 0, 0.68, 0),
-                BackgroundTransparency = 0.86,
-            }):Play()
-            task.wait(4.5)
-        end
-    end)
-
-    local MainFrame = Instance.new("Frame", ScreenGui)
-    MainFrame.Name = "KeyCard"
-    MainFrame.Size = UDim2.new(0.88, 0, 0, 460)
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.Position = UDim2.fromScale(0.5, 0.5)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(11, 6, 28)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.ClipsDescendants = true
-    MainFrame.ZIndex = 10
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
-
-    -- Keep the card comfortable on short landscape phone screens.
-    local MainScale = Instance.new("UIScale", MainFrame)
-    local function applyResponsiveScale()
-        local camera = workspace.CurrentCamera
-        local viewport = camera and camera.ViewportSize or Vector2.new(800, 600)
-        local scale = math.clamp(viewport.Y / 520, 0.78, 0.93)
-        MainScale.Scale = scale
-    end
-    applyResponsiveScale()
-    if workspace.CurrentCamera then
-        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(applyResponsiveScale)
-    end
-    
-    local mainStroke = Instance.new("UIStroke", MainFrame)
-    mainStroke.Thickness = 1.5
-    mainStroke.Color = Color3.fromRGB(124, 58, 237)
-    mainStroke.Transparency = 0.12
-
-    local borderPhase = 0
-    local borderConnection
-    borderConnection = RunService.Heartbeat:Connect(function(dt)
-        if not ScreenGui or not ScreenGui.Parent then
-            if borderConnection then borderConnection:Disconnect() end
-            return
-        end
-        borderPhase = (borderPhase + dt * 0.08) % 1
-        mainStroke.Color = Color3.fromHSV(borderPhase, 0.72, 1)
-    end)
-
-    local MainGradient = Instance.new("UIGradient", MainFrame)
-    MainGradient.Color = ColorSequence.new(
-        Color3.fromRGB(20, 10, 48),
-        Color3.fromRGB(8, 5, 22)
-    )
-    MainGradient.Rotation = 135
-
-    local HeaderGlow = Instance.new("Frame", MainFrame)
-    HeaderGlow.Size = UDim2.new(1, 0, 0, 3)
-    HeaderGlow.Position = UDim2.fromOffset(0, 78)
-    HeaderGlow.BackgroundColor3 = Color3.fromRGB(157, 92, 255)
-    HeaderGlow.BorderSizePixel = 0
-    HeaderGlow.ZIndex = 14
-
-    local HeaderGlowGradient = Instance.new("UIGradient", HeaderGlow)
-    HeaderGlowGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 28, 180)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(216, 180, 254)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(88, 28, 180)),
-    })
-    HeaderGlowGradient.Offset = Vector2.new(-1, 0)
-
-    task.spawn(function()
-        while ScreenGui and ScreenGui.Parent do
-            TweenService:Create(HeaderGlowGradient, TweenInfo.new(2.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Offset = Vector2.new(1, 0),
-            }):Play()
-            task.wait(2.8)
-            if not ScreenGui or not ScreenGui.Parent then break end
-            HeaderGlowGradient.Offset = Vector2.new(-1, 0)
-        end
-    end)
-
-    -- Close Button
-    local CloseBtn = Instance.new("TextButton", MainFrame)
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(1, -35, 0, 29)
-    CloseBtn.BackgroundTransparency = 1
-    CloseBtn.Text = "X"
-    CloseBtn.TextColor3 = Color3.fromRGB(196, 167, 235)
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 24
-    CloseBtn.ZIndex = 10
-    CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {
-            TextColor3 = Color3.fromRGB(255, 83, 105),
-            Rotation = 8,
-        }):Play()
-    end)
-    CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {
-            TextColor3 = Color3.fromRGB(196, 167, 235),
-            Rotation = 0,
-        }):Play()
-    end)
-    CloseBtn.MouseButton1Click:Connect(function()
-        TweenService:Create(MainFrame, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Size = UDim2.new(0.88, 0, 0, 0),
-            BackgroundTransparency = 1,
-        }):Play()
-        task.delay(0.24, function()
-            if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
-        end)
-    end)
-
-    local Title = Instance.new("TextLabel", MainFrame)
-    Title.Size = UDim2.new(1, -46, 0, 30)
-    Title.Position = UDim2.fromOffset(18, 29)
-    Title.Text = "LP10  /  "..Config.HubName
-    Title.BackgroundTransparency = 1
-    Title.TextColor3 = Color3.fromRGB(235, 242, 255)
-    Title.Font = Enum.Font.GothamBold;
-    Title.TextSize = 16
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.ZIndex = 12
-
-    local PromoText = Instance.new("TextLabel", MainFrame)
-    PromoText.Size = UDim2.new(1, -36, 0, 24)
-    PromoText.Position = UDim2.fromOffset(18, 59)
-    PromoText.BackgroundTransparency = 1
-    PromoText.Text = string.upper(Config.HubDescription)
-    PromoText.TextColor3 = Color3.fromRGB(196, 167, 235)
-    PromoText.Font = Enum.Font.GothamSemibold;
-    PromoText.TextSize = 10
-    PromoText.TextWrapped = true
-    PromoText.TextXAlignment = Enum.TextXAlignment.Left
-    PromoText.ZIndex = 12
-
-    local SecurePill = Instance.new("TextLabel", MainFrame)
-    SecurePill.Size = UDim2.fromOffset(132, 20)
-    SecurePill.Position = UDim2.new(1, -154, 0, 61)
-    SecurePill.BackgroundColor3 = Color3.fromRGB(18, 42, 45)
-    SecurePill.Text = "[ON]  SECURE GATEWAY"
-    SecurePill.TextColor3 = Color3.fromRGB(52, 224, 145)
-    SecurePill.Font = Enum.Font.GothamBold
-    SecurePill.TextSize = 8
-    SecurePill.ZIndex = 13
-    local SecurePillCorner = Instance.new("UICorner", SecurePill)
-    SecurePillCorner.CornerRadius = UDim.new(0, 8)
-
-    -- Rainbow Stroke Function
-    local function AddRainbowStroke(parent)
-        local stroke = Instance.new("UIStroke", parent)
-        stroke.Thickness = 1.2
-        stroke.Transparency = 0.05
-        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        task.spawn(function()
-            while stroke and stroke.Parent do
-                local hue = (os.clock() * 0.12) % 1
-                stroke.Color = Color3.fromHSV(hue, 0.82, 1)
-                task.wait(0.06)
-            end
-        end)
-        return stroke
-    end
-
-    local function AddButtonMotion(button, baseColor, hoverColor)
-        button.AutoButtonColor = false
-        button.ZIndex = 12
-        local scale = Instance.new("UIScale", button)
-        scale.Scale = 1
-        button.MouseEnter:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                BackgroundColor3 = hoverColor,
-            }):Play()
-            TweenService:Create(scale, TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Scale = 1.015,
-            }):Play()
-        end)
-        button.MouseLeave:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                BackgroundColor3 = baseColor,
-            }):Play()
-            TweenService:Create(scale, TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Scale = 1,
-            }):Play()
-        end)
-        button.MouseButton1Down:Connect(function()
-            TweenService:Create(scale, TweenInfo.new(0.08), {Scale = 0.97}):Play()
-        end)
-        button.MouseButton1Up:Connect(function()
-            TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Scale = 1.015,
-            }):Play()
-        end)
-    end
-
-    -- Dynamic Positioning for elements
-    local currentYOffset = 105
-
-    -- Discord Button
-    if Config.ShowDiscord then
-        local DiscordBtn = Instance.new("TextButton", MainFrame)
-        DiscordBtn.Size = UDim2.new(0.85, 0, 0, 35)
-        DiscordBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-        DiscordBtn.Text = "      JOIN DISCORD"
-        DiscordBtn.Font = Enum.Font.GothamBold
-        DiscordBtn.TextSize = 11
-        DiscordBtn.BackgroundColor3 = Color3.fromRGB(48, 34, 104)
-        DiscordBtn.TextColor3 = Color3.new(1, 1, 1)
-        local DiscordCorner = Instance.new("UICorner", DiscordBtn)
-        DiscordCorner.CornerRadius = UDim.new(0, 10)
-        AddRainbowStroke(DiscordBtn)
-        AddButtonMotion(DiscordBtn, Color3.fromRGB(48, 34, 104), Color3.fromRGB(65, 44, 132))
-
-        local DiscordIcon = Instance.new("ImageLabel", DiscordBtn)
-        DiscordIcon.Size = UDim2.new(0, 20, 0, 20)
-        DiscordIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-        DiscordIcon.BackgroundTransparency = 1
-        DiscordIcon.Image = "rbxassetid://18505728201"
-        
-        DiscordBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.DiscordURL)
-            local Status = MainFrame:FindFirstChild("StatusLabel")
-            if Status then 
-                Status.Text = "Discord Link Copied!"
-                Status.TextColor3 = Color3.fromRGB(88, 101, 242)
-            end
-            -- Auto-extract invite code from config URL
-            local inviteCode = string.match(Config.DiscordURL, "discord%.gg/([%w-]+)")
-            if syn and syn.request and inviteCode then
-                syn.request({Url = "http://localhost:1111/discord?invite=" .. inviteCode, Method = "GET"})
-            end
-        end)
-        
-        currentYOffset = currentYOffset + 45
-    end
-
-    -- Instagram Button
-    if Config.ShowInstagram then
-        local InstaBtn = Instance.new("TextButton", MainFrame)
-        InstaBtn.Size = UDim2.new(0.85, 0, 0, 35)
-        InstaBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-        InstaBtn.Text = "      FOLLOW INSTAGRAM"
-        InstaBtn.Font = Enum.Font.GothamBold
-        InstaBtn.TextSize = 11
-        InstaBtn.BackgroundColor3 = Color3.fromRGB(91, 28, 94)
-        InstaBtn.TextColor3 = Color3.new(1, 1, 1)
-        local InstaCorner = Instance.new("UICorner", InstaBtn)
-        InstaCorner.CornerRadius = UDim.new(0, 10)
-        AddRainbowStroke(InstaBtn)
-        AddButtonMotion(InstaBtn, Color3.fromRGB(91, 28, 94), Color3.fromRGB(126, 39, 116))
-
-        local InstaIcon = Instance.new("ImageLabel", InstaBtn)
-        InstaIcon.Size = UDim2.new(0, 20, 0, 20)
-        InstaIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-        InstaIcon.BackgroundTransparency = 1
-        InstaIcon.Image = "rbxassetid://18355586382"
-        
-        InstaBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.InstagramURL)
-            local Status = MainFrame:FindFirstChild("StatusLabel")
-            if Status then 
-                Status.Text = "Instagram Link Copied!"
-                Status.TextColor3 = Color3.fromRGB(225, 48, 108)
-            end
-        end)
-        
-        currentYOffset = currentYOffset + 45
-    end
-
-    -- YouTube Button
-    if Config.ShowYoutube then
-        local YTBtn = Instance.new("TextButton", MainFrame)
-        YTBtn.Size = UDim2.new(0.85, 0, 0, 35)
-        YTBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-        YTBtn.Text = "      SUBSCRIBE YOUTUBE"
-        YTBtn.Font = Enum.Font.GothamBold
-        YTBtn.TextSize = 11
-        YTBtn.BackgroundColor3 = Color3.fromRGB(91, 24, 55)
-        YTBtn.TextColor3 = Color3.new(1, 1, 1)
-        local YTCorner = Instance.new("UICorner", YTBtn)
-        YTCorner.CornerRadius = UDim.new(0, 10)
-        AddRainbowStroke(YTBtn)
-        AddButtonMotion(YTBtn, Color3.fromRGB(91, 24, 55), Color3.fromRGB(133, 34, 75))
-
-        local YTIcon = Instance.new("ImageLabel", YTBtn)
-        YTIcon.Size = UDim2.new(0, 20, 0, 20)
-        YTIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-        YTIcon.BackgroundTransparency = 1
-        YTIcon.Image = "rbxassetid://82532989017804"
-        
-        YTBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.YoutubeURL)
-            local Status = MainFrame:FindFirstChild("StatusLabel")
-            if Status then
-                Status.Text = "YouTube Link Copied!"
-                Status.TextColor3 = Color3.fromRGB(255, 0, 0)
-            end
-        end)
-        
-        currentYOffset = currentYOffset + 45
-    end
-
-    -- Key Input Box
-    local KeyInput = Instance.new("TextBox", MainFrame)
-    KeyInput.Size = UDim2.new(0.85, 0, 0, 40)
-    KeyInput.Position = UDim2.new(0.075, 0, 0, currentYOffset + 15)
-    KeyInput.PlaceholderText = "ENTER YOUR LP10 KEY..."
-    KeyInput.Text = ""
-    KeyInput.Font = Enum.Font.GothamSemibold
-    KeyInput.TextSize = 12
-    KeyInput.BackgroundColor3 = Color3.fromRGB(16, 10, 36)
-    KeyInput.TextColor3 = Color3.fromRGB(235, 242, 255)
-    KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 90, 170)
-    KeyInput.ClearTextOnFocus = false
-    KeyInput.TextXAlignment = Enum.TextXAlignment.Left
-    KeyInput.ZIndex = 12
-    local InputCorner = Instance.new("UICorner", KeyInput)
-    InputCorner.CornerRadius = UDim.new(0, 10)
-    local InputPadding = Instance.new("UIPadding", KeyInput)
-    InputPadding.PaddingLeft = UDim.new(0, 14)
-    InputPadding.PaddingRight = UDim.new(0, 14)
-    local InputStroke = Instance.new("UIStroke", KeyInput)
-    InputStroke.Color = Color3.fromRGB(60, 30, 100)
-    InputStroke.Thickness = 1
-    KeyInput.Focused:Connect(function()
-        TweenService:Create(InputStroke, TweenInfo.new(0.18), {
-            Color = Color3.fromRGB(157, 92, 255),
-            Thickness = 1.5,
-        }):Play()
-    end)
-    KeyInput.FocusLost:Connect(function()
-        TweenService:Create(InputStroke, TweenInfo.new(0.18), {
-            Color = Color3.fromRGB(60, 30, 100),
-            Thickness = 1,
-        }):Play()
-    end)
-
-    local VerifyBtn = Instance.new("TextButton", MainFrame)
-    VerifyBtn.Size = UDim2.new(0.4, 0, 0, 40)
-    VerifyBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset + 65)
-    VerifyBtn.Text = "[OK]  VERIFY KEY"
-    VerifyBtn.Font = Enum.Font.GothamBold
-    VerifyBtn.TextSize = 10
-    VerifyBtn.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
-    VerifyBtn.TextColor3 = Color3.new(1, 1, 1)
-    VerifyBtn.ZIndex = 12
-    local VerifyCorner = Instance.new("UICorner", VerifyBtn)
-    VerifyCorner.CornerRadius = UDim.new(0, 10)
-    local VerifyGradient = Instance.new("UIGradient", VerifyBtn)
-    VerifyGradient.Color = ColorSequence.new(
-        Color3.fromRGB(157, 92, 255),
-        Color3.fromRGB(88, 28, 180)
-    )
-    VerifyGradient.Rotation = 0
-    AddButtonMotion(VerifyBtn, Color3.fromRGB(124, 58, 237), Color3.fromRGB(151, 78, 255))
-    local VerifyStroke = Instance.new("UIStroke", VerifyBtn)
-    VerifyStroke.Color = Color3.fromRGB(196, 155, 255)
-    VerifyStroke.Transparency = 0.45
-    VerifyStroke.Thickness = 1
-
-    local GetKeyBtn = Instance.new("TextButton", MainFrame)
-    GetKeyBtn.Size = UDim2.new(0.4, 0, 0, 40)
-    GetKeyBtn.Position = UDim2.new(0.525, 0, 0, currentYOffset + 65)
-    GetKeyBtn.Text = "->  GET KEY"
-    GetKeyBtn.Font = Enum.Font.GothamBold
-    GetKeyBtn.TextSize = 10
-    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(21, 12, 46)
-    GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
-    GetKeyBtn.ZIndex = 12
-    local GetKeyCorner = Instance.new("UICorner", GetKeyBtn)
-    GetKeyCorner.CornerRadius = UDim.new(0, 10)
-    local GetKeyStroke = Instance.new("UIStroke", GetKeyBtn)
-    GetKeyStroke.Color = Color3.fromRGB(88, 50, 160)
-    GetKeyStroke.Thickness = 1
-    AddButtonMotion(GetKeyBtn, Color3.fromRGB(21, 12, 46), Color3.fromRGB(37, 20, 78))
-
-    local Status = Instance.new("TextLabel", MainFrame)
-    Status.Name = "StatusLabel"
-    Status.Size = UDim2.new(1, -36, 0, 30)
-    Status.Position = UDim2.fromOffset(18, currentYOffset + 115)
-    Status.BackgroundTransparency = 1
-    Status.Text = "READY  /  WAITING FOR INPUT..."
-    Status.TextColor3 = Color3.fromRGB(167, 139, 250)
-    Status.Font = Enum.Font.GothamSemibold
-    Status.TextSize = 10
-    Status.TextXAlignment = Enum.TextXAlignment.Center
-    Status.ZIndex = 12
-    
-    local StatusLine = Instance.new("Frame", MainFrame)
-    StatusLine.Size = UDim2.new(1, -36, 0, 1)
-    StatusLine.Position = UDim2.fromOffset(18, currentYOffset + 146)
-    StatusLine.BackgroundColor3 = Color3.fromRGB(60, 30, 100)
-    StatusLine.BorderSizePixel = 0
-    StatusLine.ZIndex = 12
-
-    local Footer = Instance.new("TextLabel", MainFrame)
-    Footer.Size = UDim2.new(1, -36, 0, 18)
-    Footer.Position = UDim2.fromOffset(18, currentYOffset + 154)
-    Footer.BackgroundTransparency = 1
-    Footer.Text = "LP10  /  PURPLE AURORA  /  SECURE ACCESS"
-    Footer.TextColor3 = Color3.fromRGB(120, 90, 170)
-    Footer.Font = Enum.Font.GothamBold
-    Footer.TextSize = 8
-    Footer.TextXAlignment = Enum.TextXAlignment.Center
-    Footer.ZIndex = 12
-
-    -- Dynamically adjust main frame height based on active elements
-    MainFrame.Size = UDim2.new(0.88, 0, 0, currentYOffset + 184)
-
-    -- Logic
-    local verifying = false
-    VerifyBtn.MouseButton1Click:Connect(function()
-        if verifying then return end
-        local key = KeyInput.Text
-        if key == "" then
-            Status.Text = "ERROR  /  ENTER A KEY FIRST"
-            Status.TextColor3 = Color3.fromRGB(255, 156, 40)
-            return
-        end
-        verifying = true
-        VerifyBtn.Active = false
-        VerifyBtn.Text = "...  VERIFYING..."
-        Status.Text = "SECURE CHECK  /  CONTACTING SERVER..."
-        Status.TextColor3 = Color3.fromRGB(216, 180, 254)
-        local callOK, success, msg = pcall(redeemKey, key)
-        if not callOK then
-            success = false
-            msg = "Verification error. Please try again."
-        end
-        if success then
-            Status.Text = "ACCESS GRANTED  /  LOADING UNIVERSAL..."
-            Status.TextColor3 = Color3.fromRGB(52, 224, 145)
-            task.wait(0.5)
-            ScreenGui:Destroy()
-            StartMainScript()
-        else
-            verifying = false
-            VerifyBtn.Active = true
-            VerifyBtn.Text = "[OK]  VERIFY KEY"
-            Status.Text = "ACCESS DENIED  /  "..tostring(msg)
-            Status.TextColor3 = Color3.fromRGB(255, 83, 105)
-        end
-    end)
-
-    GetKeyBtn.MouseButton1Click:Connect(function()
-        Status.Text = "REQUESTING  /  GENERATING YOUR KEY LINK..."
-        Status.TextColor3 = Color3.fromRGB(216, 180, 254)
-        local callOK, success, link = pcall(cacheLink)
-        if not callOK then
-            success = false
-            link = "Unable to reach the key service."
-        end
-        if success then
-            fSetClipboard(link)
-            Status.Text = "LINK COPIED  /  OPEN IT TO GET YOUR KEY"
-            Status.TextColor3 = Color3.fromRGB(52, 224, 145)
-        else
-            Status.Text = "REQUEST FAILED  /  "..tostring(link)
-            Status.TextColor3 = Color3.fromRGB(255, 83, 105)
-        end
-    end)
-
-    -- Auto Check Saved Key
-    if isfile and isfile(Config.KeyFileName) then
-        local savedKey = readfile(Config.KeyFileName)
-        if savedKey ~= "" then
-            Status.Text = "SAVED KEY FOUND  /  VERIFYING..."
-            Status.TextColor3 = Color3.fromRGB(216, 180, 254)
-            task.spawn(function()
-                local callOK, success, msg = pcall(redeemKey, savedKey)
-                if not callOK then
-                    success = false
-                    msg = "Saved key could not be verified."
+    if distanceModule then
+        local ok, module = pcall(require, distanceModule)
+        if ok and type(module) == "table" then
+            local callback = module.SetEndPos_event or module.SetEndPos
+            if type(callback) == "function" and debug and type(debug.getupvalues) == "function" then
+                local read, upvalues = pcall(debug.getupvalues, callback)
+                if read and type(upvalues) == "table" then
+                    if type(upvalues[1]) == "number" then return upvalues[1] end
+                    for _, value in pairs(upvalues) do
+                        if type(value) == "number" and math.abs(value) > 1000 then return value end
+                    end
                 end
-                if success then
-                    Status.Text = "AUTO-LOGIN SUCCESS  /  LOADING..."
-                    Status.TextColor3 = Color3.fromRGB(52, 224, 145)
-                    task.wait(0.5)
-                    ScreenGui:Destroy()
-                    StartMainScript()
-                else
-                    Status.Text = "SAVED KEY EXPIRED  /  ENTER A NEW KEY"
-                    Status.TextColor3 = Color3.fromRGB(255, 150, 0)
+            end
+        end
+    end
+
+    local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
+    if playerGui then
+        for _, label in playerGui:GetDescendants() do
+            if label:IsA("TextLabel") and label.Text:find("Mexico", 1, true) then
+                local current = label.Parent
+                while current and current ~= playerGui do
+                    local value = tonumber(current.Name:match("^Border_(-?[%d%.]+)$"))
+                    if value then return value end
+                    current = current.Parent
+                end
+            end
+        end
+    end
+end
+
+function teleports:GetStartCFrame()
+    local spawn = workspace:FindFirstChildOfClass("SpawnLocation")
+    if not spawn or not spawn.Enabled then return end
+
+    local excludes = { spawn }
+    if AutomationPlayer.Character then
+        excludes[#excludes + 1] = AutomationPlayer.Character
+    end
+
+    local parameters = RaycastParams.new()
+    parameters.FilterType = Enum.RaycastFilterType.Exclude
+    parameters.FilterDescendantsInstances = excludes
+    parameters.RespectCanCollide = true
+
+    local result = workspace:Raycast(spawn.Position + Vector3.yAxis * 6, -Vector3.yAxis * 20, parameters)
+    local y = result and result.Position.Y + 3.5 or spawn.Position.Y + 3
+
+    return CFrame.new(spawn.Position.X, y, spawn.Position.Z) * spawn.CFrame.Rotation
+end
+
+function teleports:Move(destination, subject, saveLast)
+    if typeof(destination) ~= "CFrame" then return false end
+
+    local character = AutomationPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not character or not humanoid or not root or humanoid.Health <= 0 then return false end
+
+    subject = subject or character
+    local mover = subject == character and root or nil
+    if subject ~= character then
+        local system = subject:FindFirstChild("system")
+        mover = system and system:FindFirstChild("chassis")
+    end
+    if not mover or not subject.Parent then return false end
+
+    if saveLast ~= false then
+        self.LastPosition = root.CFrame
+    end
+
+    local camera = workspace.CurrentCamera
+    local cameraCFrame = camera and camera.CFrame
+    local cameraSubject = camera and camera.CameraSubject
+    local cameraType = camera and camera.CameraType
+    if camera then
+        camera.CameraType = Enum.CameraType.Scriptable
+        camera.CFrame = cameraCFrame
+    end
+
+    local ok = pcall(function()
+        if subject == character and humanoid.SeatPart then
+            humanoid.Sit = false
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            RunService.Heartbeat:Wait()
+        end
+        subject:PivotTo(destination * mover.CFrame:Inverse() * subject:GetPivot())
+        mover.AssemblyLinearVelocity = Vector3.zero
+        mover.AssemblyAngularVelocity = Vector3.zero
+        RunService.Heartbeat:Wait()
+    end)
+
+    if camera and camera.Parent then
+        camera.CameraSubject = cameraSubject
+        camera.CameraType = cameraType
+        camera.CFrame = cameraCFrame
+    end
+    return ok
+end
+
+-- ============================================================================
+-- SECTION C: AUTOFARM â€” FULLY PORTED FROM RUNAWAYS.lua
+-- ============================================================================
+library = library or {}
+library.Unloaded = false
+
+local AutoFarm = {
+    Version = 1,
+    LobbyPlaceId = 118418618261207,
+    GamePlaceId = 117311404196294,
+    StatePath = "MyScriptHub/RUNAWAYS/lp10_auto_farm.json",
+    StateKey = "LP10_RUNAWAYS_AUTO_FARM_STATE",
+    EnabledKey = "LP10_RUNAWAYS_AUTO_FARM_ENABLED",
+    SessionKey = "LP10_RUNAWAYS_AUTO_FARM_SESSION",
+    TransitionKey = "LP10_RUNAWAYS_AUTO_FARM_TRANSITION",
+
+    TeleportLoader = [[
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/refs/heads/main/RUNAWAYS.lua?cb=" .. tostring(os.time())))()
+    ]],
+
+    Running = false,
+    ResumeRequested = false,
+    Token = nil,
+    QueueJob = nil,
+    Revision = 0,
+    Teleporting = false,
+    RunActive = false,
+    ActiveRunToken = nil,
+    RunHeartbeat = 0,
+    Phase = "Idle",
+    Detail = "Ready",
+    GateText = "--",
+    LastError = "None",
+    QueueStatus = "Not armed",
+    SessionId = "",
+    TransitionToken = "",
+    ExpectedPlaceId = 0,
+    TransitionAt = 0,
+    StartedAt = 0,
+    RunStartedAt = 0,
+    RunCashStart = 0,
+    RunWinsStart = 0,
+    LastCredzBalance = nil,
+    LastWins = nil,
+    PendingCredz = 0,
+    PendingWins = 0,
+    BalanceWarmupUntil = 0,
+    GateStartedAt = 0,
+    PendingFinish = false,
+    FinishCrossed = false,
+    PendingAt = 0,
+    ResultBusy = false,
+    ResultFinalized = false,
+    ReplayRequested = false,
+    SafeCFrame = nil,
+    SafeCharacter = nil,
+    SafeRootAnchored = nil,
+    LastGameJob = "",
+    LastSnapshot = nil,
+    LastPersistAt = 0,
+    StateReady = false,
+    TeleportFailureGeneration = 0,
+    TeleportRecoveryGeneration = 0,
+    TeleportRetryCount = 0,
+    TeleportRetryDelay = 0,
+    TeleportRetryTarget = 0,
+    TeleportRetryOptions = nil,
+    TeleportRecovering = false,
+    LastTeleportFailureAt = 0,
+    LastEndScreenScanAt = 0,
+    CrossCollisions = nil,
+
+    Config = {
+        LobbyDelay = 3,
+        GateTimeout = 165,
+        RetryDelay = 10,
+        SafeGateWait = true,
+        AutoReplay = true,
+    },
+
+    Stats = {
+        Attempts = 0,
+        Completed = 0,
+        Failed = 0,
+        Teleports = 0,
+        GateActivations = 0,
+        NPCAttacks = 0,
+        Retries = 0,
+        Replays = 0,
+        CashEarned = 0,
+        TotalRunTime = 0,
+        BestRun = 0,
+        LastRun = 0,
+    },
+}
+
+_G.LP10AutoFarm = AutoFarm
+
+local function getHumanoid()
+    local character = AutomationPlayer.Character
+    return character and character:FindFirstChildOfClass("Humanoid")
+end
+
+local function killAllNPCs(radius)
+    local folder = workspace:FindFirstChild("NPCs")
+    if not folder or not flow.NPCs or type(flow.NPCs.Damage) ~= "function" then return 0 end
+
+    local character = AutomationPlayer.Character
+    local playerRoot = character and character:FindFirstChild("HumanoidRootPart")
+    local killed = 0
+
+    for _, humanoid in folder:QueryDescendants("Humanoid") do
+        local npc = humanoid:FindFirstAncestorWhichIsA("Model")
+        local npcRoot = npc and npc:FindFirstChild("HumanoidRootPart")
+        local inRange = not radius or (playerRoot and npcRoot and (npcRoot.Position - playerRoot.Position).Magnitude <= radius)
+        if humanoid.Health > 0 and inRange then
+            local ok = pcall(flow.NPCs.Damage, humanoid, humanoid.Health + 1)
+            if ok then killed += 1 end
+        end
+    end
+    return killed
+end
+
+local function blockDamage(value)
+    if flow.PlayerDamage and type(flow.PlayerDamage.TakeDamage) == "function" then
+        -- Only block if not already blocked; simple
+    end
+end
+
+function AutoFarm:GetContext()
+    if game.PlaceId == self.LobbyPlaceId then return "Lobby" end
+    if game.PlaceId == self.GamePlaceId then return "Game" end
+    if flow.LobbyServer and type(flow.LobbyServer.create) == "function" then return "Lobby" end
+    if workspace:FindFirstChild("Map") and flow.NPCs then return "Game" end
+    return "Unsupported"
+end
+
+function AutoFarm:IsAutoReplayEnabled()
+    if LP10UI and LP10UI.toggles and LP10UI.toggles.autoReplay ~= nil then
+        return LP10UI.toggles.autoReplay
+    end
+    return self.Config.AutoReplay == true
+end
+
+function AutoFarm:GetQueueFunction()
+    if type(queue_on_teleport) == "function" then return queue_on_teleport end
+    if type(queueonteleport) == "function" then return queueonteleport end
+    if type(syn) == "table" and type(syn.queue_on_teleport) == "function" then return syn.queue_on_teleport end
+    if type(fluxus) == "table" and type(fluxus.queue_on_teleport) == "function" then return fluxus.queue_on_teleport end
+end
+
+function AutoFarm:GetTeleportLoader()
+    -- bootstrap ØµØºÙŠØ± ÙŠÙØ¹ÙŠØ¯ ØªØ­Ù…ÙŠÙ„ LP10 Ù†ÙØ³Ù‡ Ø¨Ø¹Ø¯ Replay/Teleport
+    -- ÙŠØ­ÙØ¸ ÙƒÙ„ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª (Auto Farm, SafeGateWait, etc.)
+    return [==[
+local src = nil
+pcall(function() src = game:GetService("TeleportService"):GetTeleportSetting("LP10_AUTOMATION_SOURCE") end)
+if type(src) ~= "string" or #src == 0 then
+    if type(readfile) == "function" and type(isfile) == "function" then
+        pcall(function()
+            if isfile("MyScriptHub/LP10_Automation.lua") then
+                src = readfile("MyScriptHub/LP10_Automation.lua")
+            end
+        end)
+    end
+end
+if type(src) == "string" and #src > 0 then
+    local fn = loadstring(src)
+    if type(fn) == "function" then fn() end
+end
+]==]
+end
+
+function AutoFarm:HasTeleportLoader()
+    local loader = self:GetTeleportLoader()
+    return loader ~= "" and not loader:match("^%-%-")
+end
+
+function AutoFarm:GetTeleportQueueError(expectedPlaceId)
+    if not tonumber(expectedPlaceId) then return "Target place unavailable" end
+    if not self:GetQueueFunction() then return "queue_on_teleport unavailable" end
+    if not self:HasTeleportLoader() then return "Teleport loader is not configured" end
+end
+
+function AutoFarm:GetDataValue(name)
+    if flow.LocalData and type(flow.LocalData.Get) == "function" then
+        local ok, value = pcall(flow.LocalData.Get, name)
+        if ok and type(value) == "number" then return value end
+    end
+    if flow.PlayerDataClient and type(flow.PlayerDataClient.getObserver) == "function" then
+        local ok, observer = pcall(flow.PlayerDataClient.getObserver, name)
+        if ok and observer and type(observer.get) == "function" then
+            local read, value = pcall(observer.get, observer)
+            if read and type(value) == "number" then return value end
+        end
+    end
+end
+
+function AutoFarm:GetCash()
+    return self:GetDataValue("coins")
+end
+
+function AutoFarm:GetWins()
+    return self:GetDataValue("wins")
+end
+
+function AutoFarm:GetEffectiveCredz()
+    return (tonumber(self.LastCredzBalance) or 0) + math.max(0, tonumber(self.PendingCredz) or 0)
+end
+
+function AutoFarm:GetEffectiveWins()
+    return (tonumber(self.LastWins) or 0) + math.max(0, tonumber(self.PendingWins) or 0)
+end
+
+function AutoFarm:SyncProgress(reset)
+    local credz = self:GetCash()
+    local wins = self:GetWins()
+
+    if type(credz) == "number" then
+        if reset or type(self.LastCredzBalance) ~= "number" then
+            self.LastCredzBalance = credz
+            self.PendingCredz = 0
+        elseif credz > self.LastCredzBalance then
+            local gained = credz - self.LastCredzBalance
+            local accounted = math.min(gained, math.max(0, tonumber(self.PendingCredz) or 0))
+            self.PendingCredz = math.max(0, self.PendingCredz - accounted)
+            if os.clock() >= (tonumber(self.BalanceWarmupUntil) or 0) then
+                self.Stats.CashEarned += gained - accounted
+            end
+            self.LastCredzBalance = credz
+        end
+    end
+
+    if type(wins) == "number" then
+        if reset or type(self.LastWins) ~= "number" then
+            self.LastWins = wins
+            self.PendingWins = 0
+        elseif wins > self.LastWins then
+            local gained = wins - self.LastWins
+            local accounted = math.min(gained, math.max(0, tonumber(self.PendingWins) or 0))
+            self.PendingWins = math.max(0, self.PendingWins - accounted)
+            self.LastWins = wins
+        end
+    end
+    return credz, wins
+end
+
+function AutoFarm:NormalizeStats()
+    local active = self.RunStartedAt > 0 and 1 or 0
+    local attempts = math.max(active, math.max(0, math.floor(tonumber(self.Stats.Attempts) or 0)))
+    local resolved = math.max(0, attempts - active)
+    local failed = math.min(math.max(0, math.floor(tonumber(self.Stats.Failed) or 0)), resolved)
+    local completed = math.min(math.max(0, math.floor(tonumber(self.Stats.Completed) or 0)), math.max(0, resolved - failed))
+    self.Stats.Attempts = attempts
+    self.Stats.Completed = completed
+    self.Stats.Failed = failed
+end
+
+function AutoFarm:FormatDuration(value)
+    local seconds = math.max(0, math.floor(tonumber(value) or 0))
+    return string.format("%02d:%02d:%02d", math.floor(seconds/3600), math.floor(seconds%3600/60), seconds%60)
+end
+
+function AutoFarm:SetPhase(phase, detail)
+    self.Phase = phase
+    self.Detail = detail or ""
+    if LP10UI and LP10UI.update then LP10UI.update() end
+end
+
+function AutoFarm:GetSnapshot()
+    if self.StateReady or self.Running then self:SyncProgress() end
+    self:NormalizeStats()
+    return {
+        Version = self.Version,
+        UserId = AutomationPlayer.UserId,
+        Enabled = self.Running,
+        SessionId = self.SessionId,
+        TransitionToken = self.TransitionToken,
+        ExpectedPlaceId = self.ExpectedPlaceId,
+        TransitionAt = self.TransitionAt,
+        Phase = self.Phase,
+        Detail = self.Detail,
+        StartedAt = self.StartedAt,
+        RunStartedAt = self.RunStartedAt,
+        RunCashStart = self.RunCashStart,
+        RunWinsStart = self.RunWinsStart,
+        LastCredzBalance = self.LastCredzBalance,
+        LastWins = self.LastWins,
+        PendingCredz = self.PendingCredz,
+        PendingWins = self.PendingWins,
+        GateStartedAt = self.GateStartedAt,
+        PendingFinish = self.PendingFinish,
+        FinishCrossed = self.FinishCrossed,
+        PendingAt = self.PendingAt,
+        LastGameJob = self.LastGameJob,
+        LastError = self.LastError,
+        UpdatedAt = os.time(),
+        Stats = self.Stats,
+        Config = {
+            LobbyDelay = self.Config.LobbyDelay,
+            GateTimeout = self.Config.GateTimeout,
+            RetryDelay = self.Config.RetryDelay,
+            SafeGateWait = self.Config.SafeGateWait,
+            AutoReplay = self.Config.AutoReplay,
+        },
+    }
+end
+
+function AutoFarm:Persist()
+    self.Revision += 1
+    local ok, encoded = pcall(function()
+        return game:GetService("HttpService"):JSONEncode(self:GetSnapshot())
+    end)
+    if not ok then return false end
+
+    self.LastSnapshot = encoded
+    self.LastPersistAt = os.clock()
+
+    local ts = game:GetService("TeleportService")
+    pcall(ts.SetTeleportSetting, ts, self.StateKey, encoded)
+    pcall(ts.SetTeleportSetting, ts, self.EnabledKey, self.Running)
+    pcall(ts.SetTeleportSetting, ts, self.SessionKey, self.SessionId)
+    pcall(ts.SetTeleportSetting, ts, self.TransitionKey, self.TransitionToken)
+
+    if type(writefile) == "function" then
+        if type(makefolder) == "function" then
+            pcall(function()
+                if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
+                    makefolder("MyScriptHub")
+                end
+            end)
+            pcall(function()
+                if type(isfolder) ~= "function" or not isfolder("MyScriptHub/RUNAWAYS") then
+                    makefolder("MyScriptHub/RUNAWAYS")
                 end
             end)
         end
+        pcall(writefile, self.StatePath, encoded)
+    end
+    return true
+end
+
+function AutoFarm:ApplyPreferences(snapshot)
+    if type(snapshot) ~= "table" or snapshot.UserId ~= AutomationPlayer.UserId then return false end
+    if type(snapshot.Config) == "table" then
+        self.Config.LobbyDelay = tonumber(snapshot.Config.LobbyDelay) or self.Config.LobbyDelay
+        self.Config.GateTimeout = tonumber(snapshot.Config.GateTimeout) or self.Config.GateTimeout
+        self.Config.RetryDelay = tonumber(snapshot.Config.RetryDelay) or self.Config.RetryDelay
+        if type(snapshot.Config.SafeGateWait) == "boolean" then
+            self.Config.SafeGateWait = snapshot.Config.SafeGateWait
+        end
+        if type(snapshot.Config.AutoReplay) == "boolean" then
+            self.Config.AutoReplay = snapshot.Config.AutoReplay
+        end
+    end
+    return true
+end
+
+function AutoFarm:ApplySnapshot(snapshot)
+    if not self:ApplyPreferences(snapshot) then return false end
+    self.SessionId = tostring(snapshot.SessionId or "")
+    self.TransitionToken = tostring(snapshot.TransitionToken or "")
+    self.ExpectedPlaceId = tonumber(snapshot.ExpectedPlaceId) or 0
+    self.TransitionAt = tonumber(snapshot.TransitionAt) or 0
+    self.Revision = tonumber(snapshot.Revision) or 0
+    self.StartedAt = tonumber(snapshot.StartedAt) or 0
+    self.RunStartedAt = tonumber(snapshot.RunStartedAt) or 0
+    self.RunCashStart = tonumber(snapshot.RunCashStart) or 0
+    self.RunWinsStart = tonumber(snapshot.RunWinsStart) or 0
+    self.LastCredzBalance = tonumber(snapshot.LastCredzBalance)
+    self.LastWins = tonumber(snapshot.LastWins)
+    self.PendingCredz = math.max(0, tonumber(snapshot.PendingCredz) or 0)
+    self.PendingWins = math.max(0, tonumber(snapshot.PendingWins) or 0)
+    self.GateStartedAt = tonumber(snapshot.GateStartedAt) or 0
+    self.PendingFinish = snapshot.PendingFinish == true
+    self.FinishCrossed = snapshot.FinishCrossed == true
+    self.PendingAt = tonumber(snapshot.PendingAt) or 0
+    self.LastGameJob = tostring(snapshot.LastGameJob or "")
+    self.LastError = tostring(snapshot.LastError or "None")
+    self.BalanceWarmupUntil = os.clock() + 10
+
+    if type(snapshot.Stats) == "table" then
+        for name, value in self.Stats do
+            self.Stats[name] = tonumber(snapshot.Stats[name]) or value
+        end
+    end
+    self:NormalizeStats()
+
+    if type(self.LastCredzBalance) ~= "number" then
+        self.LastCredzBalance = self:GetCash()
+        self.PendingCredz = 0
+    end
+    if type(self.LastWins) ~= "number" then
+        self.LastWins = self:GetWins()
+        self.PendingWins = 0
+    end
+    if self.RunCashStart <= 0 and type(self.LastCredzBalance) == "number" then
+        self.RunCashStart = self:GetEffectiveCredz()
+    end
+    if self.RunWinsStart <= 0 and type(self.LastWins) == "number" then
+        self.RunWinsStart = self:GetEffectiveWins()
     end
 
-    local finalSize = MainFrame.Size
-    MainFrame.Size = UDim2.new(finalSize.X.Scale, finalSize.X.Offset, 0, 0)
-    MainFrame.BackgroundTransparency = 1
-    TweenService:Create(MainFrame, TweenInfo.new(0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = finalSize,
-        BackgroundTransparency = 0,
-    }):Play()
+    self.ResumeRequested = self.SessionId ~= "" and snapshot.Enabled == true
+        and os.time() - (tonumber(snapshot.UpdatedAt) or 0) <= 900
+
+    return true
 end
 
--- Check if main script GUI is already open
-local player = game:GetService("Players").LocalPlayer
-local pGui = player:WaitForChild("PlayerGui")
+function AutoFarm:LoadState()
+    local transitionToken = tostring(env.LP10RunawaysTransitionToken or "")
+    local queuedState = env.LP10RunawaysQueuedState
+    local resumeBest, resumeUpdated, resumeRevision = nil, -1, -1
+    local preferenceBest = nil
 
-if pGui:FindFirstChild(Config.MainGuiName) then
-    StartMainScript() -- Run if main script is already active
-    return
+    env.LP10RunawaysTransitionToken = nil
+    env.LP10RunawaysQueuedState = nil
+
+    local function consider(value)
+        if type(value) == "string" then
+            local http = game:GetService("HttpService")
+            local ok, decoded = pcall(http.JSONDecode, http, value)
+            if not ok then return end
+            value = decoded
+        end
+        if type(value) ~= "table" or value.UserId ~= AutomationPlayer.UserId then return end
+
+        local updated = tonumber(value.UpdatedAt) or 0
+        local revision = tonumber(value.Revision) or 0
+
+        if not preferenceBest or updated > (tonumber(preferenceBest.UpdatedAt) or 0) then
+            preferenceBest = value
+        end
+
+        local transitionAt = tonumber(value.TransitionAt) or 0
+        if transitionToken ~= ""
+            and tostring(value.TransitionToken or "") == transitionToken
+            and transitionAt > 0
+            and math.abs(os.time() - transitionAt) <= 900
+            and tostring(value.SessionId or "") ~= ""
+            and value.Enabled == true
+            and os.time() - updated <= 900
+            and (updated > resumeUpdated or (updated == resumeUpdated and revision >= resumeRevision))
+        then
+            resumeBest = value
+            resumeUpdated = updated
+            resumeRevision = revision
+        end
+    end
+
+    consider(queuedState)
+    pcall(function()
+        consider(game:GetService("TeleportService"):GetTeleportSetting(self.StateKey))
+    end)
+    if type(readfile) == "function" and type(isfile) == "function" then
+        pcall(function()
+            if isfile(self.StatePath) then consider(readfile(self.StatePath)) end
+        end)
+    end
+
+    if resumeBest and self:ApplySnapshot(resumeBest) and self.ResumeRequested then
+        self.ExpectedPlaceId = game.PlaceId
+        return
+    end
+    if preferenceBest then self:ApplyPreferences(preferenceBest) end
+
+    self.ResumeRequested = false
+    self.SessionId = ""
+    self.TransitionToken = ""
+    self.ExpectedPlaceId = 0
+    self.TransitionAt = 0
+    self.StartedAt = 0
+    self.RunStartedAt = 0
+    self.RunCashStart = 0
+    self.RunWinsStart = 0
+    self.LastCredzBalance = self:GetCash()
+    self.LastWins = self:GetWins()
+    self.PendingCredz = 0
+    self.PendingWins = 0
+    self.GateStartedAt = 0
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+    self.LastGameJob = ""
+    self.LastError = "None"
+    self.GateText = "--"
+    for name in self.Stats do self.Stats[name] = 0 end
 end
 
--- Initialize Key System GUI
-CreateGUI()
+function AutoFarm:QueueTeleport(reason, expectedPlaceId)
+    expectedPlaceId = tonumber(expectedPlaceId)
+    local queueError = self:GetTeleportQueueError(expectedPlaceId)
+    if queueError then
+        self.QueueStatus = queueError
+        return false, self.QueueStatus
+    end
+
+    local queueFunction = self:GetQueueFunction()
+    local loader = self:GetTeleportLoader()
+
+    if self.QueueJob == game.JobId and self.TransitionToken ~= "" then
+        self.ExpectedPlaceId = expectedPlaceId
+        self.TransitionAt = os.time()
+        if not self:Persist() then return false, "Transition state is unavailable" end
+        self.QueueStatus = "Armed: " .. tostring(reason)
+        return true
+    end
+
+    local transitionToken = table.concat({
+        tostring(self.SessionId), game.JobId, tostring(expectedPlaceId),
+        tostring(os.time()), tostring(math.random(100000, 999999)),
+    }, ":")
+
+    self.TransitionToken = transitionToken
+    self.ExpectedPlaceId = expectedPlaceId
+    self.TransitionAt = os.time()
+
+    if not self:Persist() or type(self.LastSnapshot) ~= "string" then
+        return false, "Transition state is unavailable"
+    end
+
+    local snapshot = self.LastSnapshot
+    local payload = string.format(
+        "if not game:IsLoaded() then game.Loaded:Wait() end\n"
+            .. "if game.PlaceId == %d or game.PlaceId == %d then\n"
+            .. "local p = game:GetService(%q)\n"
+            .. "while not p.LocalPlayer do task.wait() end\n"
+            .. "local t = game:GetService(%q)\n"
+            .. "local v = nil\n"
+            .. "pcall(function() v = t:GetTeleportSetting(%q) end)\n"
+            .. "if t:GetTeleportSetting(%q) ~= false and tostring(v or '') == %q then\n"
+            .. "local e = getgenv and getgenv() or _G\n"
+            .. "e.LP10RunawaysTransitionToken = %q\n"
+            .. "e.LP10RunawaysQueuedState = %q\n"
+            .. "%s\n"
+            .. "end\n"
+            .. "end",
+        self.LobbyPlaceId,
+        self.GamePlaceId,
+        "Players",
+        "TeleportService",
+        self.TransitionKey,
+        self.EnabledKey,
+        transitionToken,
+        transitionToken,
+        snapshot,
+        loader
+    )
+
+    local ok, message = pcall(queueFunction, payload)
+    if not ok then
+        self.TransitionToken = ""
+        self.ExpectedPlaceId = 0
+        self.TransitionAt = 0
+        self.QueueStatus = "Queue failed"
+        self:Persist()
+        return false, tostring(message)
+    end
+    self.QueueJob = game.JobId
+    self.QueueStatus = "Armed: " .. tostring(reason)
+    return true
+end
+
+function AutoFarm:GetOwnedCar()
+    if not flow.PlayerDataClient or type(flow.PlayerDataClient.getObserver) ~= "function" then return end
+    local ok, observer = pcall(flow.PlayerDataClient.getObserver, "cars")
+    if not ok or not observer or type(observer.get) ~= "function" then return end
+    local read, cars = pcall(observer.get, observer)
+    if not read or type(cars) ~= "table" then return end
+    local names = {}
+    for name in cars do names[#names + 1] = tostring(name) end
+    table.sort(names)
+    return names[1]
+end
+
+function AutoFarm:WaitForTeleport(token, duration, failureGeneration)
+    local expires = os.clock() + duration
+    failureGeneration = tonumber(failureGeneration) or self.TeleportFailureGeneration
+    if self.TeleportFailureGeneration ~= failureGeneration then return false, "Teleport failed" end
+
+    repeat
+        if self.TeleportFailureGeneration ~= failureGeneration then return false, "Teleport failed" end
+        if self.Teleporting then return true, "Teleport started" end
+        task.wait(0.25)
+    until not self.Running or self.Token ~= token or library.Unloaded
+        or self.TeleportFailureGeneration ~= failureGeneration or os.clock() >= expires
+
+    if self.Teleporting and self.TeleportFailureGeneration == failureGeneration then
+        return true, "Teleport started"
+    end
+    return false, "Teleport timed out"
+end
+
+function AutoFarm:DismissTeleportError()
+    pcall(function() game:GetService("GuiService"):ClearError() end)
+    local promptGui = game:GetService("CoreGui"):FindFirstChild("RobloxPromptGui")
+    local overlay = promptGui and promptGui:FindFirstChild("promptOverlay")
+    local errorPrompt = overlay and (overlay:FindFirstChild("ErrorPrompt") or overlay:FindFirstChild("errorPrompt"))
+    if not errorPrompt then return end
+    local ok, buttons = pcall(errorPrompt.QueryDescendants, errorPrompt, "TextButton")
+    if not ok then return end
+    for _, button in buttons do
+        local text = tostring(button.Text or ""):lower()
+        if text == "ok" or text:find("reconnect", 1, true) then
+            if type(firesignal) == "function" then pcall(firesignal, button.MouseButton1Click)
+            else pcall(button.Activate, button) end
+            break
+        end
+    end
+end
+
+function AutoFarm:StartTeleportRecovery(token)
+    if not self.Running or self.Token ~= token or library.Unloaded then return end
+    self.TeleportRecovering = true
+    self.TeleportRecoveryGeneration += 1
+    local generation = self.TeleportRecoveryGeneration
+    local attempt = math.max(1, tonumber(self.TeleportRetryCount) or 1)
+    local delays = { 2, 5, 10, 20, 30 }
+    local delay = self.TeleportRetryDelay > 0 and self.TeleportRetryDelay or delays[math.min(attempt, #delays)]
+    self.TeleportRetryDelay = 0
+    self:SetPhase("Teleport Recovery", "Rejoining in " .. tostring(delay) .. "s | Attempt " .. tostring(attempt))
+    self:Persist()
+
+    task.spawn(function()
+        local expires = os.clock() + delay
+        repeat task.wait(0.25) until not self.Running or self.Token ~= token or library.Unloaded
+            or self.TeleportRecoveryGeneration ~= generation or os.clock() >= expires
+        if not self.Running or self.Token ~= token or library.Unloaded or self.TeleportRecoveryGeneration ~= generation then return end
+        self:DismissTeleportError()
+
+        local target = tonumber(self.TeleportRetryTarget)
+        local retryOptions = self.TeleportRetryOptions
+        local targetValid = target == self.LobbyPlaceId or target == self.GamePlaceId
+        if not targetValid then target = self:IsAutoReplayEnabled() and self.GamePlaceId or self.LobbyPlaceId end
+        local exactRetry = attempt <= 3 and targetValid and typeof(retryOptions) == "Instance" and retryOptions:IsA("TeleportOptions")
+        if not exactRetry then retryOptions = nil end
+
+        self.QueueJob = nil
+        self.Teleporting = false
+        local queued, queueError = self:QueueTeleport("teleport recovery", target)
+        if not queued then
+            self.Stats.Retries += 1
+            self.TeleportRetryCount += 1
+            self.LastError = tostring(queueError)
+            self:StartTeleportRecovery(token)
+            return
+        end
+
+        self:SetPhase(exactRetry and "Retrying Teleport" or target == self.GamePlaceId and "Rejoining Game" or "Rejoining Lobby",
+            "Recovery attempt " .. tostring(attempt))
+        self:Persist()
+
+        local sourceJob = game.JobId
+        local failureGeneration = self.TeleportFailureGeneration
+        local called, teleportError = pcall(function()
+            local ts = game:GetService("TeleportService")
+            if exactRetry then ts:TeleportAsync(target, { AutomationPlayer }, retryOptions)
+            else ts:Teleport(target, AutomationPlayer) end
+        end)
+
+        if not called then
+            self.Teleporting = false
+            self.Stats.Retries += 1
+            self.TeleportRetryCount += 1
+            self.LastError = tostring(teleportError)
+            self:StartTeleportRecovery(token)
+            return
+        end
+
+        local timeout = os.clock() + 30
+        repeat task.wait(0.25) until not self.Running or self.Token ~= token or library.Unloaded
+            or self.TeleportRecoveryGeneration ~= generation
+            or self.TeleportFailureGeneration ~= failureGeneration
+            or game.JobId ~= sourceJob or os.clock() >= timeout
+
+        if self.Running and self.Token == token and not library.Unloaded
+            and self.TeleportRecoveryGeneration == generation
+            and self.TeleportFailureGeneration == failureGeneration
+            and game.JobId == sourceJob
+        then
+            self.Teleporting = false
+            self.Stats.Retries += 1
+            self.TeleportRetryCount += 1
+            self.LastError = "Teleport timed out"
+            self:StartTeleportRecovery(token)
+        end
+    end)
+end
+
+function AutoFarm:HandleTeleportFailure(result, message, targetPlaceId, teleportOptions)
+    if not self.Running or library.Unloaded then return end
+    task.defer(self.DismissTeleportError, self)
+    if os.clock() - self.LastTeleportFailureAt < 0.75 then return end
+    self.LastTeleportFailureAt = os.clock()
+
+    local target = tonumber(targetPlaceId)
+    if target ~= self.LobbyPlaceId and target ~= self.GamePlaceId then target = tonumber(self.ExpectedPlaceId) end
+    if target ~= self.LobbyPlaceId and target ~= self.GamePlaceId then
+        target = self:GetContext() == "Game" and self:IsAutoReplayEnabled() and self.GamePlaceId or self.LobbyPlaceId
+    end
+
+    self.TeleportFailureGeneration += 1
+    self.Teleporting = false
+    self.QueueJob = nil
+    self.ReplayRequested = false
+    self.TeleportRetryCount += 1
+    self.TeleportRetryTarget = target
+    self.TeleportRetryOptions = typeof(teleportOptions) == "Instance" and teleportOptions or nil
+    self.TeleportRetryDelay = result == Enum.TeleportResult.Flooded and 15 or 0
+    self.Stats.Retries += 1
+    self.LastError = tostring(message or result or "Teleport failed")
+    self:SetCrossNoclip(false)
+    self:SetPhase("Teleport Failed", self.LastError)
+    self:Persist()
+    self:StartTeleportRecovery(self.Token)
+end
+
+function AutoFarm:GetEndScreen()
+    local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return end
+    local endFrame = playerGui:FindFirstChild("EndFrame", true)
+
+    local function visible(instance)
+        local current = instance
+        while current and current ~= playerGui do
+            if current:IsA("GuiObject") and not current.Visible then return false end
+            if current:IsA("LayerCollector") and not current.Enabled then return false end
+            current = current.Parent
+        end
+        return current == playerGui
+    end
+
+    local function layer(instance)
+        local current = instance
+        while current and current ~= playerGui do
+            if current:IsA("LayerCollector") then return current end
+            current = current.Parent
+        end
+    end
+
+    if endFrame and visible(endFrame) then
+        local escaped = endFrame:FindFirstChild("Escaped", true)
+        local captured = endFrame:FindFirstChild("Captured", true)
+        local option = endFrame:FindFirstChild("Replay", true) or endFrame:FindFirstChild("Lobby", true)
+        if escaped and visible(escaped) then return endFrame, "Escaped" end
+        if captured and visible(captured) then return endFrame, "Captured" end
+        if option and visible(option) then return endFrame, "Ended" end
+        for _, instance in endFrame:GetDescendants() do
+            if instance:IsA("GuiObject") and visible(instance) then
+                local name = instance.Name:lower()
+                local text = (instance:IsA("TextLabel") or instance:IsA("TextButton")) and instance.Text:lower() or ""
+                if name:find("captured", 1, true) or text:find("captured", 1, true) then return endFrame, "Captured" end
+                if name:find("escaped", 1, true) or text:find("escaped", 1, true) then return endFrame, "Escaped" end
+            end
+        end
+        return
+    end
+
+    if os.clock() - self.LastEndScreenScanAt < 1 then return end
+    self.LastEndScreenScanAt = os.clock()
+
+    for _, instance in playerGui:GetDescendants() do
+        if instance:IsA("GuiObject") and visible(instance) then
+            local name = instance.Name:lower()
+            local text = (instance:IsA("TextLabel") or instance:IsA("TextButton")) and instance.Text:lower() or ""
+            if name:find("captured", 1, true) or text:find("captured", 1, true) then
+                return layer(instance) or endFrame, "Captured"
+            end
+            if name:find("escaped", 1, true) or text:find("escaped", 1, true) then
+                return layer(instance) or endFrame, "Escaped"
+            end
+        end
+    end
+end
+
+function AutoFarm:IsVisible(instance)
+    local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
+    local current = instance
+    while current and current ~= playerGui do
+        if current:IsA("GuiObject") and not current.Visible then return false end
+        if current:IsA("LayerCollector") and not current.Enabled then return false end
+        current = current.Parent
+    end
+    return current == playerGui
+end
+
+function AutoFarm:GetReplayButton(endFrame)
+    if not endFrame then return end
+    local function matches(button)
+        if not button:IsA("GuiButton") or not self:IsVisible(button) then return false end
+        local name = button.Name:lower()
+        local text = button:IsA("TextButton") and tostring(button.Text or ""):lower() or ""
+        if text == "" then
+            local label = button:FindFirstChildWhichIsA("TextLabel", true)
+            text = label and tostring(label.Text or ""):lower() or ""
+        end
+        return name:find("replay", 1, true) ~= nil or text:find("replay", 1, true) ~= nil
+    end
+    local direct = endFrame:FindFirstChild("Replay", true)
+    if direct then
+        if matches(direct) then return direct end
+        local nested = direct:FindFirstChildWhichIsA("GuiButton", true)
+        if nested and matches(nested) then return nested end
+    end
+    for _, button in endFrame:GetDescendants() do
+        if matches(button) then return button end
+    end
+end
+
+function AutoFarm:RequestReplay(button)
+    if flow.GameManager and type(flow.GameManager.Replay) == "function" then
+        local called, result = pcall(flow.GameManager.Replay)
+        if called and result ~= false then return true end
+    end
+    if button then
+        if type(firesignal) == "function" then
+            local clicked = pcall(firesignal, button.MouseButton1Click)
+            if clicked then return true end
+        else
+            local clicked = pcall(button.Activate, button)
+            if clicked then return true end
+        end
+    end
+    return false, "Replay unavailable"
+end
+
+function AutoFarm:GetResultCredz(endFrame)
+    local total = endFrame and endFrame:FindFirstChild("Total", true)
+    if not total then return end
+    for _, name in { "RobloxPlus", "Credz" } do
+        local label = total:FindFirstChild(name, true)
+        if label and (label:IsA("TextLabel") or label:IsA("TextButton")) and self:IsVisible(label) then
+            local digits = tostring(label.Text or ""):gsub("[^%d]", "")
+            local value = tonumber(digits)
+            if value then return value end
+        end
+    end
+end
+
+function AutoFarm:FinalizeRun(outcome, detail, reward)
+    if self.ResultFinalized then return end
+    local duration = self.RunStartedAt > 0 and math.max(0, os.time() - self.RunStartedAt) or 0
+    local active = self.RunStartedAt > 0
+    self:SyncProgress()
+
+    local effectiveCredz = self:GetEffectiveCredz()
+    local effectiveWins = self:GetEffectiveWins()
+    local earned = math.max(0, effectiveCredz - (tonumber(self.RunCashStart) or effectiveCredz))
+    local reported = tonumber(reward)
+
+    if active and reported and reported > earned then
+        local missing = reported - earned
+        self.Stats.CashEarned += missing
+        self.PendingCredz += missing
+        effectiveCredz += missing
+        earned = reported
+    end
+
+    self:ReleaseSafeZone()
+    self.ResultFinalized = true
+
+    if active then
+        self.Stats.Attempts = math.max(self.Stats.Attempts, self.Stats.Completed + self.Stats.Failed + 1)
+    end
+
+    if active and outcome == "Escaped" then
+        self.Stats.Completed += 1
+        if effectiveWins <= (tonumber(self.RunWinsStart) or effectiveWins) then
+            self.PendingWins += 1
+            effectiveWins += 1
+        end
+        self.Stats.LastRun = duration
+        self.Stats.TotalRunTime += duration
+        if self.Stats.BestRun == 0 or duration < self.Stats.BestRun then self.Stats.BestRun = duration end
+    elseif active then
+        self.Stats.Failed += 1
+        self.Stats.LastRun = duration
+    end
+
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+    self.RunStartedAt = 0
+    self.RunCashStart = effectiveCredz
+    self.RunWinsStart = effectiveWins
+    self.GateStartedAt = 0
+    self.GatePassage = nil
+    self.GateText = "--"
+
+    if outcome == "Escaped" then
+        self.LastError = "None"
+        self:SetPhase("Run Completed", (detail or "Finish confirmed") .. " | +" .. tostring(math.floor(earned)) .. " Credz")
+    else
+        self.LastError = "Run captured"
+        self:SetPhase("Run Captured", detail or "Preparing next run")
+    end
+    self:Persist()
+end
+
+function AutoFarm:CompletePending(detail)
+    if not self.PendingFinish then return end
+    local valid = self.LastGameJob ~= "" and self.LastGameJob ~= game.JobId and self.PendingAt > 0
+        and self.FinishCrossed and os.time() - self.PendingAt <= 600
+    if not valid then
+        self.PendingFinish = false
+        self.FinishCrossed = false
+        self.PendingAt = 0
+        self.LastError = "Pending completion expired"
+        return
+    end
+    self:FinalizeRun("Escaped", detail or "Transition confirmed")
+end
+
+function AutoFarm:HandleEndScreen(token)
+    if self.ResultBusy then return false, "Result already being handled" end
+    local endFrame, outcome = self:GetEndScreen()
+    if not endFrame then return false, "Result screen unavailable" end
+
+    self.ResultBusy = true
+    self:ReleaseSafeZone()
+
+    if outcome == "Ended" then
+        local outcomeExpires = os.clock() + 2
+        repeat
+            task.wait(0.1)
+            endFrame, outcome = self:GetEndScreen()
+        until outcome ~= "Ended" or not endFrame or not self.Running or self.Token ~= token or os.clock() >= outcomeExpires
+    end
+
+    if outcome == "Escaped" or (outcome == "Ended" and self.FinishCrossed) then
+        outcome = "Escaped"
+    else
+        outcome = "Captured"
+    end
+
+    local reward
+    local rewardExpires = os.clock() + 3
+    repeat
+        reward = self:GetResultCredz(endFrame)
+        if reward then break end
+        task.wait(0.1)
+    until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= rewardExpires
+
+    if not self.Running or self.Token ~= token or library.Unloaded then
+        self.ResultBusy = false
+        return true, "Stopped"
+    end
+
+    self:FinalizeRun(outcome,
+        outcome == "Escaped" and "Finish confirmed" or "The run ended before the finish", reward)
+
+    if not self.Running or self.Token ~= token then
+        self.ResultBusy = false
+        return true, "Stopped"
+    end
+
+    local autoReplay = self:IsAutoReplayEnabled()
+    if autoReplay then
+        local replayStartedAt = os.clock()
+        local replayExpires = replayStartedAt + 45
+        local nextRequestAt = replayStartedAt
+        local queued = false
+        local requests = 0
+
+        self.ReplayRequested = true
+        self:SetPhase("Auto Replay", "Waiting for the replay control")
+
+        repeat
+            self.RunHeartbeat = os.clock()
+            if self.Teleporting then return true, "Teleporting" end
+
+            local currentFrame = self:GetEndScreen()
+            if not currentFrame then
+                -- reset detection
+                local currentCharacter = AutomationPlayer.Character
+                local currentHumanoid = currentCharacter and currentCharacter:FindFirstChildOfClass("Humanoid")
+                if currentHumanoid and currentHumanoid.Health > 0 and os.clock() - replayStartedAt >= 2 then
+                    self.LastGameJob = ""
+                    self.ReplayRequested = false
+                    self.ResultBusy = false
+                    self.QueueStatus = "Replay started"
+                    self:Persist()
+                    task.wait(1)
+                    return true, "Replay"
+                end
+            else
+                endFrame = currentFrame
+                if os.clock() >= nextRequestAt then
+                    local replayButton = self:GetReplayButton(endFrame)
+                    if replayButton or os.clock() - replayStartedAt >= 8 then
+                        if not queued then
+                            local queueError
+                            queued, queueError = self:QueueTeleport("replay", self.GamePlaceId)
+                            if not queued then
+                                self.LastError = tostring(queueError)
+                                nextRequestAt = os.clock() + 3
+                            end
+                        end
+                        if queued and requests < 10 then
+                            if requests == 0 then
+                                self.Stats.Replays += 1
+                                self:SetPhase("Auto Replay", "Submitting replay vote")
+                                self:Persist()
+                            end
+                            local requested = self:RequestReplay(replayButton)
+                            if requested then
+                                requests += 1
+                                self:SetPhase("Auto Replay", "Replay vote submitted")
+                            end
+                            nextRequestAt = os.clock() + 2
+                        elseif queued then
+                            nextRequestAt = os.clock() + 3
+                        end
+                    else
+                        nextRequestAt = os.clock() + 0.5
+                    end
+                end
+            end
+            task.wait(0.25)
+        until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= replayExpires
+
+        self.ReplayRequested = false
+        if not self.Running or self.Token ~= token or library.Unloaded then
+            self.ResultBusy = false
+            return true, "Stopped"
+        end
+
+        local queuedReplay, queueError = self:QueueTeleport("replay recovery", self.GamePlaceId)
+        if not queuedReplay then
+            self.ResultBusy = false
+            return false, tostring(queueError)
+        end
+
+        self:SetPhase("Restarting Game", "Replay did not start")
+        local failureGeneration = self.TeleportFailureGeneration
+        local called = pcall(game:GetService("TeleportService").Teleport,
+            game:GetService("TeleportService"), self.GamePlaceId, AutomationPlayer)
+        if not called then
+            self.ResultBusy = false
+            return false, "Teleport call failed"
+        end
+        if self:WaitForTeleport(token, 30, failureGeneration) then
+            return true, "Teleporting"
+        end
+        self.ResultBusy = false
+        return false, "Game restart did not start"
+    end
+
+    self.ReplayRequested = false
+    if not self.Running or self.Token ~= token then
+        self.ResultBusy = false
+        return true, "Stopped"
+    end
+    if not flow.GameManager or type(flow.GameManager.BackToLobby) ~= "function" then
+        self.ResultBusy = false
+        return false, "Lobby return unavailable"
+    end
+
+    local queued, queueError = self:QueueTeleport("lobby", self.LobbyPlaceId)
+    if not queued then self.LastError = tostring(queueError) end
+
+    local failureGeneration = self.TeleportFailureGeneration
+    local called = pcall(flow.GameManager.BackToLobby)
+    if not called then
+        self.ResultBusy = false
+        return false, "BackToLobby failed"
+    end
+    self:SetPhase("Returning to Lobby", "Replay unavailable")
+    if self:WaitForTeleport(token, 30, failureGeneration) then return true, "Teleporting" end
+    self.ResultBusy = false
+    return false, "Lobby teleport did not start"
+end
+
+function AutoFarm:RunLobby(token)
+    if not flow.LobbyServer or type(flow.LobbyServer.play) ~= "function"
+        or type(flow.LobbyServer.create) ~= "function" or type(flow.LobbyServer.exit) ~= "function"
+    then return false, "Lobby API unavailable" end
+
+    if self.PendingFinish then
+        self:SetPhase("Confirming Run", "Waiting for lobby reward")
+        local rewardExpires = os.clock() + 8
+        repeat
+            self:SyncProgress()
+            if self:GetEffectiveWins() > (tonumber(self.RunWinsStart) or self:GetEffectiveWins()) then break end
+            task.wait(0.5)
+        until not self.Running or self.Token ~= token or os.clock() >= rewardExpires
+        if not self.Running or self.Token ~= token then return true end
+        self:CompletePending("Returned to lobby")
+    end
+
+    self:SetPhase("Lobby", "Waiting before next game")
+    local delay = self.Config.LobbyDelay
+    local expires = os.clock() + delay
+    repeat task.wait(0.1) until not self.Running or self.Token ~= token or os.clock() >= expires
+    if not self.Running or self.Token ~= token then return true end
+
+    local car = self:GetOwnedCar()
+    if not car then return false, "No owned vehicle" end
+
+    local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
+    local createGui = playerGui and (playerGui:FindFirstChild("CreateLobbyGui") or playerGui:WaitForChild("CreateLobbyGui", 10))
+    if not createGui then return false, "Create lobby UI unavailable" end
+
+    local queued, queueError = self:QueueTeleport("game", self.GamePlaceId)
+    if not queued then return false, queueError end
+
+    local createFrame = createGui and createGui:FindFirstChild("Frame")
+    local exitFrame = createGui and createGui:FindFirstChild("Exit")
+
+    for attempt = 1, 2 do
+        if not self.Running or self.Token ~= token then return true end
+        createFrame = createGui:FindFirstChild("Frame")
+        exitFrame = createGui:FindFirstChild("Exit")
+
+        if exitFrame and exitFrame.Visible then
+            pcall(flow.LobbyServer.exit)
+            local leaveExpires = os.clock() + 5
+            repeat task.wait(0.1) until not exitFrame.Visible or not self.Running or self.Token ~= token or os.clock() >= leaveExpires
+            if exitFrame.Visible then
+                self.Stats.Retries += 1
+                task.wait(attempt)
+                continue
+            end
+        end
+
+        if not createFrame or not createFrame.Visible then
+            pcall(flow.LobbyServer.play)
+            local selectionExpires = os.clock() + 10
+            repeat
+                if self.Teleporting then return true end
+                task.wait(0.2)
+            until not self.Running or self.Token ~= token
+                or (createFrame and createFrame.Visible) or (exitFrame and exitFrame.Visible)
+                or os.clock() >= selectionExpires
+        end
+
+        if exitFrame and exitFrame.Visible then
+            self.Stats.Retries += 1
+            pcall(flow.LobbyServer.exit)
+            task.wait(attempt * 1.5)
+            continue
+        end
+        if not createFrame or not createFrame.Visible then
+            self.Stats.Retries += 1
+            task.wait(attempt)
+            continue
+        end
+
+        self:SetPhase("Creating Game", "Vehicle: " .. car)
+        createFrame.Visible = false
+
+        local failureGeneration = self.TeleportFailureGeneration
+        local created = pcall(flow.LobbyServer.create, { maxPlayers = 1, permissions = "Friends", car = car })
+        if not created then return false, "Create failed" end
+
+        local joinExpires = os.clock() + 5
+        repeat task.wait(0.2) until self.Teleporting or (exitFrame and exitFrame.Visible)
+            or not self.Running or self.Token ~= token or os.clock() >= joinExpires
+
+        local teleportStarted = self.Teleporting
+        if not teleportStarted then
+            teleportStarted = self:WaitForTeleport(token, 20, failureGeneration)
+        end
+        if teleportStarted then return true end
+        if self.TeleportRecovering then return false, "Teleport recovery active" end
+
+        self.Stats.Retries += 1
+        pcall(flow.LobbyServer.exit)
+        if flow.LobbyClient and type(flow.LobbyClient.forceLeave_event) == "function" then
+            pcall(flow.LobbyClient.forceLeave_event)
+        end
+        task.wait(attempt * 2)
+    end
+
+    self:SetPhase("Refreshing Lobby", "Game creation timed out")
+    local requeued = self:QueueTeleport("lobby retry", self.LobbyPlaceId)
+    if not requeued then return false, "Lobby retry failed" end
+
+    local failureGeneration = self.TeleportFailureGeneration
+    pcall(game:GetService("TeleportService").Teleport,
+        game:GetService("TeleportService"), self.LobbyPlaceId, AutomationPlayer)
+    if self:WaitForTeleport(token, 30, failureGeneration) then return true, "Teleporting" end
+    return false, "Lobby refresh did not start"
+end
+
+function AutoFarm:ReachGate(token)
+    self:SetPhase("Traveling", "Teleporting to end gate")
+    local endZ
+    local expires = os.clock() + 20
+
+    repeat
+        endZ = teleports:GetEndZ()
+        if not endZ then task.wait(0.25) end
+    until endZ or not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= expires
+    if not endZ then return nil, nil, nil, "End position unavailable" end
+
+    local start = teleports:GetStartCFrame()
+    local direction = (not start or endZ >= start.Position.Z) and 1 or -1
+    local anchor = teleports:GetEndAnchor(endZ, direction)
+
+    teleports:Stream(anchor)
+    local prompt = teleports:GetEndPrompt()
+
+    if not prompt then
+        local road = teleports:GetRoadNear(endZ)
+        local position
+        if road then
+            position = Vector3.new(road.Position.X, road.Position.Y + road.Size.Y * 0.5 + 5, endZ - direction * 30)
+        else
+            position = Vector3.new(anchor.X, anchor.Y + 4, endZ - direction * 30)
+        end
+        teleports:Move(CFrame.lookAt(position, position + Vector3.new(0, 0, direction), Vector3.yAxis), nil, false)
+        teleports:Stream(anchor)
+    end
+
+    expires = os.clock() + 20
+    repeat
+        prompt = teleports:GetEndPrompt()
+        if prompt then
+            local destination = teleports:GetEndPromptDestination(prompt, direction)
+            if destination then
+                teleports:Move(destination, nil, false)
+                task.wait(0.4)
+                local character = AutomationPlayer.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                local root = character and character:FindFirstChild("HumanoidRootPart")
+                if humanoid and root and humanoid.Health > 0
+                    and (root.Position - destination.Position).Magnitude <= math.max(prompt.MaxActivationDistance + 5, 14)
+                then
+                    self.GatePassage = self.GatePassage or self:GetGatePassage(prompt, direction, endZ)
+                    return prompt, direction, endZ
+                end
+            end
+        end
+        task.wait(0.25)
+    until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= expires
+
+    if self.Running and self.Token == token and self.GateStartedAt > 0 and self.LastGameJob == game.JobId then
+        self.GatePassage = self.GatePassage or self:GetGatePassage(nil, direction, endZ)
+        if self.GatePassage then
+            local position = self.GatePassage.Position - Vector3.new(0, 0, direction * 8)
+            teleports:Move(CFrame.lookAt(position, position + Vector3.new(0, 0, direction), Vector3.yAxis), nil, false)
+            return nil, direction, endZ, nil, true
+        end
+    end
+    return nil, nil, nil, "End gate prompt not reached"
+end
+
+function AutoFarm:GetFinalDoor(prompt)
+    local finalDoor = prompt and prompt:FindFirstAncestor("FinalDoor")
+    if finalDoor then return finalDoor end
+    local map = workspace:FindFirstChild("Map")
+    local buildings = map and map:FindFirstChild("Buildings")
+    local customs = buildings and buildings:FindFirstChild("CustomsFinal")
+    return customs and customs:FindFirstChild("FinalDoor", true)
+end
+
+function AutoFarm:GetGateTimer(prompt)
+    local finalDoor = self:GetFinalDoor(prompt)
+    if not finalDoor then return end
+    local ok, labels = pcall(finalDoor.QueryDescendants, finalDoor, "TextLabel")
+    if not ok then
+        labels = {}
+        for _, instance in finalDoor:GetDescendants() do
+            if instance:IsA("TextLabel") then labels[#labels + 1] = instance end
+        end
+    end
+    for _, label in labels do
+        local text = label.Text
+        local minutes, seconds = text:match("(%d+)%s*m%s*(%d+)%s*s")
+        if not minutes then minutes, seconds = text:match("(%d+)%s*:%s*(%d+)") end
+        if minutes and seconds then
+            return tonumber(minutes) * 60 + tonumber(seconds), text
+        end
+    end
+end
+
+function AutoFarm:CaptureGate(prompt)
+    local finalDoor = self:GetFinalDoor(prompt)
+    local records = {}
+    if not finalDoor then return records end
+    local ok, parts = pcall(finalDoor.QueryDescendants, finalDoor, "BasePart")
+    if not ok then
+        parts = {}
+        for _, instance in finalDoor:GetDescendants() do
+            if instance:IsA("BasePart") then parts[#parts + 1] = instance end
+        end
+    end
+    for _, part in parts do
+        records[part] = {
+            Position = part.Position,
+            CanCollide = part.CanCollide,
+            Transparency = part.Transparency,
+        }
+    end
+    return records
+end
+
+function AutoFarm:GetGatePassage(prompt, direction, endZ)
+    local finalDoor = self:GetFinalDoor(prompt)
+    local command = finalDoor and finalDoor:FindFirstChild("Command", true)
+    local leftHolder = finalDoor and finalDoor:FindFirstChild("DoorL")
+    local rightHolder = finalDoor and finalDoor:FindFirstChild("DoorR")
+    local leftDoor = leftHolder and leftHolder:FindFirstChild("Door", true)
+    local rightDoor = rightHolder and rightHolder:FindFirstChild("Door", true)
+    local best, bestScore = nil, -math.huge
+
+    if finalDoor then
+        local ok, parts = pcall(finalDoor.QueryDescendants, finalDoor, "BasePart")
+        if not ok then
+            parts = {}
+            for _, instance in finalDoor:GetDescendants() do
+                if instance:IsA("BasePart") then parts[#parts + 1] = instance end
+            end
+        end
+        for _, part in parts do
+            if part.CanCollide and part.Transparency < 0.95 and part.Size.Y >= 4
+                and (not command or not part:IsDescendantOf(command))
+            then
+                local name = part.Name:lower()
+                local score = part.Size.X * part.Size.Y / math.max(part.Size.Z, 0.5)
+                if name:find("door", 1, true) or name:find("gate", 1, true) then score += 1000000
+                elseif name:find("wall", 1, true) or name:find("frame", 1, true) then score -= 1000000 end
+                if score > bestScore then best = part; bestScore = score end
+            end
+        end
+    end
+
+    local road = teleports:GetRoadNear(endZ)
+    local position = (leftDoor and leftDoor:IsA("BasePart") and rightDoor and rightDoor:IsA("BasePart")
+        and (leftDoor.Position + rightDoor.Position) * 0.5)
+        or (best and best.Position)
+        or (road and Vector3.new(road.Position.X, road.Position.Y + road.Size.Y * 0.5 + 3.5, endZ))
+
+    if not position then
+        local holder = prompt and prompt.Parent
+        if holder and holder:IsA("Attachment") then position = holder.WorldPosition
+        elseif holder and holder:IsA("BasePart") then position = holder.Position end
+    end
+    if not position then return end
+
+    local parameters = RaycastParams.new()
+    local excludes = {}
+    parameters.FilterType = Enum.RaycastFilterType.Exclude
+    if AutomationPlayer.Character then excludes[#excludes + 1] = AutomationPlayer.Character end
+    if finalDoor then excludes[#excludes + 1] = finalDoor end
+    parameters.FilterDescendantsInstances = excludes
+    parameters.RespectCanCollide = true
+
+    local result = workspace:Raycast(position + Vector3.yAxis * 30, -Vector3.yAxis * 80, parameters)
+    if result then
+        position = Vector3.new(position.X, result.Position.Y + 3.5, position.Z)
+    elseif road then
+        position = Vector3.new(position.X, road.Position.Y + road.Size.Y * 0.5 + 3.5, position.Z)
+    end
+
+    return {
+        Position = position,
+        Direction = direction,
+        FinalDoor = finalDoor,
+        DoorL = leftDoor,
+        DoorR = rightDoor,
+    }
+end
+
+function AutoFarm:IsGatePassageOpen(passage)
+    if not passage or typeof(passage.Position) ~= "Vector3" then return false end
+    local finalDoor = passage.FinalDoor
+    if not finalDoor or not finalDoor.Parent then
+        finalDoor = self:GetFinalDoor()
+        passage.FinalDoor = finalDoor
+    end
+    if finalDoor then
+        local lh = finalDoor:FindFirstChild("DoorL")
+        local rh = finalDoor:FindFirstChild("DoorR")
+        local cl = lh and lh:FindFirstChild("Door", true)
+        local cr = rh and rh:FindFirstChild("Door", true)
+        if cl and cl:IsA("BasePart") then passage.DoorL = cl end
+        if cr and cr:IsA("BasePart") then passage.DoorR = cr end
+    end
+
+    local leftDoor, rightDoor = passage.DoorL, passage.DoorR
+    if leftDoor and leftDoor.Parent and leftDoor:IsA("BasePart")
+        and rightDoor and rightDoor.Parent and rightDoor:IsA("BasePart")
+    then
+        local difference = leftDoor.Position - rightDoor.Position
+        if difference.Magnitude > 0.1 then
+            local axis = difference.Unit
+            local leftHalf = math.abs(leftDoor.CFrame.RightVector:Dot(axis)) * leftDoor.Size.X * 0.5
+                + math.abs(leftDoor.CFrame.UpVector:Dot(axis)) * leftDoor.Size.Y * 0.5
+                + math.abs(leftDoor.CFrame.LookVector:Dot(axis)) * leftDoor.Size.Z * 0.5
+            local rightHalf = math.abs(rightDoor.CFrame.RightVector:Dot(axis)) * rightDoor.Size.X * 0.5
+                + math.abs(rightDoor.CFrame.UpVector:Dot(axis)) * rightDoor.Size.Y * 0.5
+                + math.abs(rightDoor.CFrame.LookVector:Dot(axis)) * rightDoor.Size.Z * 0.5
+            local midpoint = (leftDoor.Position + rightDoor.Position) * 0.5
+            passage.Position = Vector3.new(midpoint.X, passage.Position.Y, midpoint.Z)
+            return difference.Magnitude - leftHalf - rightHalf >= 12
+        end
+    end
+
+    local parameters = RaycastParams.new()
+    parameters.FilterType = Enum.RaycastFilterType.Exclude
+    parameters.FilterDescendantsInstances = AutomationPlayer.Character and { AutomationPlayer.Character } or {}
+    parameters.RespectCanCollide = true
+    local direction = Vector3.new(0, 0, passage.Direction)
+    local result = workspace:Raycast(passage.Position - direction * 10, direction * 20, parameters)
+    return result == nil
+end
+
+function AutoFarm:IsGateWindowOpen()
+    if flow.CrimesGui and type(flow.CrimesGui.StartEndTimer_event) == "function"
+        and debug and type(debug.getupvalues) == "function"
+    then
+        local ok, values = pcall(debug.getupvalues, flow.CrimesGui.StartEndTimer_event)
+        if ok and type(values) == "table" then
+            local opensAt = tonumber(values[2])
+            local closesAt = tonumber(values[3])
+            local now = workspace:GetServerTimeNow()
+            if opensAt and closesAt and now >= opensAt and now < closesAt then return true end
+        end
+    end
+
+    local playerGui = AutomationPlayer:FindFirstChildOfClass("PlayerGui")
+    local hud = playerGui and playerGui:FindFirstChild("HudGui")
+    local events = hud and hud:FindFirstChild("Events")
+    local closing = events and events:FindFirstChild("Closing")
+    if not closing or not closing.Visible then return false end
+    local timer = closing:FindFirstChild("Timer")
+    local text = timer and timer.Text or ""
+    local minutes, seconds = text:match("(%d+)%s*:%s*(%d+)")
+    return not minutes or tonumber(minutes) * 60 + tonumber(seconds) > 0
+end
+
+function AutoFarm:ActivateGate(prompt, direction, token)
+    if not self.Running or self.Token ~= token then return false, {}, "Auto Farm stopped" end
+    if self.GateStartedAt > 0 and self.LastGameJob == game.JobId then
+        local seconds = self:GetGateTimer(prompt)
+        if not prompt.Enabled or (seconds and seconds < 120) then
+            return true, self:CaptureGate(prompt)
+        end
+        self.GateStartedAt = 0
+    end
+
+    self:SetPhase("Activating Gate", "Starting two minute countdown")
+    local records = self:CaptureGate(prompt)
+
+    for attempt = 1, 3 do
+        if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
+
+        local destination = teleports:GetEndPromptDestination(prompt, direction)
+        if destination then
+            teleports:Move(destination, nil, false)
+            task.wait(0.4)
+        end
+        if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
+
+        local before = self:GetGateTimer(prompt)
+        local fired = false
+        if type(fireproximityprompt) == "function" then
+            fired = pcall(fireproximityprompt, prompt)
+        end
+        if not fired then
+            fired = pcall(function()
+                local duration = prompt.HoldDuration
+                prompt.HoldDuration = 0
+                prompt:InputHoldBegin()
+                task.wait(0.1)
+                prompt:InputHoldEnd()
+                prompt.HoldDuration = duration
+            end)
+        end
+        if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
+
+        if fired then
+            local expires = os.clock() + 6
+            repeat
+                local seconds = self:GetGateTimer(prompt)
+                local accepted = not prompt.Enabled
+                    or (seconds and before and seconds < before)
+                    or (seconds and seconds < 120)
+                if accepted then
+                    self.GateStartedAt = os.time() - (seconds and math.max(0, 120 - seconds) or 0)
+                    self.Stats.GateActivations += 1
+                    self:Persist()
+                    return true, records
+                end
+                task.wait(0.25)
+            until os.clock() >= expires or not self.Running or self.Token ~= token or library.Unloaded
+            if not self.Running or self.Token ~= token then return false, records, "Auto Farm stopped" end
+        end
+        self.Stats.Retries += 1
+        task.wait(attempt)
+    end
+    self.GateStartedAt = 0
+    return false, records, "Gate activation not confirmed"
+end
+
+function AutoFarm:GetSafeCFrame()
+    local passage = self.GatePassage
+    if not passage or typeof(passage.Position) ~= "Vector3" then return end
+
+    local finalDoor = passage.FinalDoor
+    local customsBuilding = finalDoor and finalDoor:FindFirstAncestor("CustomsBuilding")
+    local prompt = teleports:GetEndPrompt()
+    local holder = prompt and prompt.Parent
+    local promptPosition = (holder and holder:IsA("Attachment") and holder.WorldPosition)
+        or (holder and holder:IsA("BasePart") and holder.Position)
+        or passage.Position
+    local bestFloor
+    local bestDistance = math.huge
+
+    if customsBuilding then
+        for _, office in customsBuilding:GetChildren() do
+            if office.Name == "CustomsOffice" then
+                local floor = office:FindFirstChild("Floor", true)
+                if floor and floor:IsA("BasePart") then
+                    local distance = (floor.Position - promptPosition).Magnitude
+                    if distance < bestDistance then bestFloor = floor; bestDistance = distance end
+                end
+            end
+        end
+    end
+
+    if bestFloor then
+        local position = bestFloor.CFrame:PointToWorldSpace(Vector3.new(5, bestFloor.Size.Y * 0.5 + 3.25, 8))
+        return CFrame.lookAt(position, Vector3.new(promptPosition.X, position.Y, promptPosition.Z), Vector3.yAxis)
+    end
+end
+
+function AutoFarm:DisengageHelicopter()
+    if flow.PoliceHeli and type(flow.PoliceHeli.Despawn) == "function" then
+        pcall(flow.PoliceHeli.Despawn)
+    end
+end
+
+function AutoFarm:ReleaseSafeZone()
+    local character = self.SafeCharacter
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if root and self.SafeRootAnchored ~= nil then
+        root.Anchored = self.SafeRootAnchored
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+    end
+    self.SafeCFrame = nil
+    self.SafeCharacter = nil
+    self.SafeRootAnchored = nil
+end
+
+function AutoFarm:MoveToSafeZone(token)
+    if not self.Config.SafeGateWait then self:ReleaseSafeZone(); return true end
+    if not self.Running or self.Token ~= token then return false, "Auto Farm stopped" end
+
+    local destination = self:GetSafeCFrame()
+    local character = AutomationPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not destination or not humanoid or not root or humanoid.Health <= 0 then
+        return false, "Safe gate position unavailable"
+    end
+
+    self:ReleaseSafeZone()
+    self.SafeCharacter = character
+    self.SafeRootAnchored = root.Anchored
+    self.SafeCFrame = destination
+
+    local moved = teleports:Move(destination, nil, false)
+    if not moved then self:ReleaseSafeZone(); return false, "Could not enter safe zone" end
+    if not self.Running or self.Token ~= token or library.Unloaded then
+        self:ReleaseSafeZone(); return false, "Auto Farm stopped"
+    end
+    if not self.Config.SafeGateWait then self:ReleaseSafeZone(); return true end
+
+    if AutomationPlayer.Character ~= character or self.SafeCharacter ~= character or self.SafeCFrame ~= destination then
+        self:ReleaseSafeZone(); return false, "Character changed while entering safe zone"
+    end
+
+    root = character:FindFirstChild("HumanoidRootPart")
+    if not root then self:ReleaseSafeZone(); return false, "Root missing" end
+
+    root.CFrame = destination
+    root.AssemblyLinearVelocity = Vector3.zero
+    root.AssemblyAngularVelocity = Vector3.zero
+    root.Anchored = true
+    self:DisengageHelicopter()
+    self:SetPhase("Safe Gate Wait", "Protected from helicopter until gate opens")
+    return true
+end
+
+function AutoFarm:MaintainSafeZone(token)
+    if not self.Config.SafeGateWait then self:ReleaseSafeZone(); return true end
+    local character = AutomationPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    if character ~= self.SafeCharacter or not self.SafeCFrame then
+        return self:MoveToSafeZone(token)
+    end
+    if not humanoid or not root or humanoid.Health <= 0 then
+        return false, "Character unavailable in safe zone"
+    end
+    root.CFrame = self.SafeCFrame
+    root.AssemblyLinearVelocity = Vector3.zero
+    root.AssemblyAngularVelocity = Vector3.zero
+    root.Anchored = true
+    return true
+end
+
+function AutoFarm:WaitForGate(token, prompt, records)
+    local timeout = self.Config.GateTimeout
+    local expires = os.clock() + timeout
+    self:SetPhase("Waiting for Gate", "God Mode and NPC clearing active")
+
+    repeat
+        self.RunHeartbeat = os.clock()
+        local endFrame = self:GetEndScreen()
+        if endFrame then
+            self:ReleaseSafeZone()
+            local _, result = self:HandleEndScreen(token)
+            return false, result
+        end
+
+        local safe, safeError = self:MaintainSafeZone(token)
+        if not safe then
+            self:ReleaseSafeZone()
+            local resultExpires = os.clock() + 4
+            repeat
+                if self:GetEndScreen() then
+                    local _, result = self:HandleEndScreen(token)
+                    return false, result
+                end
+                task.wait(0.1)
+            until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= resultExpires
+            return false, safeError
+        end
+
+        local elapsed = math.max(0, os.time() - self.GateStartedAt)
+        local seconds, text = self:GetGateTimer(prompt)
+        if text then self.GateText = text
+        else self.GateText = self:FormatDuration(math.max(120 - elapsed, 0)):sub(4) end
+
+        local passageRead, passageOpen = pcall(self.IsGatePassageOpen, self, self.GatePassage)
+        local windowRead, gateWindowOpen = pcall(self.IsGateWindowOpen, self)
+        local timedOpen = self.GateStartedAt > 0 and elapsed >= 120
+
+        if (passageRead and passageOpen) or (windowRead and gateWindowOpen) or timedOpen then
+            self:ReleaseSafeZone()
+            return true
+        end
+
+        if os.clock() - self.LastPersistAt >= 10 then self:Persist() end
+        task.wait(0.5)
+    until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= expires
+
+    if not self.Running or self.Token ~= token then self:ReleaseSafeZone(); return false, "Auto Farm stopped" end
+    self:ReleaseSafeZone()
+    return false, "Gate wait timed out"
+end
+
+function AutoFarm:SetCrossNoclip(value)
+    if value then
+        if self.CrossCollisions then return end
+        self.CrossCollisions = {}
+        local character = AutomationPlayer.Character
+        if character then
+            for _, part in character:GetDescendants() do
+                if part:IsA("BasePart") then
+                    self.CrossCollisions[part] = part.CanCollide
+                    part.CanCollide = false
+                end
+            end
+        end
+        return
+    end
+    for part, canCollide in self.CrossCollisions or {} do
+        if part.Parent then part.CanCollide = canCollide end
+    end
+    self.CrossCollisions = nil
+end
+
+function AutoFarm:WaitForFinishResult(token, duration)
+    local expires = os.clock() + duration
+    repeat
+        if self.Teleporting then return true, "Teleporting" end
+        local endFrame = self:GetEndScreen()
+        if endFrame then
+            self:SetCrossNoclip(false)
+            return self:HandleEndScreen(token)
+        end
+        task.wait(0.2)
+    until not self.Running or self.Token ~= token or library.Unloaded or os.clock() >= expires
+    if not self.Running or self.Token ~= token then return true, "Stopped" end
+    return false, "Finish result did not appear"
+end
+
+function AutoFarm:CrossGate(token, prompt, direction, endZ)
+    self:ReleaseSafeZone()
+    self:SetPhase("Entering Finish", "Crossing the opened gate")
+    self:SetCrossNoclip(true)
+
+    local character = AutomationPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root or humanoid.Health <= 0 then
+        self:SetCrossNoclip(false)
+        return false, "Character unavailable"
+    end
+
+    local passage = self.GatePassage or self:GetGatePassage(prompt, direction, endZ)
+    if not passage then
+        self:SetCrossNoclip(false)
+        return false, "Gate passage unavailable"
+    end
+
+    self:IsGatePassageOpen(passage)
+    teleports:Stream(passage.Position)
+    task.wait(0.4)
+
+    local finishOffset = math.max(12, (tonumber(endZ) and (endZ - passage.Position.Z) * direction or 0) + 12)
+
+    for _, offset in { -10, -3, 6, finishOffset, finishOffset + 24, finishOffset + 50, finishOffset + 85 } do
+        if not self.Running or self.Token ~= token or library.Unloaded then
+            self:SetCrossNoclip(false)
+            return false, "Auto Farm stopped"
+        end
+
+        local position = passage.Position + Vector3.new(0, 0, direction * offset)
+        local moved = teleports:Move(
+            CFrame.lookAt(position, position + Vector3.new(0, 0, direction), Vector3.yAxis), nil, false)
+
+        local crossedEnd = (tonumber(endZ) and (position.Z - endZ) * direction >= 0) or offset >= 6
+        if moved and crossedEnd and not self.FinishCrossed then
+            self.FinishCrossed = true
+            self:Persist()
+        end
+
+        task.wait(0.4)
+        if self.Teleporting then
+            self:SetCrossNoclip(false)
+            return true, "Teleporting"
+        end
+        if self:GetEndScreen() then
+            self:SetCrossNoclip(false)
+            return self:HandleEndScreen(token)
+        end
+    end
+
+    humanoid:MoveTo(passage.Position + Vector3.new(0, 0, direction * 110))
+    local handled, result = self:WaitForFinishResult(token, 35)
+    if handled then return true, result end
+    self:SetCrossNoclip(false)
+    return false, result
+end
+
+function AutoFarm:RunGame(token)
+    if self.PendingFinish and self.LastGameJob ~= "" and self.LastGameJob ~= game.JobId then
+        self:CompletePending("Replay transition confirmed")
+    end
+
+    if self:GetEndScreen() then return self:HandleEndScreen(token) end
+
+    if self.LastGameJob ~= game.JobId then
+        self:ReleaseSafeZone()
+        self.BalanceWarmupUntil = os.clock() + 10
+        self:SyncProgress()
+        self.LastGameJob = game.JobId
+        self.RunStartedAt = os.time()
+        self.RunCashStart = self:GetEffectiveCredz()
+        self.RunWinsStart = self:GetEffectiveWins()
+        self.GateStartedAt = 0
+        self.GatePassage = nil
+        self.PendingFinish = false
+        self.FinishCrossed = false
+        self.PendingAt = 0
+        self.ResultBusy = false
+        self.ResultFinalized = false
+        self.ReplayRequested = false
+        self.Stats.Attempts += 1
+        self:Persist()
+    end
+
+    self:SetPhase("Loading Game", "Waiting for character and map")
+    local expires = os.clock() + 30
+    repeat
+        local character = AutomationPlayer.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if humanoid and root and humanoid.Health > 0 and workspace:FindFirstChild("Map") then break end
+        task.wait(0.25)
+    until not self.Running or self.Token ~= token or os.clock() >= expires
+    if not self.Running or self.Token ~= token then return true end
+
+    do
+        local character = AutomationPlayer.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        if not humanoid or not root or humanoid.Health <= 0 or not workspace:FindFirstChild("Map") then
+            return false, "Gameplay did not finish loading"
+        end
+    end
+
+    local prompt, direction, endZ, reachError, gateAlreadyActivated = self:ReachGate(token)
+    if not prompt and not gateAlreadyActivated then return false, reachError end
+
+    local records
+    if gateAlreadyActivated then
+        records = self:CaptureGate(prompt)
+    else
+        local activated, activationRecords, activationError = self:ActivateGate(prompt, direction, token)
+        if not activated then return false, activationError end
+        records = activationRecords
+    end
+
+    local opened, gateError = self:WaitForGate(token, prompt, records)
+    if not opened then
+        if gateError == "Replay" or gateError == "Teleporting" or gateError == "Stopped" then
+            return true, gateError
+        end
+        return false, gateError
+    end
+
+    self.PendingFinish = true
+    self.FinishCrossed = true
+    self.PendingAt = os.time()
+    self:Persist()
+
+    local autoReplay = self:IsAutoReplayEnabled()
+    local nextPlaceId = autoReplay and self.GamePlaceId or self.LobbyPlaceId
+    local queued, queueError = self:QueueTeleport(autoReplay and "replay" or "lobby", nextPlaceId)
+    if not queued then
+        self.PendingFinish = false
+        self.FinishCrossed = false
+        self.PendingAt = 0
+        return false, queueError
+    end
+
+    for attempt = 1, 3 do
+        local crossed, crossError = self:CrossGate(token, prompt, direction, endZ)
+        if crossed then return true, crossError end
+        if not self.Running or self.Token ~= token then return true end
+        self.Stats.Retries += 1
+        self.LastError = crossError
+        task.wait(attempt * 2)
+    end
+
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+    self:ReleaseSafeZone()
+    return false, "Could not enter finish"
+end
+
+function AutoFarm:ReleaseRun(token)
+    if self.ActiveRunToken ~= token then return end
+    self.RunActive = false
+    self.ActiveRunToken = nil
+    if self.Running and self.Token and self.Token ~= token and not library.Unloaded then
+        task.spawn(self.Run, self, self.Token)
+    end
+end
+
+function AutoFarm:Run(token)
+    if self.RunActive then return end
+    self.RunActive = true
+    self.ActiveRunToken = token
+    self.RunHeartbeat = os.clock()
+    local failures = 0
+
+    while self.Running and self.Token == token and not library.Unloaded do
+        self.RunHeartbeat = os.clock()
+        if self.TeleportRecovering then task.wait(0.25); continue end
+
+        local executed, ok, message = xpcall(function()
+            local context = self:GetContext()
+            if context == "Lobby" then return self:RunLobby(token) end
+            if context == "Game" then return self:RunGame(token) end
+            return false, "Unsupported place: " .. tostring(game.PlaceId)
+        end, function(message)
+            if type(debug) == "table" and type(debug.traceback) == "function" then
+                local read, trace = pcall(debug.traceback, tostring(message), 2)
+                if read and type(trace) == "string" then return trace end
+            end
+            return tostring(message)
+        end)
+
+        if not executed then
+            message = ok
+            ok = false
+            self:ReleaseSafeZone()
+            self:SetCrossNoclip(false)
+            self.ResultBusy = false
+            self.ReplayRequested = false
+        end
+
+        if self.TeleportRecovering then failures = 0; task.wait(0.25); continue end
+        if ok and message == "Replay" and not self.Teleporting and self.Running and self.Token == token then
+            failures = 0
+            task.wait(1)
+            continue
+        end
+        if ok or self.Teleporting or not self.Running or self.Token ~= token then
+            self:ReleaseRun(token)
+            return
+        end
+
+        failures += 1
+        self.Stats.Retries += 1
+        self.LastError = tostring(message or "Unknown error")
+        self:SetPhase("Retrying", self.LastError)
+        self:Persist()
+
+        local delay = self.Config.RetryDelay
+        local expires = os.clock() + math.min(delay * failures, 30)
+        repeat self.RunHeartbeat = os.clock(); task.wait(0.25)
+        until not self.Running or self.Token ~= token or os.clock() >= expires
+    end
+    self:ReleaseRun(token)
+end
+
+function AutoFarm:Start()
+    if self.Running then return end
+    if not flow then
+        self.LastError = "FlowClient unavailable"
+        self:SetPhase("Start Failed", self.LastError)
+        notify(self.LastError)
+        return
+    end
+
+    local resumed = self.ResumeRequested
+    if not resumed then
+        self.SessionId = tostring(AutomationPlayer.UserId) .. "-" .. tostring(os.time()) .. "-" .. tostring(math.random(100000, 999999))
+        self:ResetStats()
+    elseif self.StartedAt <= 0 then
+        self.StartedAt = os.time()
+    end
+
+    self.ResumeRequested = false
+    self.Running = true
+    self.RunActive = false
+    self.ActiveRunToken = nil
+    self.Teleporting = false
+    self.TeleportRecoveryGeneration += 1
+    self.TeleportRetryCount = 0
+    self.TeleportRetryDelay = 0
+    self.TeleportRetryTarget = 0
+    self.TeleportRetryOptions = nil
+    self.TeleportRecovering = false
+    self.LastTeleportFailureAt = 0
+    self.QueueJob = nil
+    self.ResultBusy = false
+    self.ResultFinalized = false
+    self.ReplayRequested = false
+    self.RunHeartbeat = os.clock()
+    self.TransitionToken = ""
+    self.ExpectedPlaceId = 0
+    self.TransitionAt = 0
+    self.Token = {}
+    self.QueueStatus = "Not armed"
+    self:Persist()
+    self:SetPhase("Starting", "Preparing Auto Farm")
+
+    local context = self:GetContext()
+    local targetPlaceId = context == "Lobby" and self.GamePlaceId
+        or (context == "Game" and (self:IsAutoReplayEnabled() and self.GamePlaceId or self.LobbyPlaceId))
+    local queueError = self:GetTeleportQueueError(targetPlaceId)
+    if queueError then
+        self.Running = false
+        self.Token = nil
+        self.QueueStatus = queueError
+        self.LastError = tostring(queueError)
+        self:SetPhase("Start Failed", self.LastError)
+        self:Persist()
+        notify("Auto Farm: " .. queueError)
+        if LP10UI and LP10UI.setAutoFarmToggle then LP10UI.setAutoFarmToggle(false) end
+        return
+    end
+
+    -- NPC killer loop
+    task.spawn(function()
+        local token = self.Token
+        while self.Running and self.Token == token and not library.Unloaded do
+            local context = self:GetContext()
+            if context == "Game" then
+                local humanoid = getHumanoid()
+                if humanoid then
+                    -- simple god mode
+                    if humanoid.Health < humanoid.MaxHealth then humanoid.Health = humanoid.MaxHealth end
+                end
+                self.Stats.NPCAttacks += killAllNPCs()
+            end
+            task.wait(context == "Game" and 0.4 or 1)
+        end
+    end)
+
+    -- Result screen watcher
+    task.spawn(function()
+        local token = self.Token
+        while self.Running and self.Token == token and not library.Unloaded do
+            local context = self:GetContext()
+            if context == "Game" and not self.ResultBusy and not self.RunActive then
+                local endFrame = self:GetEndScreen()
+                if endFrame then
+                    self:ReleaseSafeZone()
+                    self:SetCrossNoclip(false)
+                    self.RunActive = false
+                    self.ActiveRunToken = nil
+                    self.RunHeartbeat = os.clock()
+                    self:SetPhase("Recovering", "Handling result screen")
+                    task.spawn(self.Run, self, token)
+                end
+            end
+            task.wait(context == "Game" and 0.5 or 1)
+        end
+    end)
+
+    task.spawn(self.Run, self, self.Token)
+end
+
+function AutoFarm:ResetStats()
+    self:SyncProgress()
+    local now = os.time()
+    local active = self.Running and self.RunStartedAt > 0
+    local runCashStart = self:GetEffectiveCredz()
+    local runWinsStart = self:GetEffectiveWins()
+
+    self.StartedAt = now
+    self.RunStartedAt = active and now or 0
+    self.RunCashStart = runCashStart
+    self.RunWinsStart = runWinsStart
+    self.GateStartedAt = active and self.GateStartedAt or 0
+    self.LastError = "None"
+    self.GateText = "--"
+    self.Stats = {
+        Attempts = active and 1 or 0, Completed = 0, Failed = 0, Teleports = 0,
+        GateActivations = 0, NPCAttacks = 0, Retries = 0, Replays = 0,
+        CashEarned = 0, TotalRunTime = 0, BestRun = 0, LastRun = 0,
+    }
+    self.LastCredzBalance = runCashStart
+    self.LastWins = runWinsStart
+    self.PendingCredz = 0
+    self.PendingWins = 0
+    self:Persist()
+end
+
+function AutoFarm:Stop(silent)
+    if not self.Running and not self.ResumeRequested then return end
+
+    self.Running = false
+    self.ResumeRequested = false
+    self.Token = nil
+    self.RunActive = false
+    self.ActiveRunToken = nil
+    self.Teleporting = false
+    self.TeleportRecoveryGeneration += 1
+    self.TeleportRetryCount = 0
+    self.TeleportRetryDelay = 0
+    self.TeleportRetryTarget = 0
+    self.TeleportRetryOptions = nil
+    self.TeleportRecovering = false
+    self.QueueJob = nil
+    self.TransitionToken = ""
+    self.ExpectedPlaceId = 0
+    self.TransitionAt = 0
+    self.PendingFinish = false
+    self.FinishCrossed = false
+    self.PendingAt = 0
+    self.ResultBusy = false
+    self.ResultFinalized = false
+    self.ReplayRequested = false
+    self.LastGameJob = ""
+    self.RunStartedAt = 0
+    self.GateStartedAt = 0
+    self.GatePassage = nil
+    self.GateText = "--"
+    self.QueueStatus = "Disabled"
+    self:ReleaseSafeZone()
+    self:SetCrossNoclip(false)
+    self:DismissTeleportError()
+
+    pcall(function()
+        local ts = game:GetService("TeleportService")
+        ts:SetTeleportSetting(self.EnabledKey, false)
+        ts:SetTeleportSetting(self.TransitionKey, "")
+    end)
+
+    self:SetPhase("Stopped", "Auto Farm disabled")
+    self:Persist()
+    if not silent then notify("Auto Farm stopped.") end
+end
+
+-- ============================================================================
+-- SECTION D: LP10 UI PANEL (AutoFarm Wired In)
+-- ============================================================================
+LP10UI = {
+    toggles = {
+        autoFarm = false,
+        safeGateWait = true,
+        autoReplay = true,
+    },
+    refs = {},
+}
+
+local AutomationPanel = Instance.new("ScrollingFrame")
+AutomationPanel.Name = "AutomationPanel"
+AutomationPanel.Parent = Main
+AutomationPanel.Position = UDim2.new(0, 8, 0, 40)
+AutomationPanel.Size = UDim2.new(1, -16, 1, -56)
+AutomationPanel.BackgroundTransparency = 1
+AutomationPanel.BorderSizePixel = 0
+AutomationPanel.ScrollBarThickness = 4
+AutomationPanel.ScrollBarImageColor3 = Config.AccentColor
+AutomationPanel.CanvasSize = UDim2.new()
+AutomationPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local Layout = Instance.new("UIListLayout", AutomationPanel)
+Layout.Padding = UDim.new(0, 5)
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function makeLabel(text, height, color)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -4, 0, height or 24)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.Gotham
+    label.Text = text
+    label.TextColor3 = color or Color3.fromRGB(235, 235, 235)
+    label.TextSize = 12
+    label.TextWrapped = true
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextYAlignment = Enum.TextYAlignment.Center
+    label.Parent = AutomationPanel
+    return label
+end
+
+local function makeToggle(text, default, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -4, 0, 26)
+    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.AutoButtonColor = false
+    btn.Font = Enum.Font.GothamBold
+    btn.TextColor3 = Color3.fromRGB(245, 245, 245)
+    btn.TextSize = 12
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = AutomationPanel
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+    local state = default == true
+    local function render()
+        btn.Text = "  " .. text .. "    [" .. (state and "ON" or "OFF") .. "]"
+        btn.BackgroundColor3 = state and Color3.fromRGB(20, 92, 145) or Color3.fromRGB(25, 25, 25)
+    end
+    render()
+
+    local setter
+    setter = function(newState, fire)
+        state = newState == true
+        render()
+        if fire and callback then callback(state) end
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        setter(not state, true)
+    end)
+    return btn, setter
+end
+
+local function makeNumber(text, default, minV, maxV, callback)
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, -4, 0, 26)
+    box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    box.Font = Enum.Font.Gotham
+    box.PlaceholderText = text
+    box.Text = tostring(default)
+    box.TextColor3 = Color3.fromRGB(245, 245, 245)
+    box.TextSize = 12
+    box.ClearTextOnFocus = false
+    box.Parent = AutomationPanel
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    box.FocusLost:Connect(function()
+        local v = math.clamp(tonumber(box.Text) or default, minV, maxV)
+        box.Text = tostring(v)
+        if callback then callback(v) end
+    end)
+    return box
+end
+
+makeLabel("AUTOMATION", 22, Config.AccentColor)
+
+local autoFarmBtn, autoFarmSet = makeToggle("Auto Farm", false, function(v)
+    LP10UI.toggles.autoFarm = v
+    if v then AutoFarm:Start() else AutoFarm:Stop() end
+end)
+LP10UI.setAutoFarmToggle = function(v) autoFarmSet(v, false) end
+LP10UI.refs.autoFarmBtn = autoFarmBtn
+
+local safeGateBtn, safeGateSet = makeToggle("Safe Gate Wait", true, function(v)
+    LP10UI.toggles.safeGateWait = v
+    AutoFarm.Config.SafeGateWait = v
+    if not v then AutoFarm:ReleaseSafeZone() end
+    if AutoFarm.StateReady then AutoFarm:Persist() end
+end)
+LP10UI.refs.safeGateBtn = safeGateBtn
+
+local autoReplayBtn, autoReplaySet = makeToggle("Auto Replay", true, function(v)
+    LP10UI.toggles.autoReplay = v
+    AutoFarm.Config.AutoReplay = v
+    if AutoFarm.StateReady then AutoFarm:Persist() end
+end)
+LP10UI.refs.autoReplayBtn = autoReplayBtn
+
+makeLabel("Delay Between Runs", 16, Color3.fromRGB(170, 170, 170))
+local delayBox = makeNumber("Seconds", 3, 0, 30, function(v)
+    AutoFarm.Config.LobbyDelay = v
+    if AutoFarm.StateReady then AutoFarm:Persist() end
+end)
+LP10UI.refs.delayBox = delayBox
+
+makeLabel("Gate Timeout", 16, Color3.fromRGB(170, 170, 170))
+local gateBox = makeNumber("Seconds", 165, 125, 240, function(v)
+    AutoFarm.Config.GateTimeout = v
+    if AutoFarm.StateReady then AutoFarm:Persist() end
+end)
+LP10UI.refs.gateBox = gateBox
+
+makeLabel("Retry Delay", 16, Color3.fromRGB(170, 170, 170))
+local retryBox = makeNumber("Seconds", 10, 3, 30, function(v)
+    AutoFarm.Config.RetryDelay = v
+    if AutoFarm.StateReady then AutoFarm:Persist() end
+end)
+LP10UI.refs.retryBox = retryBox
+
+local StatusLabel = makeLabel("Status: Idle\nReady", 36)
+local StatsLabel = makeLabel("Session: 00:00:00 | Runs: 0/0\nFailures: 0 | Retries: 0 | NPC: 0\nCurrent run: 00:00:00 | Gate: --", 50, Color3.fromRGB(180, 210, 230))
+local ErrorLabel = makeLabel("Last error: None", 24, Color3.fromRGB(255, 145, 145))
+LP10UI.refs.status = StatusLabel
+LP10UI.refs.stats = StatsLabel
+LP10UI.refs.error = ErrorLabel
+
+local resetBtn = Instance.new("TextButton")
+resetBtn.Size = UDim2.new(1, -4, 0, 26)
+resetBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+resetBtn.Font = Enum.Font.GothamBold
+resetBtn.Text = "Reset Statistics"
+resetBtn.TextColor3 = Color3.fromRGB(245, 245, 245)
+resetBtn.TextSize = 12
+resetBtn.Parent = AutomationPanel
+Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
+resetBtn.MouseButton1Click:Connect(function()
+    AutoFarm:ResetStats()
+    LP10UI.update()
+end)
+
+local Footer = Instance.new("TextLabel")
+Footer.Name = "LPOLVOFooter"
+Footer.Parent = Main
+Footer.Position = UDim2.new(0, 8, 1, -18)
+Footer.Size = UDim2.new(1, -16, 0, 14)
+Footer.BackgroundTransparency = 1
+Footer.Font = Enum.Font.Gotham
+Footer.Text = "by LPOLVO"
+Footer.TextColor3 = Config.AccentColor
+Footer.TextSize = 10
+Footer.TextXAlignment = Enum.TextXAlignment.Right
+
+-- ============================================================================
+-- SECTION E: LIVE SYNC LOOP
+-- ============================================================================
+local function dur(v)
+    v = math.max(0, math.floor(tonumber(v) or 0))
+    return string.format("%02d:%02d:%02d", math.floor(v/3600), math.floor(v%3600/60), v%60)
+end
+
+LP10UI.update = function()
+    local elapsed = AutoFarm.StartedAt > 0 and os.time() - AutoFarm.StartedAt or 0
+    local runElapsed = AutoFarm.RunStartedAt > 0 and os.time() - AutoFarm.RunStartedAt or 0
+
+    StatusLabel.Text = "Status: " .. AutoFarm.Phase .. "\n" .. AutoFarm.Detail
+    StatsLabel.Text = string.format(
+        "Session: %s | Runs: %d/%d\nFailures: %d | Retries: %d | NPC: %d\nCurrent run: %s | Gate: %s",
+        dur(elapsed), AutoFarm.Stats.Completed, AutoFarm.Stats.Attempts,
+        AutoFarm.Stats.Failed, AutoFarm.Stats.Retries, AutoFarm.Stats.NPCAttacks,
+        dur(runElapsed), AutoFarm.GateText or "--"
+    )
+    ErrorLabel.Text = "Last error: " .. tostring(AutoFarm.LastError)
+
+    -- sync toggle visuals with actual state
+    if AutoFarm.Running and not LP10UI.toggles.autoFarm then
+        autoFarmSet(true, false)
+        LP10UI.toggles.autoFarm = true
+    elseif not AutoFarm.Running and LP10UI.toggles.autoFarm then
+        autoFarmSet(false, false)
+        LP10UI.toggles.autoFarm = false
+    end
+end
+
+task.spawn(function()
+    while not library.Unloaded do
+        task.wait(0.5)
+        LP10UI.update()
+        if AutoFarm.Running and AutoFarm:GetContext() == "Game"
+            and os.clock() - AutoFarm.LastPersistAt >= 10
+        then
+            AutoFarm:Persist()
+        end
+    end
+end)
+
+-- ============================================================================
+-- SECTION F: TELEPORT EVENT HOOKS
+-- ============================================================================
+AutomationPlayer.OnTeleport:Connect(function(state)
+    if not AutoFarm.Running then return end
+    if state == Enum.TeleportState.Started or state == Enum.TeleportState.InProgress then
+        if not AutoFarm.Teleporting then
+            AutoFarm.Stats.Teleports += 1
+        end
+        AutoFarm.Teleporting = true
+        AutoFarm:SetPhase("Teleporting", "Moving to next server")
+        AutoFarm:Persist()
+    end
+end)
+
+game:GetService("TeleportService").TeleportInitFailed:Connect(
+    function(failedPlayer, result, message, targetPlaceId, teleportOptions)
+        if failedPlayer ~= AutomationPlayer then return end
+        AutoFarm:HandleTeleportFailure(result, message, targetPlaceId, teleportOptions)
+    end
+)
+
+-- ============================================================================
+-- SECTION G: INITIAL LOAD
+-- ============================================================================
+AutoFarm:LoadState()
+
+if LP10UI.refs.delayBox then LP10UI.refs.delayBox.Text = tostring(AutoFarm.Config.LobbyDelay) end
+if LP10UI.refs.gateBox then LP10UI.refs.gateBox.Text = tostring(AutoFarm.Config.GateTimeout) end
+if LP10UI.refs.retryBox then LP10UI.refs.retryBox.Text = tostring(AutoFarm.Config.RetryDelay) end
+safeGateSet(AutoFarm.Config.SafeGateWait, false)
+autoReplaySet(AutoFarm.Config.AutoReplay, false)
+LP10UI.toggles.safeGateWait = AutoFarm.Config.SafeGateWait
+LP10UI.toggles.autoReplay = AutoFarm.Config.AutoReplay
+
+AutoFarm.StateReady = true
+LP10UI.update()
+
+if AutoFarm.ResumeRequested then
+    task.defer(function()
+        autoFarmSet(true, true)
+    end)
+else
+    AutoFarm:Persist()
+end
+
+print("LP10 HUB: RUNAWAYS AutoFarm (Full Port) loaded | by LPOLVO")
+]===]
+
+LP10SelfEnv.LP10RunawaysAutomationSource = LP10AutomationSource
+
+-- Ù†Ø­ÙØ¸ Ø§Ù„Ù…ØµØ¯Ø± ÙÙŠ TeleportSetting (ÙŠØ³ØªÙ…Ø± Ø¨ÙŠÙ† Ø§Ù„Ø³ÙŠØ±ÙØ±Ø§Øª)
+pcall(function()
+    game:GetService("TeleportService"):SetTeleportSetting("LP10_AUTOMATION_SOURCE", LP10AutomationSource)
+end)
+
+-- Ù†Ø­ÙØ¸ Ø§Ù„Ù…ØµØ¯Ø± ÙÙŠ Ù…Ù„Ù ÙƒÙ†Ø³Ø®Ø© Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©
+if type(writefile) == "function" then
+    pcall(function()
+        if type(isfolder) ~= "function" or not isfolder("MyScriptHub") then
+            if type(makefolder) == "function" then makefolder("MyScriptHub") end
+        end
+        writefile("MyScriptHub/LP10_Automation.lua", LP10AutomationSource)
+    end)
+end
+
+-- Ø§Ù„Ø¢Ù† Ù†Ø´ØºÙ‘Ù„ Ø§Ù„Ø³ÙƒØ±Ø¨Øª
+local LP10Run = loadstring(LP10AutomationSource)
+if type(LP10Run) == "function" then
+    LP10Run()
+end
+]====],
+    },
+    --[[
+    {
+        N = "Example Script",
+        F = "Short description.",
+        Cat = "Universal",
+        New = true,
+        S = 'loadstring(game:HttpGet("YOUR_PROTECTED_RAW_URL"))()',
+    },
+    ]]
+}
+
+local C = {
+    panel = Color3.fromRGB(10, 6, 22),
+    panelLight = Color3.fromRGB(18, 10, 38),
+    card = Color3.fromRGB(22, 12, 46),
+    cardHot = Color3.fromRGB(35, 18, 69),
+    purple = Color3.fromRGB(124, 58, 237),
+    electric = Color3.fromRGB(157, 92, 255),
+    light = Color3.fromRGB(216, 180, 254),
+    text = Color3.fromRGB(239, 235, 255),
+    muted = Color3.fromRGB(145, 119, 184),
+    green = Color3.fromRGB(52, 224, 145),
+    yellow = Color3.fromRGB(255, 198, 74),
+    red = Color3.fromRGB(255, 83, 105),
+}
+
+local function New(className, parent, properties)
+    local object = Instance.new(className)
+    object.Parent = parent
+    for key, value in pairs(properties or {}) do
+        object[key] = value
+    end
+    return object
+end
+
+local function Corner(parent, radius)
+    return New("UICorner", parent, {
+        CornerRadius = UDim.new(0, radius or 10),
+    })
+end
+
+local function Stroke(parent, color, thickness, transparency)
+    return New("UIStroke", parent, {
+        Color = color,
+        Thickness = thickness or 1,
+        Transparency = transparency or 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    })
+end
+
+local function Gradient(parent, first, second, rotation)
+    return New("UIGradient", parent, {
+        Color = ColorSequence.new(first, second),
+        Rotation = rotation or 90,
+    })
+end
+
+local function Play(object, duration, properties, style, direction)
+    return TweenService:Create(
+        object,
+        TweenInfo.new(
+            duration,
+            style or Enum.EasingStyle.Quart,
+            direction or Enum.EasingDirection.Out
+        ),
+        properties
+    )
+end
+
+local function Draggable(handle, target)
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPosition
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPosition = target.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            target.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+local Parent = CoreGui
+pcall(function()
+    if gethui then Parent = gethui() end
+end)
+
+local Existing = Parent:FindFirstChild(Config.GuiName)
+if Existing then Existing:Destroy() end
+
+local ScreenGui = New("ScreenGui", Parent, {
+    Name = Config.GuiName,
+    ResetOnSpawn = false,
+    IgnoreGuiInset = true,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
+
+-- Only the small toggle and the small library window are created.
+local Toggle = New("TextButton", ScreenGui, {
+    Name = "LP10Toggle",
+    Size = UDim2.fromOffset(48, 48),
+    Position = UDim2.new(0.07, 0, 0.18, 0),
+    BackgroundColor3 = C.panel,
+    AutoButtonColor = false,
+    Text = "",
+    ZIndex = 30,
+})
+Corner(Toggle, 17)
+local ToggleStroke = Stroke(Toggle, C.electric, 1.6, 0.04)
+Gradient(Toggle, C.cardHot, C.panel, 135)
+
+New("TextLabel", Toggle, {
+    Size = UDim2.new(1, 0, 0, 26),
+    Position = UDim2.fromOffset(0, 8),
+    BackgroundTransparency = 1,
+    Text = "LP",
+    TextColor3 = C.text,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 17,
+    ZIndex = 31,
+})
+
+local ToggleState = New("TextLabel", Toggle, {
+    Size = UDim2.new(1, 0, 0, 12),
+    Position = UDim2.new(0, 0, 1, -16),
+    BackgroundTransparency = 1,
+    Text = "OPEN",
+    TextColor3 = C.light,
+    Font = Enum.Font.GothamBold,
+    TextSize = 7,
+    ZIndex = 31,
+})
+
+local Main = New("Frame", ScreenGui, {
+    Name = "CompactLibrary",
+    Size = UDim2.fromOffset(290, 350),
+    Position = UDim2.new(0.5, -145, 0.5, -175),
+    BackgroundColor3 = C.panel,
+    BorderSizePixel = 0,
+    Active = true,
+    ClipsDescendants = true,
+    Visible = Config.StartOpen,
+    ZIndex = 10,
+})
+Corner(Main, 15)
+local MainStroke = Stroke(Main, C.electric, 1.25, 0.10)
+Gradient(Main, C.panelLight, C.panel, 135)
+
+local MainScale = New("UIScale", Main, {Scale = 1})
+local function Responsive()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+    local viewport = camera.ViewportSize
+    MainScale.Scale = math.clamp(math.min(viewport.X / 330, viewport.Y / 410), 0.68, 1)
+end
+Responsive()
+if workspace.CurrentCamera then
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(Responsive)
+end
+
+local Header = New("TextLabel", Main, {
+    Size = UDim2.new(1, -60, 0, 26),
+    Position = UDim2.fromOffset(14, 10),
+    BackgroundTransparency = 1,
+    Text = Config.HubName,
+    TextColor3 = C.text,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 15,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 20,
+})
+
+local SubHeader = New("TextLabel", Main, {
+    Size = UDim2.new(1, -32, 0, 15),
+    Position = UDim2.fromOffset(14, 33),
+    BackgroundTransparency = 1,
+    Text = string.upper(Config.MapName),
+    TextColor3 = C.muted,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 8,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ZIndex = 20,
+})
+
+local Close = New("TextButton", Main, {
+    Size = UDim2.fromOffset(28, 28),
+    Position = UDim2.new(1, -38, 0, 7),
+    BackgroundTransparency = 1,
+    AutoButtonColor = false,
+    Text = "X",
+    TextColor3 = C.light,
+    Font = Enum.Font.GothamBold,
+    TextSize = 18,
+    ZIndex = 21,
+})
+
+local HeaderLine = New("Frame", Main, {
+    Size = UDim2.new(1, 0, 0, 2),
+    Position = UDim2.fromOffset(0, 57),
+    BackgroundColor3 = C.purple,
+    BorderSizePixel = 0,
+    ZIndex = 20,
+})
+local HeaderLineGradient = Gradient(HeaderLine, C.purple, C.light, 0)
+
+local List = New("ScrollingFrame", Main, {
+    Name = "ScriptList",
+    Size = UDim2.new(1, -24, 0, 248),
+    Position = UDim2.fromOffset(12, 70),
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    ScrollBarThickness = 3,
+    ScrollBarImageColor3 = C.electric,
+    ScrollingDirection = Enum.ScrollingDirection.Y,
+    ZIndex = 20,
+})
+local ListLayout = New("UIListLayout", List, {
+    Padding = UDim.new(0, 7),
+    SortOrder = Enum.SortOrder.LayoutOrder,
+})
+New("UIPadding", List, {
+    PaddingBottom = UDim.new(0, 6),
+})
+
+local Footer = New("TextLabel", Main, {
+    Size = UDim2.new(1, -24, 0, 18),
+    Position = UDim2.new(0, 12, 1, -25),
+    BackgroundTransparency = 1,
+    Text = "0 SCRIPTS  /  LP10",
+    TextColor3 = C.muted,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 8,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    ZIndex = 20,
+})
+
+local Refresh
+
+local function EmptyState()
+    local card = New("Frame", List, {
+        Size = UDim2.new(1, -5, 0, 100),
+        BackgroundColor3 = C.card,
+        BorderSizePixel = 0,
+        LayoutOrder = 1,
+        ZIndex = 21,
+    })
+    Corner(card, 12)
+    Stroke(card, C.purple, 0.9, 0.48)
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -20, 0, 24),
+        Position = UDim2.fromOffset(10, 22),
+        BackgroundTransparency = 1,
+        Text = "LIBRARY READY",
+        TextColor3 = C.light,
+        Font = Enum.Font.GothamBlack,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 22,
+    })
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -20, 0, 28),
+        Position = UDim2.fromOffset(10, 51),
+        BackgroundTransparency = 1,
+        Text = "Add scripts inside the Scripts table.",
+        TextColor3 = C.muted,
+        Font = Enum.Font.Gotham,
+        TextSize = 9,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 22,
+    })
+end
+
+local function ScriptCard(data, order)
+    local card = New("Frame", List, {
+        Size = UDim2.new(1, -5, 0, 70),
+        BackgroundColor3 = C.card,
+        BorderSizePixel = 0,
+        LayoutOrder = order,
+        ZIndex = 21,
+    })
+    Corner(card, 11)
+    local cardStroke = Stroke(card, C.purple, 0.8, 0.55)
+    Gradient(card, C.cardHot, C.card, 135)
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -100, 0, 20),
+        Position = UDim2.fromOffset(12, 9),
+        BackgroundTransparency = 1,
+        Text = tostring(data.N or "Unnamed Script"),
+        TextColor3 = C.text,
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 22,
+    })
+
+    New("TextLabel", card, {
+        Size = UDim2.new(1, -100, 0, 22),
+        Position = UDim2.fromOffset(12, 31),
+        BackgroundTransparency = 1,
+        Text = tostring(data.F or data.Cat or "Ready to execute."),
+        TextColor3 = C.muted,
+        Font = Enum.Font.Gotham,
+        TextSize = 8,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        ZIndex = 22,
+    })
+
+    if data.New then
+        local badge = New("TextLabel", card, {
+            Size = UDim2.fromOffset(32, 15),
+            Position = UDim2.new(1, -112, 0, 10),
+            BackgroundColor3 = C.purple,
+            Text = "NEW",
+            TextColor3 = C.text,
+            Font = Enum.Font.GothamBlack,
+            TextSize = 6,
+            ZIndex = 23,
+        })
+        Corner(badge, 5)
+    end
+
+    local Run = New("TextButton", card, {
+        Size = UDim2.fromOffset(62, 25),
+        Position = UDim2.new(1, -72, 0.5, -12),
+        BackgroundColor3 = C.purple,
+        AutoButtonColor = false,
+        Text = "RUN",
+        TextColor3 = C.text,
+        Font = Enum.Font.GothamBlack,
+        TextSize = 8,
+        ZIndex = 23,
+    })
+    Corner(Run, 8)
+    Stroke(Run, C.light, 0.7, 0.35)
+
+    Run.MouseEnter:Connect(function()
+        Play(Run, 0.14, {BackgroundColor3 = C.electric}):Play()
+        Play(cardStroke, 0.14, {Transparency = 0.16}):Play()
+    end)
+    Run.MouseLeave:Connect(function()
+        Play(Run, 0.14, {BackgroundColor3 = C.purple}):Play()
+        Play(cardStroke, 0.14, {Transparency = 0.55}):Play()
+    end)
+    Run.MouseButton1Click:Connect(function()
+        if type(data.S) ~= "string" or data.S == "" then
+            Run.Text = "EMPTY"
+            task.delay(0.9, function()
+                if Run and Run.Parent then Run.Text = "RUN" end
+            end)
+            return
+        end
+
+        Run.Text = "LOAD"
+        task.spawn(function()
+            local ok, err = pcall(function()
+                local fn = loadstring(data.S)
+                if fn then fn() end
+            end)
+            if Run and Run.Parent then
+                Run.Text = ok and "DONE" or "ERROR"
+                task.delay(1.1, function()
+                    if Run and Run.Parent then Run.Text = "RUN" end
+                end)
+            end
+            if not ok then warn("[LP10] "..tostring(err)) end
+        end)
+    end)
+end
+
+Refresh = function()
+    for _, child in ipairs(List:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+
+    if #Scripts == 0 then
+        EmptyState()
+    else
+        for index, data in ipairs(Scripts) do
+            ScriptCard(data, index)
+        end
+    end
+    Footer.Text = tostring(#Scripts).." SCRIPTS  /  LP10"
+end
+
+local function SetOpen(open)
+    Main.Visible = open
+    ToggleState.Text = open and "CLOSE" or "OPEN"
+    if open then
+        MainScale.Scale = 0.92
+        Play(MainScale, 0.20, {Scale = 1}, Enum.EasingStyle.Back):Play()
+    end
+end
+
+Close.MouseEnter:Connect(function()
+    Play(Close, 0.14, {TextColor3 = C.red}):Play()
+end)
+Close.MouseLeave:Connect(function()
+    Play(Close, 0.14, {TextColor3 = C.light}):Play()
+end)
+Close.MouseButton1Click:Connect(function()
+    SetOpen(false)
+end)
+
+Toggle.MouseEnter:Connect(function()
+    Play(Toggle, 0.14, {BackgroundColor3 = C.cardHot}):Play()
+end)
+Toggle.MouseLeave:Connect(function()
+    Play(Toggle, 0.14, {BackgroundColor3 = C.panel}):Play()
+end)
+Toggle.MouseButton1Click:Connect(function()
+    SetOpen(not Main.Visible)
+end)
+
+Draggable(Main, Main)
+Draggable(Toggle, Toggle)
+
+local phase = 0
+RunService.Heartbeat:Connect(function(delta)
+    if not ScreenGui or not ScreenGui.Parent then return end
+    phase = (phase + delta * 0.08) % 1
+    MainStroke.Color = Color3.fromHSV(phase, 0.70, 1)
+    ToggleStroke.Color = Color3.fromHSV((phase + 0.14) % 1, 0.70, 1)
+    HeaderLineGradient.Offset = Vector2.new(math.sin(os.clock() * 0.8) * 0.7, 0)
+end)
+
+local Library = {}
+
+function Library.AddScript(data)
+    if type(data) ~= "table" or not data.N then return false end
+    table.insert(Scripts, data)
+    Refresh()
+    return true
+end
+
+function Library.SetScripts(list)
+    if type(list) ~= "table" then return false end
+    Scripts = list
+    Refresh()
+    return true
+end
+
+function Library.Open()
+    SetOpen(true)
+end
+
+function Library.Close()
+    SetOpen(false)
+end
+
+_G.LP10CompactLibrary = Library
+Refresh()
+SetOpen(Config.StartOpen)
+
+print("LP10 Compact Purple Library loaded.")
