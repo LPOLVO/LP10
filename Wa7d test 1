@@ -1,12 +1,2552 @@
---[[rscripts:analytics:start]]
--- Script analytics (enabled by the creator on rscripts.net).
--- Runs in its own thread and cannot affect the script below.
-task.spawn(function()
-	pcall(function()
-		loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6a7b8c54b2c67c5146622fa6"))()
+-- Behaviour trace of a MoonSec V3 script
+-- NOTE: reconstructed from observed behaviour; branches that were not taken
+--       during the trace are missing and conditions are only noted in comments.
+-- run status: stopped in an endless loop (truncated)
+-- 52260 statements recorded in 4.43s
+-- URLs requested:
+--   https://raw.githubusercontent.com/farehamhz/RedzLib/main/RedzLib
+-- remotes fired/invoked:
+--   ReplicatedStorage.Remotes.CommF_
+--   FishingRequest
+-- non-standard globals touched: MobESP, SeaESP, NpcESP, InfAbility, InfAb, NoClip, plr, PosY, ProjectTrialPro, FarmMtrFruit
+
+-- [deobf] folded 0 repeated calls into 0 helper functions and 2 unrolled runs into loops
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local module = require(ReplicatedStorage.Effect.Container.Death)
+
+hookfunction(module, function()
+end)
+
+local module2 = require(ReplicatedStorage.Effect.Container.Respawn)
+
+hookfunction(module2, function()
+end)
+
+spawn(function()
+	wait()
+	local children = workspace.Enemies:GetChildren()
+
+	for k, v in pairs(children) do
+		v:FindFirstChild("HumanoidRootPart")
+		v:FindFirstChild("MobEap")
+		v.MobEap.TextLabel.Text = v.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	local children2 = workspace.Enemies:GetChildren()
+
+	for k2, v2 in pairs(children2) do
+		v2:FindFirstChild("HumanoidRootPart")
+		v2:FindFirstChild("MobEap")
+		v2.MobEap.TextLabel.Text = v2.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	local children3 = workspace.SeaBeasts:GetChildren()
+
+	for k4, v4 in pairs(children3) do
+		v4:FindFirstChild("HumanoidRootPart")
+		v4:FindFirstChild("Seaesps")
+		v4.Seaesps.TextLabel.Text = v4.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	local children4 = workspace.SeaBeasts:GetChildren()
+
+	for k5, v5 in pairs(children4) do
+		v5:FindFirstChild("HumanoidRootPart")
+		v5:FindFirstChild("Seaesps")
+		v5.Seaesps.TextLabel.Text = v5.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	local children5 = workspace.NPCs:GetChildren()
+
+	for k7, v7 in pairs(children5) do
+		v7:FindFirstChild("HumanoidRootPart")
+		v7:FindFirstChild("NpcEspes")
+		v7.NpcEspes.TextLabel.Text = v7.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	local children6 = workspace.NPCs:GetChildren()
+
+	for k8, v8 in pairs(children6) do
+		v8:FindFirstChild("HumanoidRootPart")
+		v8:FindFirstChild("NpcEspes")
+		v8.NpcEspes.TextLabel.Text = v8.Name .. " - " .. 0 .. " Distance"
+	end
+
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	InfAb()
+	wait()
+	InfAb()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+end)
+
+spawn(function()
+	task.wait()
+	local Players = game:GetService("Players")
+	local children7 = Players.LocalPlayer.Backpack:GetChildren()
+
+	for k10, v10 in pairs(children7) do
+		v10:FindFirstChild("RemoteFunctionShoot")
+	end
+
+	task.wait()
+	local children8 = Players.LocalPlayer.Backpack:GetChildren()
+
+	for k11, v11 in pairs(children8) do
+		v11:FindFirstChild("RemoteFunctionShoot")
+	end
+
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	plr.Character.Head:FindFirstChild("Nigga")
+	local Nigga = plr.Character.Head:FindFirstChild("Nigga")
+	Nigga:Destroy()
+	wait()
+	plr.Character.Head:FindFirstChild("Nigga")
+	local Nigga2 = plr.Character.Head:FindFirstChild("Nigga")
+	Nigga2:Destroy()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait()
+	Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	task.wait()
+	Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait()
+	Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	Players.LocalPlayer.Character:FindFirstChild("Block")
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait(0.2)
+	local BodyClip = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+	BodyClip:Destroy()
+	task.wait(0.2)
+	local BodyClip2 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+	BodyClip2:Destroy()
+	task.wait(0.2)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait()
+	game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+	game.Players.LocalPlayer.Character.PartTele:Destroy()
+	task.wait()
+	game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+	game.Players.LocalPlayer.Character.PartTele:Destroy()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait()
+	game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+	local Humanoid2 = character:WaitForChild("Humanoid")
+
+	Humanoid2.Died:Connect(function()
+		game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+		game.Players.LocalPlayer.Character.PartTele:Destroy()
 	end)
 end)
---[[rscripts:analytics:end]]
 
--- discord.gg/synapsex
-loadstring(game:HttpGet("https://raw.githubusercontent.com/joustingmatch/Ouroboros/main/loader.lua"))()
+local Humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+
+Humanoid.Died:Connect(function()
+	game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+	game.Players.LocalPlayer.Character.PartTele:Destroy()
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait()
+	Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	local RunService = game:GetService("RunService")
+
+	RunService.Stepped:Connect(function(time, deltaTime)
+		local descendants = Players.LocalPlayer.Character:GetDescendants()
+
+		for k13, v13 in pairs(descendants) do
+			v13.CanCollide = false
+		end
+	end)
+end)
+
+spawn(function()
+	wait()
+	local children9 = Players.LocalPlayer.Backpack:GetChildren()
+
+	for k14, v14 in pairs(children9) do
+		v14:FindFirstChild("RemoteFunctionShoot")
+		_G.SelectWeaponGun = v14.Name
+	end
+
+	wait()
+	local children10 = Players.LocalPlayer.Backpack:GetChildren()
+
+	for k16, v16 in pairs(children10) do
+		v16:FindFirstChild("RemoteFunctionShoot")
+	end
+
+	_G.SelectWeaponGun = v16.Name
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Players.LocalPlayer.Idled:connect(function(idleTime)
+	local VirtualUser = game:GetService("VirtualUser")
+	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+	wait(1)
+	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+end)
+
+_G.TargTrial = "TargTrial"
+local response = game:HttpGet("https://raw.githubusercontent.com/farehamhz/RedzLib/main/RedzLib")
+local RedzLib = loadstring(response)()
+local Window = RedzLib:MakeWindow({ Title = "redz Hub", SaveFolder = "Redz | redz lib v5.lua", SubTitle = "by real_redz" })
+local ControlGUI = Instance.new("ScreenGui")
+ControlGUI.Name = "ControlGUI"
+ControlGUI.Parent = game.CoreGui
+local ImageButton = Instance.new("ImageButton")
+ImageButton.Size = UDim2.new(0, 35, 0, 35)
+ImageButton.Position = UDim2.new(0.15, 0, 0.15, 0)
+ImageButton.Image = "rbxassetid://80424431930361"
+ImageButton.BackgroundTransparency = 1
+ImageButton.Parent = ControlGUI
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0.25, 0)
+UICorner.Parent = ImageButton
+
+ImageButton.InputBegan:Connect(function(input, gameProcessed)
+end)
+
+ImageButton.InputChanged:Connect(function(input2, gameProcessed2)
+end)
+
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputChanged:Connect(function(input3, gameProcessed3)
+end)
+
+ImageButton.MouseButton1Click:Connect(function()
+	Window:Minimize(true)
+end)
+
+local Tab = Window:MakeTab({ "Farming", "home" })
+local Tab2 = Window:MakeTab({ "Auto Fishing", "rbxassetid://" })
+Window:MakeTab({ "Quest | Items", "swords" })
+local Tab3 = Window:MakeTab({ "Volcano Dojo", "cake" })
+local Tab4 = Window:MakeTab({ "Sea Event", "waves" })
+local Tab5 = Window:MakeTab({ "Race V4", "crown" })
+local Tab6 = Window:MakeTab({ "Raid Fruits", "cherry" })
+local Tab7 = Window:MakeTab({ "Fruits | Check Stock", "apple" })
+Window:MakeTab({ "Teleport", "locate" })
+Window:MakeTab({ "PvP,Player", "user" })
+Window:MakeTab({ "Shop", "shoppingCart" })
+Window:MakeTab({ "Settings", "settings" })
+Tab:AddSection({ "Select Melee,Sword,Gun,Fruit" })
+_G.SelectWeapon = "Melee"
+
+task.spawn(function()
+	task.wait()
+	local children11 = game.Players.LocalPlayer.Backpack:GetChildren()
+
+	for k21, v21 in pairs(children11) do
+	end
+
+	task.wait()
+	local children12 = game.Players.LocalPlayer.Backpack:GetChildren()
+
+	for k23, v23 in pairs(children12) do
+	end
+
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.SelectWeapon = false
+
+Tab:AddDropdown({
+	Name = "Chá»n CÃ´ng Cá»¥",
+	Description = "Chá»n cÃ´ng cá»¥ báº¡n muá»‘n sá»­ dá»¥ng",
+	Default = "Melee",
+	Flag = "WeaponType",
+	Options = { "Melee", "Sword", "Gun", "Blox Fruit" },
+	Callback = function()
+	end
+})
+
+Tab:AddSection({ "Main Farm" })
+
+Tab:AddToggle({
+	Name = "Auto Farm Level",
+	Description = "Only Level 1 -> Level 2650",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoFarm = state
+		else
+			_G.AutoFarm = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local TweenService = game:GetService("TweenService")
+			local tween = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween:Play()
+
+			tween.Completed:Connect(function(playbackState)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip3 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip3:Destroy()
+			_G.StopTween = false
+			_G.Clip = false
+		end
+	end
+})
+
+spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Title = "Farm Level New",
+	Description = "Only Submerged Island",
+	Value = false,
+	Callback = function(state)
+		if state then
+			_G.AutoFarmLevelNew = state
+		else
+			_G.AutoFarmLevelNew = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween2 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween2:Play()
+
+			tween2.Completed:Connect(function(playbackState2)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip4 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip4:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Kill Near | Mob Aura",
+	Description = "ÄÃ¡nh QuÃ¡i Gáº§n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoNear = state
+		else
+			_G.AutoNear = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween3 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween3:Play()
+
+			tween3.Completed:Connect(function(playbackState3)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip5 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip5:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "Boss" })
+_G.SelectBoss = false
+
+Tab:AddDropdown({
+	Name = "Auto Select Boss",
+	Description = "Chá»n Boss Cáº§n Farm",
+	Options = {},
+	Callback = function(state)
+		if state then
+			_G.SelectBoss = state
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Farm Boss",
+	Description = "Farm Boss ÄÃ£ Chá»n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.BossPain = state
+		else
+			_G.BossPain = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween4 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween4:Play()
+
+			tween4.Completed:Connect(function(playbackState4)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip6 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip6:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "AutoRaidPirate" })
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Farm Pirate",
+	Description = "ÄÃ¡nh Háº£i Táº·c TrÃªn PhÃ¡o ÄÃ i Biá»ƒn",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoRaidPirate = state
+		else
+			_G.AutoRaidPirate = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween5 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween5:Play()
+
+			tween5.Completed:Connect(function(playbackState5)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip7 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip7:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "TyrantoftheSkies" })
+local Paragraph = Tab:AddParagraph({ Title = "Check Eyes Status", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye1")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye2")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye3")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye4")
+	Paragraph:Set("Status: 0 Eye(s)")
+	task.wait(1)
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye1")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye2")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye3")
+	workspace.Map.TikiOutpost.IslandModel:FindFirstChild("Eye4")
+	Paragraph:Set("Status: 0 Eye(s)")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Farm Tyrant",
+	Description = "Farm QuÃ¡i VÃ  ÄÃ¡nh Boss Chim",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.FarmDaiBan = state
+		else
+			_G.FarmDaiBan = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween6 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween6:Play()
+
+			tween6.Completed:Connect(function(playbackState6)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip8 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip8:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Summon Tyrant Of The Skies",
+	Description = "Tá»± Äá»™ng PhÃ¡ BÃ¬nh Äá»ƒ Triá»‡u Há»“i Boss",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Farm8Binhs = state
+		else
+			_G.Farm8Binhs = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween7 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween7:Play()
+
+			tween7.Completed:Connect(function(playbackState7)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip9 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip9:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait(1)
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "XÆ°Æ¡ng" })
+local Paragraph2 = Tab:AddParagraph({ Title = "Check Bone", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	local response2 = ReplicatedStorage.Remotes.CommF_:InvokeServer("Bones", "Check")
+	Paragraph2:Set("You Have: " .. tostring(response2) .. " Bones")
+	task.wait(1)
+	local response3 = ReplicatedStorage.Remotes.CommF_:InvokeServer("Bones", "Check")
+	Paragraph2:Set("You Have: " .. tostring(response3) .. " Bones")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Fram Bone",
+	Description = "Fram SÆ°Æ¡ng",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.FarmBone = state
+		else
+			_G.FarmBone = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween8 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween8:Play()
+
+			tween8.Completed:Connect(function(playbackState8)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip10 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip10:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Seperator Hallow Scythe",
+	Description = "Triá»‡u há»“i vÃ  tiÃªu diá»‡t Soul Reaper",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Hallow = state
+		else
+			_G.Hallow = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween9 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween9:Play()
+
+			tween9.Completed:Connect(function(playbackState9)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip11 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip11:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Trade Bone",
+	Description = "Tá»± Ä‘á»™ng Ä‘á»•i xÆ°Æ¡ng láº¥y pháº§n thÆ°á»Ÿng",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Rdbone = state
+		else
+			_G.Rdbone = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween10 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween10:Play()
+
+			tween10.Completed:Connect(function(playbackState10)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip12 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip12:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Pray",
+	Description = "",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Pray = state
+		else
+			_G.Pray = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween11 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween11:Play()
+
+			tween11.Completed:Connect(function(playbackState11)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip13 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip13:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Try Luck",
+	Description = "",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Trylux = state
+		else
+			_G.StopTween = true
+			_G.Trylux = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween12 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween12:Play()
+
+			tween12.Completed:Connect(function(playbackState12)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip14 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip14:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "Katakuri" })
+local Paragraph3 = Tab:AddParagraph({ Title = "Check Cake Prince", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	ReplicatedStorage.Remotes.CommF_:InvokeServer("CakePrinceSpawner")
+	Paragraph3:Set("Prince King Spawned âœ…")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Farm Katakuri",
+	Description = "Fram QuÃ¡i VÃ  ÄÃ¡nh HoÃ ng Tá»­ Bá»™t V1",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.FarmCake = state
+		else
+			_G.StopTween = true
+			_G.FarmCake = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween13 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween13:Play()
+
+			tween13.Completed:Connect(function(playbackState13)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip15 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip15:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Farm Katakuri V2",
+	Description = "Fram QuÃ¡i VÃ  ÄÃ¡nh HoÃ ng Tá»­ Bá»™t V2",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Fullykatakuri = state
+		else
+			_G.StopTween = true
+			_G.Fullykatakuri = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween14 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween14:Play()
+
+			tween14.Completed:Connect(function(playbackState14)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip16 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip16:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "Auto Farm Chest And Berry" })
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Collect Berry",
+	Description = "Tá»± Ä‘á»™ng Nháº·t Berry",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.CollectBerry = state
+		else
+			_G.CollectBerry = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween15 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween15:Play()
+
+			tween15.Completed:Connect(function(playbackState15)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip17 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip17:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Auto Farm Chest [ Tween ]",
+	Description = "Tá»± Ä‘á»™ng Nháº·t rÆ°Æ¡ng báº±ng tween",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.FarmChest = state
+		else
+			_G.StopTween = true
+			_G.FarmChest = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween16 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween16:Play()
+
+			tween16.Completed:Connect(function(playbackState16)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip18 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip18:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "Boss Fram" })
+
+Tab:AddButton({
+	Name = "Cáº­p Nháº­t Boss",
+	Description = "LÃ m má»›i danh sÃ¡ch boss",
+	Callback = function()
+	end
+})
+
+local Paragraph4 = Tab:AddParagraph({ Title = "Boss Spawn Status", Content = "Initializing..." })
+
+task.spawn(function()
+	task.wait(1)
+	Paragraph4:Set("Status: Boss Not Spawn âŒ")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddDropdown({
+	Name = "Auto Select Boss",
+	Description = "Chá»n Boss Cáº§n Farm",
+	Options = {},
+	Callback = function()
+	end
+})
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Farm Boss",
+	Description = "Farm Boss ÄÃ£ Chá»n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoBoss = state
+		else
+			_G.StopTween = true
+			_G.AutoBoss = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween17 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween17:Play()
+
+			tween17.Completed:Connect(function(playbackState17)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip19 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip19:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab:AddSection({ "Material" })
+_G.SelectMaterial = false
+
+Tab:AddDropdown({
+	Name = "Select Material",
+	Description = "Chá»n váº­t pháº©m cáº§n farm",
+	Options = {},
+	Callback = function(state)
+		if state then
+			_G.SelectMaterial = state
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab:AddToggle({
+	Name = "Start Farm",
+	Description = "Tá»± Ä‘á»™ng farm material Ä‘Ã£ chá»n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoFarmMaterial = state
+		else
+			_G.StopTween = true
+			_G.AutoFarmMaterial = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween18 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween18:Play()
+
+			tween18.Completed:Connect(function(playbackState18)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip20 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip20:Destroy()
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait(0.2)
+	task.wait(0.2)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab2:AddSection({ "Auto Fishing |  Tá»± Äá»™ng CÃ¢u CÃ¡" })
+_G.AutoFishing = false
+
+Tab2:AddToggle({
+	Title = "Auto Fishing",
+	Description = "Tá»± Äá»™ng CÃ¢u CÃ¡ XoÃ¡ Hiá»‡u á»¨ng Khi CÃ¢u",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoFishing = state
+		end
+	end
+})
+
+local FishReplicated = game.ReplicatedStorage:WaitForChild("FishReplicated")
+local FishingRequest = FishReplicated:WaitForChild("FishingRequest")
+require(FishReplicated.FishingClient.Config)
+require(game.ReplicatedStorage.Util.GetWaterHeightAtLocation)
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab2:AddDropdown({
+	Name = "Select Fishing Lure",
+	Description = "Tá»± Äá»™ng Chá»n Má»“i Khi CÃ¢u CÃ¡",
+	Default = "Basic Bait",
+	Options = {
+		"Basic Bait",
+		"Kelp Bait",
+		"Good Bait",
+		"Abyssal Bait",
+		"Frozen Bait",
+		"Epic Bait",
+		"Carnivore Bait"
+	},
+	Callback = function(state)
+		if state then
+			_G.SelectedBait = state
+			FishingRequest:InvokeServer("SelectBait", state)
+		else
+			_G.SelectedBait = false
+			FishingRequest:InvokeServer("SelectBait", false)
+		end
+	end
+})
+
+_G.SelectedRod = false
+
+Tab2:AddDropdown({
+	Name = "Select Fishing Rod",
+	Description = "Tá»± Äá»™ng Chá»n Cáº§n CÃ¢u Khi CÃ¢u CÃ¡",
+	Default = "Fishing Rod",
+	Options = { "Fishing Rod", "Gold Rod", "Shark Rod", "Shell Rod", "Treasure Rod" },
+	Callback = function(state)
+		if state then
+			_G.SelectedRod = state
+		end
+	end
+})
+
+Tab3:AddButton({
+	Title = "Tween Dragon Dojo",
+	Value = false,
+	Callback = function(state)
+		ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(5661.52978515625, 1013.0900268554688, -334.95999145507812))
+		game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+
+		if state then
+			local tween19 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(5841.29, 1208.32, 884.31) })
+			tween19:Play()
+
+			tween19.Completed:Connect(function(playbackState19)
+			end)
+		else
+			local tween20 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(5841.29, 1208.32, 884.31) })
+			tween20:Play()
+
+			tween20.Completed:Connect(function(playbackState20)
+			end)
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Dragon Huntery",
+	Description = "Tá»± Äá»™ng Farm Blaze",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.FarmBlazeEM = state
+		else
+			_G.StopTween = true
+			_G.FarmBlazeEM = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween21 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween21:Play()
+
+			tween21.Completed:Connect(function(playbackState21)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip21 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip21:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait(0.1)
+	task.wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab3:AddSection({ "Volcanic Island" })
+
+Tab3:AddButton({
+	Title = "Craft Volcanic Magnet",
+	Value = false,
+	Callback = function()
+		ReplicatedStorage.Remotes.CommF_:InvokeServer("CraftItem", "Craft", "Volcanic Magnet")
+	end
+})
+
+local Paragraph5 = Tab3:AddParagraph({ Title = "Check Prehistoric Island", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	workspace.Map:FindFirstChild("PrehistoricIsland")
+	Paragraph5:Set("Prehistoric Island Spawning âœ…")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Find Prehistoric",
+	Description = "Tá»± Äá»™ng TÃ¬m Äáº£o Thá»i Tiá»n Sá»­ ( Äáº£o NÃºi Lá»­a )",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Nocliprock = state
+		else
+			_G.Nocliprock = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween22 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween22:Play()
+
+			tween22.Completed:Connect(function(playbackState22)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip22 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip22:Destroy()
+		end
+	end
+})
+
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+RunService.RenderStepped:Connect(function(deltaTime2)
+end)
+
+RunService.RenderStepped:Connect(function(deltaTime3)
+end)
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Tween Prehistoric Island",
+	Description = "Tá»± Äá»™ng Bay VÃ o Äáº£o NÃºi Lá»­a Volcano",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.TweenVolcano = state
+		else
+			_G.TweenVolcano = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween23 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween23:Play()
+
+			tween23.Completed:Connect(function(playbackState23)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip23 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip23:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	workspace.Map:FindFirstChild("PrehistoricIsland")
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Defend Prehistoric",
+	Description = "XoÃ¡ Lava",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.DefendVolcano = state
+		else
+			_G.DefendVolcano = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween24 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween24:Play()
+
+			tween24.Completed:Connect(function(playbackState24)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip24 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip24:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab3:AddSection({ "Auto Skill" })
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Use Melee",
+	Description = "DÃ¹ng Melee Äá»ƒ PhÃ¡ Lava",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.UseMelee = state
+		else
+			_G.StopTween = true
+			_G.UseMelee = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween25 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween25:Play()
+
+			tween25.Completed:Connect(function(playbackState25)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip25 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip25:Destroy()
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Use Sword",
+	Description = "DÃ¹ng Sword Äá»ƒ PhÃ¡ Lava",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.UseSword = state
+		else
+			_G.UseSword = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween26 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween26:Play()
+
+			tween26.Completed:Connect(function(playbackState26)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip26 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip26:Destroy()
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Use Gun",
+	Description = "DÃ¹ng Gun Äá»ƒ PhÃ¡ Lava",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.UseGun = state
+		else
+			_G.StopTween = true
+			_G.UseGun = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween27 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween27:Play()
+
+			tween27.Completed:Connect(function(playbackState27)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip27 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip27:Destroy()
+		end
+	end
+})
+
+Tab3:AddSection({ "Auto Kill Golem" })
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Kill Golem",
+	Description = "Tá»± Äá»™ng Kill Golem",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.KillGolem = state
+		else
+			_G.KillGolem = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween28 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween28:Play()
+
+			tween28.Completed:Connect(function(playbackState28)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip28 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip28:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Kill Aura Golem",
+	Description = "Tá»± Äá»™ng Kill Aura Golem",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Kill_Aura = state
+		else
+			_G.StopTween = true
+			_G.Kill_Aura = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween29 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween29:Play()
+
+			tween29.Completed:Connect(function(playbackState29)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip29 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip29:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab3:AddSection({ "Auto Collect Bone,Egg" })
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Collect Bone",
+	Description = "Tá»± Äá»™ng Nháº·t SÆ°Æ¡ng",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoCollectBone = state
+		else
+			_G.AutoCollectBone = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween30 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween30:Play()
+
+			tween30.Completed:Connect(function(playbackState30)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip30 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip30:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab3:AddToggle({
+	Name = "Auto Collect Egg",
+	Description = "Tá»± Äá»™ng Nháº·t Trá»©ng",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.CollectEgg = state
+		else
+			_G.CollectEgg = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween31 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween31:Play()
+
+			tween31.Completed:Connect(function(playbackState31)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip31 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip31:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab4:AddSection({ "Kitsune Island" })
+local Paragraph6 = Tab4:AddParagraph({ Title = "Check Kitsune Island", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	workspace.Map:FindFirstChild("KitsuneIsland")
+	Paragraph6:Set("Kitsune Island Spawning âœ…")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Tween Kitsune island",
+	Description = "Bay VÃ´ Äáº£o Kitsune",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.TweenToKitsune = state
+		else
+			_G.TweenToKitsune = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween32 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween32:Play()
+
+			tween32.Completed:Connect(function(playbackState32)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip32 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip32:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	workspace.Map:FindFirstChild("KitsuneIsland")
+	wait(1)
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab4:AddToggle({
+	Title = "Esp Kitsune Island",
+	Value = false,
+	Callback = function(state)
+		if state then
+			task.spawn(function()
+				local children13 = workspace._WorldOrigin.Locations:GetChildren()
+
+				for k194, v194 in pairs(children13) do
+				end
+
+				task.wait(1)
+				local children14 = workspace._WorldOrigin.Locations:GetChildren()
+
+				for k195, v195 in pairs(children14) do
+				end
+
+				task.wait(1)
+				-- [envlog] the statements above repeat forever (loop)
+			end)
+		else
+			local children15 = workspace._WorldOrigin.Locations:GetChildren()
+
+			for k197, v197 in pairs(children15) do
+				v197:FindFirstChild("NameEsp")
+				local NameEsp = v197:FindFirstChild("NameEsp")
+				NameEsp:Destroy()
+			end
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Azuer Ember",
+	Description = "Tá»± Äá»™ng Nháº·t Linh Há»“n Xanh",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoAzuerEmber = state
+		else
+			_G.AutoAzuerEmber = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween33 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween33:Play()
+
+			tween33.Completed:Connect(function(playbackState33)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip33 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip33:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab4:AddSection({ "Sea Events" })
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Drive Boats",
+	Description = "Tá»± Äá»™ng LÃ¡i Thuyá»n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.SailBoat = state
+		else
+			_G.SailBoat = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween34 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween34:Play()
+
+			tween34.Completed:Connect(function(playbackState34)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip34 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip34:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Kill Terror Shank",
+	Description = "Tá»± ÄÃ¡nh Terror Shank",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Autoterrorshark = state
+		else
+			_G.Autoterrorshark = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween35 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween35:Play()
+
+			tween35.Completed:Connect(function(playbackState35)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip35 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip35:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	task.wait(0.1)
+	task.wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Kill Shark",
+	Description = "Tá»± Äá»™ng ÄÃ¡nh Shark",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.KillShark = state
+		else
+			_G.KillShark = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween36 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween36:Play()
+
+			tween36.Completed:Connect(function(playbackState36)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip36 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip36:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Kill Piranha",
+	Description = "Tá»± Äá»™ng ÄÃ¡nh Piranha",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.KillPiranha = state
+		else
+			_G.KillPiranha = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween37 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween37:Play()
+
+			tween37.Completed:Connect(function(playbackState37)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip37 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip37:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Kill Fish Crew Member",
+	Description = "Tá»± Äá»™ng ThÃ nh viÃªn phi hÃ nh Ä‘oÃ n Auto Kill Fish",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.KillFishCrew = state
+		else
+			_G.KillFishCrew = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween38 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween38:Play()
+
+			tween38.Completed:Connect(function(playbackState38)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip38 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip38:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab4:AddSection({ "Mirage Island" })
+local Paragraph7 = Tab4:AddParagraph({ Title = "Check Mirage Island", Content = "Loading..." })
+
+task.spawn(function()
+	task.wait(1)
+	game.Workspace._WorldOrigin.Locations:FindFirstChild("Mirage Island")
+	Paragraph7:Set("Mirage Island Spawning âœ…")
+	task.wait(1)
+	game.Workspace._WorldOrigin.Locations:FindFirstChild("Mirage Island")
+	Paragraph7:Set("Mirage Island Spawning âœ…")
+	task.wait(1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Tween Mirage Island",
+	Description = "Tá»± Äá»™ng Bay Tá»›i Äáº£o BÃ­ áº¨n",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoMysticIsland = state
+		else
+			_G.AutoMysticIsland = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween39 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween39:Play()
+
+			tween39.Completed:Connect(function(playbackState39)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip39 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip39:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	task.wait(0.1)
+	task.wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab4:AddToggle({
+	Title = "Esp Mirage Island",
+	Description = "Äá»‹nh Vá»‹ Äáº£o BÃ­ áº¨n",
+	Value = false,
+	Callback = function(state)
+		if state then
+			task.spawn(function()
+				local children16 = workspace._WorldOrigin.Locations:GetChildren()
+
+				for k252, v252 in pairs(children16) do
+				end
+
+				task.wait(1)
+				local children17 = workspace._WorldOrigin.Locations:GetChildren()
+
+				for k253, v253 in pairs(children17) do
+				end
+
+				task.wait(1)
+				-- [envlog] the statements above repeat forever (loop)
+			end)
+		else
+			local children18 = workspace._WorldOrigin.Locations:GetChildren()
+
+			for k255, v255 in pairs(children18) do
+				v255:FindFirstChild("NameEsp")
+				local NameEsp2 = v255:FindFirstChild("NameEsp")
+				NameEsp2:Destroy()
+			end
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Look Moon + Auto V3",
+	Description = "Tá»± Äá»™ng NhÃ¬n TrÄƒng VÃ  Báº­t Tá»™c V3",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoDooHee = state
+		else
+			_G.AutoDooHee = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween40 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween40:Play()
+
+			tween40.Completed:Connect(function(playbackState40)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip40 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip40:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab4:AddToggle({
+	Name = "Auto Tween To Gear",
+	Description = "Tá»± Äá»™ng Bay Äáº¿n Gear",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.TweenMGear = state
+		else
+			_G.TweenMGear = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween41 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = Players.LocalPlayer.Character.HumanoidRootPart.CFrame })
+			tween41:Play()
+
+			tween41.Completed:Connect(function(playbackState41)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip41 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip41:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab5:AddSection({ "Teleport V4" })
+
+Tab5:AddButton({
+	Title = "Teleport To Top GreatTree",
+	Value = false,
+	Callback = function()
+		Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3030.39453125, 2280.6171875, -7320.18359375)
+	end
+})
+
+Tab5:AddButton({
+	Title = "Teleport Temple Of Time",
+	Value = false,
+	Callback = function()
+		Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875)
+	end
+})
+
+Tab5:AddButton({
+	Title = "Teleport Lever Pull",
+	Value = false,
+	Callback = function(state)
+		game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+
+		if state then
+			local tween42 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28575.181640625, 14936.6279296875, 72.316368103027344) })
+			tween42:Play()
+
+			tween42.Completed:Connect(function(playbackState42)
+			end)
+		else
+			local tween43 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28575.181640625, 14936.6279296875, 72.316368103027344) })
+			tween43:Play()
+
+			tween43.Completed:Connect(function(playbackState43)
+			end)
+		end
+	end
+})
+
+Tab5:AddButton({
+	Title = "Teleport To The Clock",
+	Value = false,
+	Callback = function(state)
+		game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+
+		if state then
+			local tween44 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(29553.7812, 15066.6133, -88.2750015, 1, 0, 0, 0, 1, 0, 0, 0, 1) })
+			tween44:Play()
+
+			tween44.Completed:Connect(function(playbackState44)
+			end)
+		else
+			local tween45 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(29553.7812, 15066.6133, -88.2750015, 1, 0, 0, 0, 1, 0, 0, 0, 1) })
+			tween45:Play()
+
+			tween45.Completed:Connect(function(playbackState45)
+			end)
+		end
+	end
+})
+
+Tab5:AddSection({ "Trial V4" })
+
+Tab5:AddButton({
+	Title = "Auto Race Door",
+	Value = false,
+	Callback = function()
+		Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875)
+		wait(0.1)
+		Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875)
+		wait(0.1)
+		-- [envlog] the statements above repeat forever (loop)
+	end
+})
+
+Tab5:AddButton({
+	Title = "Buy Acient One Quest",
+	Value = false,
+	Callback = function()
+		ReplicatedStorage.Remotes.CommF_:InvokeServer("UpgradeRace", "Buy")
+	end
+})
+
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Trial Human Ghost",
+	Description = "Tá»± Äá»™ng Trial",
+	Default = false,
+	Callback = function(state)
+		if not state then
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween46 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween46:Play()
+
+			tween46.Completed:Connect(function(playbackState46)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip42 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip42:Destroy()
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Trailer All Race",
+	Description = "Tá»± Äá»™ng Trailer All Race",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoQuestRace = state
+		else
+			_G.AutoQuestRace = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween47 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween47:Play()
+
+			tween47.Completed:Connect(function(playbackState47)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip43 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip43:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Kill Player Trailer V4",
+	Description = "ÄÃ¡nh NgÆ°á»i ChÆ¡i Trong Trial",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoKillV4 = state
+		else
+			_G.AutoKillV4 = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween48 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween48:Play()
+
+			tween48.Completed:Connect(function(playbackState48)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip44 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip44:Destroy()
+		end
+	end
+})
+
+spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab5:AddSection({ "Auto Skill" })
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Skill Z",
+	Description = "Tá»± Äá»™ng DÃ¹ng Skill Z Äá»ƒ ÄÃ¡nh",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.XaiSkillZ = state
+		else
+			_G.StopTween = true
+			_G.XaiSkillZ = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween49 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween49:Play()
+
+			tween49.Completed:Connect(function(playbackState49)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip45 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip45:Destroy()
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Skill X",
+	Description = "Tá»± Äá»™ng DÃ¹ng Skill X Äá»ƒ ÄÃ¡nh",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.XaiSkillX = state
+		else
+			_G.StopTween = true
+			_G.XaiSkillX = false
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween50 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween50:Play()
+
+			tween50.Completed:Connect(function(playbackState50)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip46 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip46:Destroy()
+		end
+	end
+})
+
+_G.StopTween = false
+
+Tab5:AddToggle({
+	Name = "Auto Skill C",
+	Description = "Tá»± Äá»™ng DÃ¹ng Skill C Äá»ƒ ÄÃ¡nh",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.XaiSkillC = state
+		else
+			_G.XaiSkillC = false
+			_G.StopTween = true
+			wait()
+			game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			game.Players.LocalPlayer.Character:FindFirstChild("PartTele")
+			local tween51 = TweenService:Create(game.Players.LocalPlayer.Character.PartTele, TweenInfo.new(0, Enum.EasingStyle.Linear), { CFrame = CFrame.new(28286.35546875, 14895.3017578125, 102.62469482421875) })
+			tween51:Play()
+
+			tween51.Completed:Connect(function(playbackState51)
+			end)
+
+			wait()
+			Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			local BodyClip47 = Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChild("BodyClip")
+			BodyClip47:Destroy()
+		end
+	end
+})
+
+Tab6:AddSection({ "Raid Fruits" })
+_G.SelectChip = false
+
+Tab6:AddDropdown({
+	Name = "Select Chip",
+	Default = "Flame",
+	Options = {
+		"Flame",
+		"Ice",
+		"Sand",
+		"Dark",
+		"Light",
+		"Magma",
+		"Quake",
+		"Buddha",
+		"Spider",
+		"Phoenix",
+		"Lightning",
+		"Dough"
+	},
+	Callback = function(state)
+		if state then
+			_G.SelectChip = state
+		end
+	end
+})
+
+_G.AutoBuyChip = false
+
+Tab6:AddToggle({
+	Name = "Auto Buy Chip",
+	Description = "Tá»± Äá»™ng Mua Chip Raid",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoBuyChip = state
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.StartRaid = false
+
+Tab6:AddToggle({
+	Name = "Auto Start Raid",
+	Description = "Báº¯t Äáº§u Raid",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.StartRaid = state
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.Dungeon = false
+
+Tab6:AddToggle({
+	Name = "Auto Farm Raid Next Island",
+	Description = "ÄÃ¡nh QuÃ¡i VÃ  Äi Chuyá»ƒn Äáº£o",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Dungeon = state
+		end
+	end
+})
+
+task.spawn(function()
+	task.wait()
+	task.wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.Autofruit = false
+
+Tab6:AddToggle({
+	Name = "Auto Get Fruit Low Beli",
+	Description = "Tá»± Äá»™ng Láº¥y TrÃ¡i Ãt Beli",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Autofruit = state
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab6:AddSection({ "Raid Law Sea 2" })
+
+Tab6:AddButton({
+	Title = "Auto Buy Chip Law",
+	Description = "Tá»± Äá»™ng Mua Chip Law Raid",
+	Value = false,
+	Callback = function()
+		ReplicatedStorage.Remotes.CommF_:InvokeServer("BlackbeardReward", "Microchip", "2")
+	end
+})
+
+Tab6:AddButton({
+	Title = "Auto Start Raid Law",
+	Value = false,
+	Callback = function()
+		fireclickdetector(workspace.Map.CircleIsland.RaidSummon.Button.Main.ClickDetector)
+	end
+})
+
+_G.AutoLawRaid = false
+
+Tab6:AddToggle({
+	Name = "Auto Farm Law Raid",
+	Description = "ÄÃ¡nh Boss Law Raid",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.AutoLawRaid = state
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab7:AddSection({ "Fruits" })
+_G.RandomAuto = false
+
+Tab7:AddToggle({
+	Name = "Auto Random Fruits",
+	Description = "Tá»± Äá»™ng Random TrÃ¡i Ãc Quá»·",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.RandomAuto = state
+		end
+	end
+})
+
+spawn(function()
+	wait()
+	wait()
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+getgenv().AutoStoreFruit = false
+
+Tab7:AddToggle({
+	Title = "Auto Store Fruits",
+	Description = "Tá»± Äá»™ng LÆ°u TrÃ¡i Ãc Quá»· VÃ o Kho Äá»“",
+	Value = false,
+	Callback = function(state)
+		if state then
+			getgenv().AutoStoreFruit = state
+		end
+	end
+})
+
+spawn(function()
+	task.wait(0.2)
+	task.wait(0.2)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.Tweenfruit = false
+
+Tab7:AddToggle({
+	Name = "Teleport To Fruit Spawn",
+	Description = "Tá»± Äá»™ng Nháº·t TrÃ¡i Ãc Quá»· Náº¿u Xuáº¥t Hiá»‡n Trong Sever",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Tweenfruit = state
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+_G.Grabfruit = false
+
+Tab7:AddToggle({
+	Name = "Auto Teleport Fruits",
+	Description = "Tá»± Äá»™ng Teleport Äáº¿n TrÃ¡i Ãc Quá»·",
+	Default = false,
+	Callback = function(state)
+		if state then
+			_G.Grabfruit = state
+		end
+	end
+})
+
+spawn(function()
+	wait(0.1)
+	wait(0.1)
+	-- [envlog] the statements above repeat forever (loop)
+end)
+
+Tab7:AddSection({ "Check Stock Fruits" })
+Tab7:AddParagraph({ Title = "Stock TrÃ¡i CÃ¢y", Content = "Äang táº£i dá»¯ liá»‡u..." })
+
+task.spawn(function()
+	task.wait(60)
+	local response4 = ReplicatedStorage.Remotes.CommF_:InvokeServer("GetFruits", true)
+
+	for k315, v315 in pairs(response4) do
+		local result2 = tostring(v315.Price):gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		local lastResult = result2
+
+		for _ = 1, 24999 do
+			local previousResult = lastResult
+			local result3 = previousResult:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+			lastResult = result3
+		end
+
+		lastResult:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		-- [envlog] block truncated after 25000 statements
+	end
+end)
+
+local response5 = ReplicatedStorage.Remotes.CommF_:InvokeServer("GetFruits", true)
+
+for k316, v316 in pairs(response5) do
+	local result25002 = tostring(v316.Price):gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+	local lastResult2 = result25002
+
+	for _ = 1, 24999 do
+		local previousResult2 = lastResult2
+		local result25003 = previousResult2:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+		lastResult2 = result25003
+	end
+
+	lastResult2:gsub("^(-?%d+)(%d%d%d)", "%1,%2")
+	-- [envlog] block truncated after 25000 statements
+end
