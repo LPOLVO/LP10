@@ -1297,34 +1297,60 @@ end
 
 ----------------------------------------------------------------
 -- 🎃 HALLOWEEN EVENT  (Escape Cops For Luckyblocks)
---   🍬 Instant Collect Candy : fires the collect for every candy, no teleport, no tween
---   🚪 Auto Knock            : Trick or Treat on every house it can find
+--   🍬 Instant Collect Candy : fires Collect for every candy (no teleport, no tween)
+--   🚪 Auto Knock            : Trick or Treat on every house, knocks again for a 2nd try
 ----------------------------------------------------------------
 local function BuildHalloweenEvent()
     local Players = game:GetService("Players")
     local RS = game:GetService("ReplicatedStorage")
     local lp = Players.LocalPlayer
 
-    -- candy ids seen in the game (used even if the candy model is not loaded on your screen)
-    local KNOWN_CANDY_IDS = {107, 112, 119, 122, 137, 141, 139, 145, 142, 136, 143, 140, 146,
-        157, 155, 156, 163, 161, 172, 158, 177, 194}
-    -- houses seen in the game: {name, x, z}  -> remote string "name@x,z"
-    local KNOWN_HOUSES = {
-        {"House1", -339, -7309},
-        {"House4", -417, -7376},
-        {"House5", -451, -7374},
-        {"HalloweenGhostHouse", -411, -7312},
+    -- {remote string, x, y, z}  (x,y,z = the exact spot where the knock worked)
+    local HOUSES = {
+        {"House4@-333,-7154", -325.2, 26.7, -7160.2},
+        {"HalloweenGhostHouse@-340,-7218", -336.7, 27.8, -7214.4},
+        {"House1@-339,-7309", -336.5, 28.6, -7307.6},
+        {"FrankesteinHouse@-339,-7371", -337.8, 28.7, -7367.5},
+        {"HalloweenHouse4@-368,-7441", -365.6, 28, -7441.9},
+        {"House4@-417,-7376", -415.7, 27.8, -7379.1},
+        {"House5@-451,-7374", -445, 29.2, -7372.1},
+        {"House1@-458,-7310", -455.5, 28.9, -7310.2},
+        {"HalloweenGhostHouse@-411,-7312", -411.5, 28, -7313.9},
+        {"House4@-452,-7222", -448.8, 28.3, -7222.3},
+        {"House1@-417,-7213", -418.4, 28, -7213.3},
+        {"HalloweenHouse4@-458,-7154", -458.2, 27.6, -7152.1},
+        {"FrankesteinHouse@-413,-7137", -412.3, 28.8, -7137.4},
+        {"House1@-80,-7216", -81.6, 28, -7219.1},
+        {"FrankesteinHouse@-78,-7158", -78.7, 29.1, -7156.8},
+        {"House4@-12,-7127", -11, 27, -7127},
+        {"House5@30,-7143", 21.7, 26.2, -7138.9},
+        {"HalloweenGhostHouse@-10,-7199", -8.2, 27.8, -7196.9},
+        {"House1@27,-7203", 18.6, 29.5, -7202},
+        {"House1@-7,-7298", -7.8, 28.2, -7297.9},
+        {"House4@26,-7289", 18.5, 28.8, -7289},
+        {"HalloweenHouse4@31,-7358", 26.8, 28.1, -7357.4},
+        {"FrankesteinHouse@-15,-7376", -13.6, 29.3, -7377.8},
+        {"House4@-89,-7353", -88.6, 29.1, -7354.8},
+        {"HalloweenGhostHouse@-86,-7289", -88.2, 26.1, -7289.3},
+        {"HalloweenGhostHouse@-93,-7438", -95.8, 27, -7437.2},
+        {"House1@-140,-7454", -138, 27.7, -7454},
+        {"House5@-211,-7458", -208.3, 27.2, -7457.2},
+        {"House4@-294,-7454", -293.1, 29.5, -7454.6},
     }
-    local GROUND_Y = 27
+    local KNOWN_NAMES = {House1 = true, House4 = true, House5 = true, HalloweenHouse4 = true,
+        HalloweenGhostHouse = true, FrankesteinHouse = true}
 
     local S = {
-        collect = false, knock = false, tp = true,
-        cInterval = 1.0, kDelay = 1.5,
-        alive = true, cRunning = false, kRunning = false,
-        ids = {}, houses = {}, houseOrder = {},
-        candyList = {}, lastScan = 0,
+        collect = false, scan = true, tpCollect = false,
+        knock = false, tp = true, extra = true,
+        cInterval = 1.0, maxId = 700, reps = 2, repGap = 0.6, kDelay = 1.2,
+        alive = true, cRunning = false, tRunning = false, kRunning = false,
+        candyList = {}, lastScan = 0, lastBrute = 0,
+        houseList = {}, extraSeen = {},
     }
-    for _, id in ipairs(KNOWN_CANDY_IDS) do S.ids[id] = true end
+    for _, h in ipairs(HOUSES) do
+        S.houseList[#S.houseList + 1] = {strs = {h[1]}, x = h[2], y = h[3], z = h[4]}
+    end
 
     local function Root()
         local ch = lp.Character
@@ -1372,6 +1398,7 @@ local function BuildHalloweenEvent()
             end
         end
         S.candyList = found
+        S.lastScan = os.clock()
     end
 
     local function FindId(inst)
@@ -1399,17 +1426,18 @@ local function BuildHalloweenEvent()
         return nil
     end
 
-    local function CollectOne(c)
-        local id = FindId(c)
-        if id then S.ids[id] = true end
+    local function PartOf(c)
+        return c:IsA("BasePart") and c or c:FindFirstChildWhichIsA("BasePart", true)
+    end
 
+    local function CollectOne(c, remote)
+        local id = FindId(c)
+        if id and remote then pcall(remote.FireServer, remote, id) end
         local prompt = c:FindFirstChildWhichIsA("ProximityPrompt", true)
         if prompt and fireproximityprompt then pcall(fireproximityprompt, prompt) end
         local cd = c:FindFirstChildWhichIsA("ClickDetector", true)
         if cd and fireclickdetector then pcall(fireclickdetector, cd) end
-
-        local part = c:IsA("BasePart") and c or c:FindFirstChildWhichIsA("BasePart", true)
-        local r = Root()
+        local part, r = PartOf(c), Root()
         if part and r and firetouchinterest then
             pcall(firetouchinterest, r, part, 0)
             pcall(firetouchinterest, r, part, 1)
@@ -1417,16 +1445,19 @@ local function BuildHalloweenEvent()
     end
 
     local function CollectCycle()
-        if os.clock() - S.lastScan > 3 then
-            S.lastScan = os.clock()
-            ScanCandy()
-        end
-        for _, c in ipairs(S.candyList) do
-            if c.Parent then pcall(CollectOne, c) end
-        end
+        if os.clock() - S.lastScan > 3 then ScanCandy() end
         local remote = GetRemote("Collect")
-        if remote then
-            for id in pairs(S.ids) do pcall(remote.FireServer, remote, id) end
+        for _, c in ipairs(S.candyList) do
+            if c.Parent then pcall(CollectOne, c, remote) end
+        end
+        -- fire every possible candy id (invalid ids are ignored by the game)
+        if S.scan and remote and os.clock() - S.lastBrute >= math.max(S.cInterval, 2) then
+            S.lastBrute = os.clock()
+            for id = 1, S.maxId do
+                if not (S.collect and S.alive) then break end
+                pcall(remote.FireServer, remote, id)
+                if id % 50 == 0 then task.wait() end
+            end
         end
     end
 
@@ -1443,67 +1474,88 @@ local function BuildHalloweenEvent()
         end)
     end
 
+    -- backup mode: fly to each candy it can see and collect it there
+    local function TpCollectWorker()
+        if S.tRunning then return end
+        S.tRunning = true
+        task.spawn(function()
+            local r0 = Root()
+            local origin = r0 and r0.CFrame
+            while S.alive and S.tpCollect do
+                local ok, err = pcall(function()
+                    if os.clock() - S.lastScan > 3 then ScanCandy() end
+                    local remote = GetRemote("Collect")
+                    for _, c in ipairs(S.candyList) do
+                        if not (S.tpCollect and S.alive) then break end
+                        local part = c.Parent and PartOf(c)
+                        if part then
+                            local p = part.Position
+                            Go(p.X, p.Y + 3, p.Z)
+                            task.wait(0.08)
+                            CollectOne(c, remote)
+                            task.wait(0.05)
+                        end
+                    end
+                end)
+                if not ok then warn("[LP10 HALLOWEEN] tp-collect error: " .. tostring(err)) end
+                task.wait(0.5)
+            end
+            local r1 = Root()
+            if origin and r1 then r1.CFrame = origin end
+            S.tRunning = false
+        end)
+    end
+
     ------------------------------------------------------------
     -- HOUSES
     ------------------------------------------------------------
-    local function AddHouse(name, x, z, strs)
-        if S.houses[name] then return end
-        S.houses[name] = {name = name, x = x, z = z, strs = strs}
-        S.houseOrder[#S.houseOrder + 1] = name
-    end
-    for _, h in ipairs(KNOWN_HOUSES) do
-        AddHouse(h[1], h[2], h[3], {("%s@%d,%d"):format(h[1], h[2], h[3])})
+    local function NearKnown(x, z)
+        for _, h in ipairs(S.houseList) do
+            if math.abs(h.x - x) < 14 and math.abs(h.z - z) < 14 then return true end
+        end
+        return false
     end
 
-    local function IsHouseName(n)
-        return n:match("^%a*House%d*$") ~= nil
-    end
-
-    local function ScanHouses()
+    local function ScanExtraHouses()
         local n = 0
         for _, d in ipairs(workspace:GetDescendants()) do
             n += 1
             if n % 600 == 0 then task.wait() end
-            if (d:IsA("Model") or d:IsA("BasePart")) and IsHouseName(d.Name) and not S.houses[d.Name] then
-                local nested, cur = false, d.Parent
-                while cur and cur ~= workspace do
-                    if cur:IsA("Model") and IsHouseName(cur.Name) then nested = true break end
-                    cur = cur.Parent
-                end
-                if not nested then
-                    local ok, pos = pcall(function()
-                        return d:IsA("Model") and d:GetPivot().Position or d.Position
-                    end)
-                    if ok and pos then
-                        local fx, fz = math.floor(pos.X), math.floor(pos.Z)
-                        local rx, rz = math.floor(pos.X + 0.5), math.floor(pos.Z + 0.5)
-                        local strs = {("%s@%d,%d"):format(d.Name, fx, fz)}
-                        if rx ~= fx or rz ~= fz then
-                            strs[2] = ("%s@%d,%d"):format(d.Name, rx, rz)
-                        end
-                        AddHouse(d.Name, fx, fz, strs)
-                    end
+            if (d:IsA("Model") or d:IsA("BasePart")) and not S.extraSeen[d]
+                and (KNOWN_NAMES[d.Name] or d.Name:match("^House%d+$")) then
+                S.extraSeen[d] = true
+                local ok, pos = pcall(function()
+                    return d:IsA("Model") and d:GetPivot().Position or d.Position
+                end)
+                if ok and pos and not NearKnown(pos.X, pos.Z) then
+                    local fx, fz = math.floor(pos.X), math.floor(pos.Z)
+                    local rx, rz = math.floor(pos.X + 0.5), math.floor(pos.Z + 0.5)
+                    local strs = {("%s@%d,%d"):format(d.Name, fx, fz)}
+                    if rx ~= fx or rz ~= fz then strs[2] = ("%s@%d,%d"):format(d.Name, rx, rz) end
+                    S.houseList[#S.houseList + 1] = {strs = strs, x = pos.X, y = 28, z = pos.Z}
                 end
             end
         end
     end
 
     local function KnockCycle()
-        ScanHouses()
+        if S.extra then ScanExtraHouses() end
         local remote = GetRemote("TrickOrTreat")
         if not remote then task.wait(1) return end
-        local origin = Root() and Root().CFrame
-        for _, name in ipairs(S.houseOrder) do
+        for _, h in ipairs(S.houseList) do
             if not (S.knock and S.alive) then break end
-            local h = S.houses[name]
             if S.tp then
-                Go(h.x, GROUND_Y, h.z)
-                task.wait(0.25)
+                Go(h.x, h.y, h.z)
+                task.wait(0.35)
             end
-            for _, str in ipairs(h.strs) do pcall(remote.FireServer, remote, str) end
+            -- knock, then knock again (first knock sometimes gives nothing)
+            for _ = 1, S.reps do
+                if not (S.knock and S.alive) then break end
+                for _, str in ipairs(h.strs) do pcall(remote.FireServer, remote, str) end
+                task.wait(S.repGap)
+            end
             task.wait(S.kDelay)
         end
-        if S.tp and origin and Root() and not S.knock then Root().CFrame = origin end
     end
 
     local function KnockWorker()
@@ -1528,7 +1580,6 @@ local function BuildHalloweenEvent()
     ------------------------------------------------------------
     local function Dump()
         pcall(ScanCandy)
-        pcall(ScanHouses)
         local L = {"== LP10 HALLOWEEN DEBUG ==", ("PlaceId: %s"):format(tostring(game.PlaceId))}
         L[#L + 1] = ("Candy objects found: %d"):format(#S.candyList)
         for i, c in ipairs(S.candyList) do
@@ -1544,11 +1595,7 @@ local function BuildHalloweenEvent()
             L[#L + 1] = ("  %s [%s] id=%s attrs{%s} kids{%s}"):format(
                 c:GetFullName(), c.ClassName, tostring(FindId(c)), table.concat(attrs, ","), table.concat(kids, ","))
         end
-        L[#L + 1] = ("Houses known: %d"):format(#S.houseOrder)
-        for _, name in ipairs(S.houseOrder) do
-            local h = S.houses[name]
-            L[#L + 1] = ("  %s -> %s"):format(name, table.concat(h.strs, " | "))
-        end
+        L[#L + 1] = ("Houses in list: %d"):format(#S.houseList)
         local ok, folder = pcall(function() return RS.Remotes.Halloween end)
         if ok and folder then
             L[#L + 1] = "Remotes.Halloween:"
@@ -1569,6 +1616,13 @@ local function BuildHalloweenEvent()
             S.collect = v
             if v then CollectWorker() end
         end})
+        AddToggleFeature({Name = "Scan All Candy IDs", Icon = "🔢", Default = true, Callback = function(v)
+            S.scan = v
+        end})
+        AddToggleFeature({Name = "Teleport Collect (backup)", Icon = "🧲", Default = false, Callback = function(v)
+            S.tpCollect = v
+            if v then TpCollectWorker() end
+        end})
         AddToggleFeature({Name = "Auto Knock (Trick or Treat)", Icon = "🚪", Default = false, Callback = function(v)
             S.knock = v
             if v then KnockWorker() end
@@ -1576,9 +1630,16 @@ local function BuildHalloweenEvent()
         AddToggleFeature({Name = "Teleport to Houses", Icon = "📍", Default = true, Callback = function(v)
             S.tp = v
         end})
-        AddSlider({Name = "Collect Interval", Min = 100, Max = 3000, Step = 100, Suffix = " ms", Default = 1000,
+        AddToggleFeature({Name = "Find Extra Houses", Icon = "🏚️", Default = true, Callback = function(v)
+            S.extra = v
+        end})
+        AddSlider({Name = "Collect Interval", Min = 500, Max = 5000, Step = 100, Suffix = " ms", Default = 1000,
             Callback = function(v) S.cInterval = v / 1000 end})
-        AddSlider({Name = "Knock Delay", Min = 300, Max = 5000, Step = 100, Suffix = " ms", Default = 1500,
+        AddSlider({Name = "Max Candy ID", Min = 100, Max = 1500, Step = 50, Default = 700,
+            Callback = function(v) S.maxId = v end})
+        AddSlider({Name = "Knocks per House", Min = 1, Max = 5, Step = 1, Default = 2,
+            Callback = function(v) S.reps = v end})
+        AddSlider({Name = "Knock Delay", Min = 300, Max = 5000, Step = 100, Suffix = " ms", Default = 1200,
             Callback = function(v) S.kDelay = v / 1000 end})
         if Config.Debug then
             AddButtonFeature({Name = "Copy Debug Info", Icon = "🧪", Text = "COPY", Callback = Dump})
@@ -1588,7 +1649,7 @@ local function BuildHalloweenEvent()
     return {
         AddRows = AddRows,
         Dump = Dump,
-        Destroy = function() S.alive = false S.collect = false S.knock = false end,
+        Destroy = function() S.alive = false S.collect = false S.knock = false S.tpCollect = false end,
     }
 end
 
