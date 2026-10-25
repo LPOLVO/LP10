@@ -33,10 +33,7 @@
 -- Every Add* returns an object:  :Set(v)  :Get()  :Destroy()
 -- Dropdown extras: :SetOptions({...})   Lib.Flags["Auto Steal"] = current value
 -- Other:  Lib.Clear()  Lib.Open()  Lib.Close()  Lib.Strike()  Lib.Destroy()
--- 🎥 RECORDER: floating 🎥 button (or the RECORDER rows) opens the Action Recorder window.
---   ● REC then play normally -> every collect/drop/remote/prompt/click/tool/stat is logged.
---   📋 COPY LOG = send it to Claude | 📋 COPY SCRIPT = runnable replay | ➕ = clone action to the menu
---   After Lib.Clear() call Lib.AddRecorder() to put the RECORDER rows back. Lib.OpenRecorder() opens the window.
+-- 🎃 HALLOWEEN EVENT rows are added automatically (Lib.AddHalloweenEvent() re-adds them after Lib.Clear()).
 -- NEW GAME / NEW FEATURES: call Lib.Clear() first (removes the old game's rows and
 --   switches its toggles OFF), then add the new features. Re-executing this file
 --   also removes the previous window completely before creating a fresh one.
@@ -55,7 +52,8 @@ local Config = {
     Intro = true,          -- Halloween intro animation
     Ambient = true,        -- floating bats / ghosts / pumpkins
     Lightning = true,      -- random purple lightning flash
-    Recorder = true,       -- 🎥 Action Recorder (rows in the menu + floating 🎥 button)
+    HalloweenEvent = true, -- 🍬 Instant Collect Candy + 🚪 Auto Knock rows
+    Debug = true,          -- 🧪 'Copy Debug Info' button (set false before sharing)
 }
 
 local C = {
@@ -1298,968 +1296,35 @@ function Library.Destroy()
 end
 
 ----------------------------------------------------------------
--- 🎥 LP10 ACTION RECORDER
--- Records collect / drop / remotes / prompts / clicks / tools / stats,
--- exports a LOG (send it to Claude) + a runnable REPLAY SCRIPT,
--- and can clone any recorded action into the main menu as a button/toggle.
+-- 🎃 HALLOWEEN EVENT  (Escape Cops For Luckyblocks)
+--   🍬 Instant Collect Candy : fires the collect for every candy, no teleport, no tween
+--   🚪 Auto Knock            : Trick or Treat on every house it can find
 ----------------------------------------------------------------
-local function BuildRecorder()
-    local Players = game:GetService("Players")
-    local PPS = game:GetService("ProximityPromptService")
-    local LocalPlayer = Players.LocalPlayer
-    local genv = (getgenv and getgenv()) or _G
-
-    local MAX_ENTRIES, FOLDER, NOISE_LIMIT = 400, "LP10_Recorder", 8
-
-    local Rec = {
-        Log = {}, NextId = 1, Recording = false, Start = os.clock(),
-        Muted = {}, Rate = {}, Loops = {}, LoopOn = false, LoopDelay = 0.3,
-        TpFirst = false, Alive = true, Rows = {}, SuppressUntil = 0,
-        HookOK = false, LoopRunning = false, GameName = nil,
-    }
-    local LibObjs = {}
-    local RefreshStatus, AddRow, Notify, SetRecording, SetLoop, SetTpFirst
-
-    task.spawn(function()
-        local ok, info = pcall(function()
-            return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
-        end)
-        Rec.GameName = (ok and info and info.Name) or ("PlaceId " .. tostring(game.PlaceId))
-    end)
-
-    ------------------------------------------------------------
-    -- SERIALIZATION
-    ------------------------------------------------------------
-    local KEYWORDS = {}
-    for w in ("and break do else elseif end false for function if in local nil not or repeat return then true until while continue"):gmatch("%S+") do
-        KEYWORDS[w] = true
-    end
-    local CLASH = {Name = true, Parent = true, ClassName = true, Archivable = true}
-
-    local function IsIdent(s)
-        return type(s) == "string" and s:match("^[%a_][%w_]*$") ~= nil and not KEYWORDS[s] and not CLASH[s]
-    end
-
-    local function PathOf(inst)
-        local chain, cur = {}, inst
-        while cur and cur ~= game do
-            table.insert(chain, 1, cur)
-            cur = cur.Parent
-        end
-        if cur ~= game then return ("nil --[[%s]]"):format(tostring(inst.Name)) end
-        local out = "game"
-        for i, o in ipairs(chain) do
-            if i == 1 and pcall(game.GetService, game, o.ClassName) then
-                out = ("game:GetService(%q)"):format(o.ClassName)
-            elseif IsIdent(o.Name) then
-                out = out .. "." .. o.Name
-            else
-                out = out .. ("[%q]"):format(o.Name)
-            end
-        end
-        return out
-    end
-
-    local function DotPath(inst)
-        if typeof(inst) ~= "Instance" then return tostring(inst) end
-        local ok, s = pcall(function() return inst:GetFullName() end)
-        return ok and s or tostring(inst)
-    end
-
-    local function Ser(v, depth, seen)
-        depth = depth or 0
-        local t = typeof(v)
-        if t == "string" then
-            return string.format("%q", v)
-        elseif t == "number" then
-            if v ~= v then return "0/0" end
-            if v == math.huge then return "math.huge" end
-            if v == -math.huge then return "-math.huge" end
-            return tostring(v)
-        elseif t == "boolean" or t == "nil" then
-            return tostring(v)
-        elseif t == "Vector3" then
-            return ("Vector3.new(%s, %s, %s)"):format(v.X, v.Y, v.Z)
-        elseif t == "Vector2" then
-            return ("Vector2.new(%s, %s)"):format(v.X, v.Y)
-        elseif t == "CFrame" then
-            return "CFrame.new(" .. table.concat({v:GetComponents()}, ", ") .. ")"
-        elseif t == "Color3" then
-            return ("Color3.new(%s, %s, %s)"):format(v.R, v.G, v.B)
-        elseif t == "UDim2" then
-            return ("UDim2.new(%s, %s, %s, %s)"):format(v.X.Scale, v.X.Offset, v.Y.Scale, v.Y.Offset)
-        elseif t == "BrickColor" then
-            return ("BrickColor.new(%q)"):format(v.Name)
-        elseif t == "EnumItem" then
-            return tostring(v)
-        elseif t == "Instance" then
-            return PathOf(v)
-        elseif t == "table" then
-            if depth >= 4 then return "{} --[[max depth]]" end
-            seen = seen or {}
-            if seen[v] then return "nil --[[cycle]]" end
-            seen[v] = true
-            local parts, n, count = {}, #v, 0
-            for _ in pairs(v) do count += 1 end
-            if count == n then
-                for i = 1, n do parts[#parts + 1] = Ser(v[i], depth + 1, seen) end
-            else
-                for k, val in pairs(v) do
-                    local key = (type(k) == "string" and IsIdent(k)) and k or ("[" .. Ser(k, depth + 1, seen) .. "]")
-                    parts[#parts + 1] = key .. " = " .. Ser(val, depth + 1, seen)
-                end
-            end
-            seen[v] = nil
-            return "{" .. table.concat(parts, ", ") .. "}"
-        end
-        return ("nil --[[%s]]"):format(t)
-    end
-
-    local function SerArgs(args)
-        local parts = {}
-        for i = 1, args.n or #args do parts[i] = Ser(args[i]) end
-        return table.concat(parts, ", ")
-    end
-
-    ------------------------------------------------------------
-    -- POSITION HELPERS
-    ------------------------------------------------------------
-    local function RootPart()
-        local ch = LocalPlayer.Character
-        return ch and ch:FindFirstChild("HumanoidRootPart")
-    end
-    local function MyPos()
-        local r = RootPart()
-        return r and r.Position
-    end
-    local function R1(n) return math.floor(n * 10 + 0.5) / 10 end
-    local function V3S(v)
-        return v and ("(%s, %s, %s)"):format(R1(v.X), R1(v.Y), R1(v.Z)) or "?"
-    end
-    local function TpTo(pos, raise)
-        local r = RootPart()
-        if r and pos then r.CFrame = CFrame.new(pos + Vector3.new(0, raise or 0, 0)) end
-    end
-    local function InstPos(i)
-        if not i then return nil end
-        local ok, p = pcall(function()
-            if i:IsA("BasePart") then return i.Position end
-            if i:IsA("Attachment") then return i.WorldPosition end
-            if i:IsA("Model") then return i:GetPivot().Position end
-            local par = i.Parent
-            if par then
-                if par:IsA("BasePart") then return par.Position end
-                if par:IsA("Attachment") then return par.WorldPosition end
-                if par:IsA("Model") then return par:GetPivot().Position end
-            end
-        end)
-        return ok and p or nil
-    end
-
-    ------------------------------------------------------------
-    -- LOG STORAGE
-    ------------------------------------------------------------
-    local function RemoveEntry(id)
-        for i, e in ipairs(Rec.Log) do
-            if e.id == id then table.remove(Rec.Log, i) break end
-        end
-        Rec.Loops[id] = nil
-        if Rec.Rows[id] then Rec.Rows[id]:Destroy() Rec.Rows[id] = nil end
-        RefreshStatus()
-    end
-
-    local function AddEntry(e)
-        e.id = Rec.NextId
-        Rec.NextId += 1
-        e.t = os.clock() - Rec.Start
-        e.pos = e.pos or MyPos()
-        table.insert(Rec.Log, e)
-        if #Rec.Log > MAX_ENTRIES then
-            local old = table.remove(Rec.Log, 1)
-            Rec.Loops[old.id] = nil
-            if Rec.Rows[old.id] then Rec.Rows[old.id]:Destroy() Rec.Rows[old.id] = nil end
-        end
-        AddRow(e)
-        RefreshStatus()
-        return e
-    end
-
-    local function NoisyCheck(key)
-        local now = os.clock()
-        local r = Rec.Rate[key]
-        if not r or now - r.t0 > 1 then
-            r = {t0 = now, n = 0}
-            Rec.Rate[key] = r
-        end
-        r.n += 1
-        if r.n > NOISE_LIMIT then
-            Rec.Muted[key] = true
-            return true
-        end
-        return false
-    end
-
-    ------------------------------------------------------------
-    -- RECORDING SOURCES
-    ------------------------------------------------------------
-    local REMOTE_CLASSES = {RemoteEvent = true, RemoteFunction = true, UnreliableRemoteEvent = true}
-
-    local function OnRemote(remote, method, args)
-        if not Rec.Recording or not Rec.Alive then return end
-        if os.clock() < Rec.SuppressUntil then return end
-        local key = remote.Name
-        if Rec.Muted[key] then return end
-        if NoisyCheck(key) then
-            AddEntry({kind = "info", title = "Auto-muted noisy remote", sub = key})
-            return
-        end
-        local ok, e = pcall(function()
-            return {
-                kind = "remote", title = remote.Name .. ":" .. method,
-                sub = SerArgs(args), inst = remote, method = method, args = args,
-                key = key, path = DotPath(remote), luaPath = PathOf(remote),
-            }
-        end)
-        if ok then AddEntry(e) end
-    end
-
-    local function InstallHook()
-        genv.__LP10_REC_HANDLER = OnRemote
-        if genv.__LP10_REC_HOOKED then Rec.HookOK = true return end
-
-        if hookmetamethod and getnamecallmethod and newcclosure then
-            local ok = pcall(function()
-                local old
-                old = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-                    local method = getnamecallmethod()
-                    if method == "FireServer" or method == "InvokeServer" then
-                        local handler = genv.__LP10_REC_HANDLER
-                        if handler and not (checkcaller and checkcaller()) then
-                            local _, cn = pcall(function() return self.ClassName end)
-                            if REMOTE_CLASSES[cn] then
-                                task.defer(handler, self, method, table.pack(...))
-                            end
-                        end
-                    end
-                    if setnamecallmethod and method then setnamecallmethod(method) end
-                    return old(self, ...)
-                end))
-            end)
-            if ok then genv.__LP10_REC_HOOKED = true Rec.HookOK = true return end
-        end
-
-        if hookfunction and newcclosure then
-            local ok = pcall(function()
-                local function HookMethod(inst, name, method)
-                    local old
-                    old = hookfunction(inst[name], newcclosure(function(self, ...)
-                        local handler = genv.__LP10_REC_HANDLER
-                        if handler and not (checkcaller and checkcaller()) then
-                            task.defer(handler, self, method, table.pack(...))
-                        end
-                        return old(self, ...)
-                    end))
-                end
-                HookMethod(Instance.new("RemoteEvent"), "FireServer", "FireServer")
-                HookMethod(Instance.new("RemoteFunction"), "InvokeServer", "InvokeServer")
-            end)
-            if ok then genv.__LP10_REC_HOOKED = true Rec.HookOK = true return end
-        end
-        Rec.HookOK = false
-    end
-
-    local function HookGame()
-        -- ProximityPrompts (most "collect" buttons)
-        Track(PPS.PromptTriggered:Connect(function(prompt, plr)
-            if not Rec.Recording or plr ~= LocalPlayer then return end
-            local act, obj = prompt.ActionText, prompt.ObjectText
-            AddEntry({
-                kind = "prompt",
-                title = "Prompt: " .. (act ~= "" and act or "Interact") .. (obj ~= "" and (" · " .. obj) or ""),
-                sub = DotPath(prompt), inst = prompt, tpos = InstPos(prompt), luaPath = PathOf(prompt),
-            })
-        end))
-
-        -- ClickDetectors
-        local function WatchClick(cd)
-            Track(cd.MouseClick:Connect(function(plr)
-                if not Rec.Recording or plr ~= LocalPlayer then return end
-                AddEntry({
-                    kind = "click", title = "Click: " .. (cd.Parent and cd.Parent.Name or cd.Name),
-                    sub = DotPath(cd), inst = cd, tpos = InstPos(cd), luaPath = PathOf(cd),
-                })
-            end))
-        end
-        task.spawn(function()
-            local n = 0
-            for _, d in ipairs(workspace:GetDescendants()) do
-                if not Rec.Alive then return end
-                if d:IsA("ClickDetector") then WatchClick(d) end
-                n += 1
-                if n % 400 == 0 then task.wait() end
-            end
-        end)
-        Track(workspace.DescendantAdded:Connect(function(d)
-            if d:IsA("ClickDetector") then WatchClick(d) end
-        end))
-
-        -- Tools (got / lost / dropped)
-        local owned = setmetatable({}, {__mode = "k"})
-        local function OnAdded(child)
-            if not child:IsA("Tool") or owned[child] then return end
-            owned[child] = true
-            if Rec.Recording then
-                AddEntry({kind = "tool", title = "TOOL+ " .. child.Name, sub = "added to inventory"})
-            end
-        end
-        local function OnRemoved(child)
-            if not child:IsA("Tool") then return end
-            task.delay(0.4, function()
-                if not owned[child] then return end
-                local bp, ch = LocalPlayer:FindFirstChildOfClass("Backpack"), LocalPlayer.Character
-                if child.Parent ~= bp and child.Parent ~= ch then
-                    owned[child] = nil
-                    if Rec.Recording then
-                        AddEntry({kind = "tool", title = "TOOL- " .. child.Name, sub = "removed / dropped / sold"})
-                    end
-                end
-            end)
-        end
-        local function Attach(container)
-            if not container then return end
-            for _, c in ipairs(container:GetChildren()) do
-                if c:IsA("Tool") then owned[c] = true end
-            end
-            Track(container.ChildAdded:Connect(OnAdded))
-            Track(container.ChildRemoved:Connect(OnRemoved))
-        end
-        task.spawn(function()
-            Attach(LocalPlayer:WaitForChild("Backpack", 5))
-            Attach(LocalPlayer.Character)
-        end)
-        Track(LocalPlayer.CharacterAdded:Connect(function(ch)
-            task.wait(0.5)
-            Attach(ch)
-            Attach(LocalPlayer:FindFirstChildOfClass("Backpack"))
-        end))
-
-        -- leaderstats changes (shows the EFFECT of an action)
-        local function WatchStat(v)
-            if not v:IsA("ValueBase") then return end
-            local last = v.Value
-            Track(v.Changed:Connect(function(new)
-                local prev = last
-                last = new
-                local key = "stat:" .. v.Name
-                if not Rec.Recording or Rec.Muted[key] or NoisyCheck(key) then return end
-                local delta = ""
-                if type(new) == "number" and type(prev) == "number" then
-                    delta = (" (%+g)"):format(new - prev)
-                end
-                AddEntry({kind = "stat", title = "STAT " .. v.Name .. delta, sub = tostring(prev) .. " → " .. tostring(new)})
-            end))
-        end
-        task.spawn(function()
-            local ls = LocalPlayer:WaitForChild("leaderstats", 8)
-            if ls then
-                for _, v in ipairs(ls:GetChildren()) do WatchStat(v) end
-                Track(ls.ChildAdded:Connect(WatchStat))
-            end
-        end)
-    end
-
-    ------------------------------------------------------------
-    -- REPLAY
-    ------------------------------------------------------------
-    local function RunEntry(e)
-        Rec.SuppressUntil = os.clock() + 0.15
-        if e.kind == "waypoint" then
-            TpTo(e.pos, 0)
-            return true
-        elseif e.kind == "remote" then
-            local r = e.inst
-            if not (r and r.Parent) then return false end
-            if Rec.TpFirst and e.pos then TpTo(e.pos, 0) task.wait(0.15) end
-            local a = e.args or {n = 0}
-            if e.method == "InvokeServer" then
-                task.spawn(function() pcall(r.InvokeServer, r, unpack(a, 1, a.n)) end)
-            else
-                pcall(r.FireServer, r, unpack(a, 1, a.n))
-            end
-            return true
-        elseif e.kind == "prompt" then
-            local p = e.inst
-            if not (p and p.Parent) then return false end
-            if Rec.TpFirst then
-                if e.pos then TpTo(e.pos, 0) elseif e.tpos then TpTo(e.tpos, 3) end
-                task.wait(0.15)
-            end
-            if fireproximityprompt then
-                pcall(fireproximityprompt, p)
-            else
-                pcall(function() p:InputHoldBegin() task.wait() p:InputHoldEnd() end)
-            end
-            return true
-        elseif e.kind == "click" then
-            if not (e.inst and e.inst.Parent and fireclickdetector) then return false end
-            if Rec.TpFirst and e.pos then TpTo(e.pos, 0) task.wait(0.15) end
-            pcall(fireclickdetector, e.inst)
-            return true
-        end
-        return false
-    end
-
-    local function StartLoop()
-        if Rec.LoopRunning then return end
-        Rec.LoopRunning = true
-        task.spawn(function()
-            while Rec.LoopOn and Rec.Alive do
-                local ran = false
-                for _, e in ipairs(Rec.Log) do
-                    if not (Rec.LoopOn and Rec.Alive) then break end
-                    if Rec.Loops[e.id] then
-                        ran = true
-                        RunEntry(e)
-                        task.wait(Rec.LoopDelay)
-                    end
-                end
-                if not ran then task.wait(0.3) end
-                task.wait()
-            end
-            Rec.LoopRunning = false
-        end)
-    end
-
-    ------------------------------------------------------------
-    -- INSTANT PROMPTS (HoldDuration = 0)
-    ------------------------------------------------------------
-    local InstantOn, instantConn = false, nil
-    local origHold = setmetatable({}, {__mode = "k"})
-    local function MakeInstant(p)
-        if p:IsA("ProximityPrompt") then
-            if origHold[p] == nil then origHold[p] = p.HoldDuration end
-            p.HoldDuration = 0
-        end
-    end
-    local function SetInstant(on)
-        InstantOn = on == true
-        if instantConn then instantConn:Disconnect() instantConn = nil end
-        if InstantOn then
-            task.spawn(function()
-                local n = 0
-                for _, d in ipairs(workspace:GetDescendants()) do
-                    if not InstantOn then return end
-                    MakeInstant(d)
-                    n += 1
-                    if n % 500 == 0 then task.wait() end
-                end
-            end)
-            instantConn = workspace.DescendantAdded:Connect(function(d)
-                if InstantOn then MakeInstant(d) end
-            end)
-        else
-            for p, h in pairs(origHold) do pcall(function() p.HoldDuration = h end) end
-            origHold = setmetatable({}, {__mode = "k"})
-        end
-    end
-
-    ------------------------------------------------------------
-    -- EXPORT
-    ------------------------------------------------------------
-    local function BuildLog()
-        local L = {
-            "== LP10 ACTION LOG ==",
-            ("Game: %s | PlaceId: %s"):format(tostring(Rec.GameName or "?"), tostring(game.PlaceId)),
-            ("Entries: %d | Remote hook: %s"):format(#Rec.Log, Rec.HookOK and "ON" or "NOT SUPPORTED"),
-            "@player = my position when it happened | @target = object position",
-            "------------------------------------------------",
-        }
-        for _, e in ipairs(Rec.Log) do
-            local text
-            if e.kind == "remote" then
-                text = ("%s:%s(%s)"):format(e.path or e.title, e.method, e.sub or "")
-            else
-                text = e.title .. ((e.sub and e.sub ~= "") and ("  →  " .. e.sub) or "")
-            end
-            local line = ("#%d +%.1fs %-8s %s"):format(e.id, e.t, string.upper(e.kind), text)
-            if e.pos then line ..= "  @player" .. V3S(e.pos) end
-            if e.tpos then line ..= "  @target" .. V3S(e.tpos) end
-            L[#L + 1] = line
-        end
-        return table.concat(L, "\n")
-    end
-
-    local function BuildScript()
-        local L = {
-            "-- Generated by LP10 Action Recorder",
-            ("-- Game: %s (%s)"):format(tostring(Rec.GameName or "?"), tostring(game.PlaceId)),
-            'local lp = game:GetService("Players").LocalPlayer',
-            "local function tp(x, y, z)",
-            "    local c = lp.Character",
-            '    local r = c and c:FindFirstChild("HumanoidRootPart")',
-            "    if r then r.CFrame = CFrame.new(x, y, z) end",
-            "end",
-            "",
-        }
-        local prevT, lastTp
-        for _, e in ipairs(Rec.Log) do
-            if e.kind == "remote" or e.kind == "prompt" or e.kind == "click" or e.kind == "waypoint" then
-                if prevT then L[#L + 1] = ("task.wait(%.2f)"):format(math.clamp(e.t - prevT, 0.05, 2)) end
-                prevT = e.t
-                if e.pos and (e.kind == "waypoint" or not lastTp or (e.pos - lastTp).Magnitude > 4) then
-                    L[#L + 1] = ("tp(%s, %s, %s)"):format(R1(e.pos.X), R1(e.pos.Y), R1(e.pos.Z))
-                    lastTp = e.pos
-                end
-                if e.kind ~= "waypoint" then
-                    local p = e.luaPath or ""
-                    local line
-                    if e.kind == "remote" then
-                        line = ("%s:%s(%s)"):format(p, e.method, e.sub or "")
-                    elseif e.kind == "prompt" then
-                        line = ("fireproximityprompt(%s)"):format(p)
-                    else
-                        line = ("fireclickdetector(%s)"):format(p)
-                    end
-                    if p:sub(1, 3) == "nil" then line = "-- (instance not found) " .. line end
-                    L[#L + 1] = line
-                end
-            end
-        end
-        return table.concat(L, "\n")
-    end
-
-    local function CopyText(text)
-        local fn = setclipboard or toclipboard
-        if not fn then return false end
-        return (pcall(fn, text))
-    end
-    local function SaveFile(text, name)
-        if not writefile then return false end
-        pcall(function()
-            if makefolder and isfolder and not isfolder(FOLDER) then makefolder(FOLDER) end
-        end)
-        return (pcall(writefile, FOLDER .. "/" .. name, text))
-    end
-
-    ------------------------------------------------------------
-    -- WINDOW
-    ------------------------------------------------------------
-    local KIND_ICON = {remote = "📡", prompt = "🖐️", click = "👆", tool = "🎒", stat = "📊", waypoint = "📍", info = "ℹ️"}
-    local KIND_COLOR = {
-        remote = C.witch, prompt = C.slime, click = C.flame, tool = C.orange,
-        stat = C.muted, waypoint = C.purple, info = C.muted,
-    }
-
-    local RW = New("Frame", ScreenGui, {
-        Name = "RecorderWindow", Size = UDim2.fromOffset(330, 450),
-        AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
-        BackgroundColor3 = C.panel, BorderSizePixel = 0, Active = true,
-        ClipsDescendants = true, Visible = false, ZIndex = 40,
-    })
-    Corner(RW, 15)
-    local RWStroke = Stroke(RW, C.slime, 1.6, 0.1)
-    Gradient(RW, C.panelLight, C.panel, 120)
-    local RWScale = New("UIScale", RW, {Scale = 1})
-    local function RWResponsive()
-        local cam = workspace.CurrentCamera
-        if not cam then return end
-        local vp = cam.ViewportSize
-        RWScale.Scale = math.clamp(math.min(vp.X / 360, vp.Y / 480), 0.5, 1)
-    end
-    RWResponsive()
-    if workspace.CurrentCamera then
-        Track(workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(RWResponsive))
-    end
-
-    local RHeader = New("Frame", RW, {Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, ZIndex = 41})
-    New("TextLabel", RHeader, {
-        Size = UDim2.new(1, -50, 1, 0), Position = UDim2.fromOffset(12, 0), BackgroundTransparency = 1,
-        Text = "🎥 ACTION RECORDER", TextColor3 = C.slime, Font = Enum.Font.GothamBlack, TextSize = 15,
-        TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 42,
-    })
-    local RClose = New("TextButton", RHeader, {
-        Size = UDim2.fromOffset(30, 30), Position = UDim2.new(1, -38, 0, 5), BackgroundTransparency = 1,
-        Text = "✖", TextColor3 = C.flame, Font = Enum.Font.GothamBlack, TextSize = 16, ZIndex = 43,
-    })
-    Draggable(RHeader, RW)
-
-    local function Btn(text, x, y, bg, fg)
-        local b = New("TextButton", RW, {
-            Size = UDim2.fromOffset(98, 28), Position = UDim2.fromOffset(x, y),
-            BackgroundColor3 = bg or C.orange, AutoButtonColor = false, Text = text,
-            TextColor3 = fg or C.black, Font = Enum.Font.GothamBlack, TextSize = 10, ZIndex = 43,
-        })
-        Corner(b, 8)
-        Stroke(b, C.flame, 0.8, 0.4)
-        return b
-    end
-
-    local BRec    = Btn("● REC", 10, 44, C.red, C.text)
-    local BClear  = Btn("🗑 CLEAR", 116, 44, C.off, C.text)
-    local BMark   = Btn("📍 MARK POS", 222, 44, C.purple, C.text)
-    local BLog    = Btn("📋 COPY LOG", 10, 78, C.orange)
-    local BScript = Btn("📋 COPY SCRIPT", 116, 78, C.flame)
-    local BSave   = Btn("💾 SAVE FILE", 222, 78, C.slime)
-    local BUnmute = Btn("🔊 UNMUTE ALL", 10, 112, C.off, C.text)
-    local BTp     = Btn("📍 TP FIRST: OFF", 116, 112, C.off, C.text)
-    local BLoop   = Btn("🔁 LOOP: OFF", 222, 112, C.off, C.text)
-
-    local StatusLabel = New("TextLabel", RW, {
-        Size = UDim2.new(1, -20, 0, 18), Position = UDim2.fromOffset(10, 146), BackgroundTransparency = 1,
-        Text = "", TextColor3 = C.muted, Font = Enum.Font.GothamBold, TextSize = 10,
-        TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 43,
-    })
-
-    local RList = New("ScrollingFrame", RW, {
-        Size = UDim2.new(1, -16, 1, -172), Position = UDim2.fromOffset(8, 166),
-        BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
-        ScrollBarImageColor3 = C.orange, CanvasSize = UDim2.new(),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y, ZIndex = 41,
-    })
-    New("UIListLayout", RList, {Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
-
-    local Hint = New("TextLabel", RW, {
-        Size = UDim2.new(1, -40, 0, 90), Position = UDim2.new(0, 20, 0, 200), BackgroundTransparency = 1,
-        Text = "Press ● REC, then play normally:\ncollect · drop · open · buy…\nEvery action appears here.\n\n▶ replay   🔁 mark for loop   ➕ clone to main menu   ⛔ mute noisy remote",
-        TextColor3 = C.muted, Font = Enum.Font.GothamSemibold, TextSize = 10, TextWrapped = true, ZIndex = 42,
-    })
-
-    local noteUntil = 0
-    RefreshStatus = function()
-        Hint.Visible = #Rec.Log == 0
-        BRec.Text = Rec.Recording and "■ STOP" or "● REC"
-        BRec.BackgroundColor3 = Rec.Recording and C.slime or C.red
-        BRec.TextColor3 = Rec.Recording and C.black or C.text
-        BTp.Text = Rec.TpFirst and "📍 TP FIRST: ON" or "📍 TP FIRST: OFF"
-        BTp.BackgroundColor3 = Rec.TpFirst and C.orange or C.off
-        BTp.TextColor3 = Rec.TpFirst and C.black or C.text
-        BLoop.Text = Rec.LoopOn and "🔁 LOOP: ON" or "🔁 LOOP: OFF"
-        BLoop.BackgroundColor3 = Rec.LoopOn and C.orange or C.off
-        BLoop.TextColor3 = Rec.LoopOn and C.black or C.text
-        if os.clock() < noteUntil then return end
-        StatusLabel.Text = ("%s  •  %d actions  •  remote hook: %s"):format(
-            Rec.Recording and "● REC" or "■ IDLE", #Rec.Log, Rec.HookOK and "ON" or "OFF")
-        StatusLabel.TextColor3 = Rec.Recording and C.red or C.muted
-    end
-    Notify = function(text)
-        StatusLabel.Text = text
-        StatusLabel.TextColor3 = C.flame
-        noteUntil = os.clock() + 2.2
-        task.delay(2.3, function()
-            if Rec.Alive and StatusLabel.Parent then RefreshStatus() end
-        end)
-    end
-
-    local function SetRWOpen(open)
-        RW.Visible = open
-        if open then
-            RWResponsive()
-            local target = RWScale.Scale
-            RWScale.Scale = target * 0.9
-            Play(RWScale, 0.22, {Scale = target}, Enum.EasingStyle.Back):Play()
-            RefreshStatus()
-        end
-    end
-
-    local function Flash(b, ok)
-        local orig = b.BackgroundColor3
-        b.BackgroundColor3 = ok and C.slime or C.red
-        task.delay(0.35, function()
-            if b.Parent then b.BackgroundColor3 = orig end
-        end)
-    end
-
-    ------------------------------------------------------------
-    -- CLONE A RECORDED ACTION INTO THE MAIN MENU
-    ------------------------------------------------------------
-    local function ShortName(e)
-        local n = e.title:gsub("^Prompt: ", ""):gsub("^Click: ", "")
-        return string.sub(n, 1, 22) .. " #" .. e.id
-    end
-    local function AddToLibrary(e)
-        local name = ShortName(e)
-        if e.kind == "waypoint" then
-            AddButtonFeature({Name = "TP " .. name, Icon = "📍", Text = "TP", Callback = function() RunEntry(e) end})
-        else
-            AddButtonFeature({Name = name, Icon = "⚡", Text = "RUN", Callback = function() RunEntry(e) end})
-            local token = 0
-            AddToggleFeature({
-                Name = "Auto " .. name, Icon = "🔁", Default = false,
-                Callback = function(v)
-                    token += 1
-                    local my = token
-                    if v then
-                        task.spawn(function()
-                            while token == my and Rec.Alive do
-                                RunEntry(e)
-                                task.wait(Rec.LoopDelay)
-                            end
-                        end)
-                    end
-                end,
-            })
-        end
-        Notify("➕ Added to main menu (open 🎃)")
-    end
-
-    ------------------------------------------------------------
-    -- ROWS
-    ------------------------------------------------------------
-    local function RowBtn(parent, text, offset, bg)
-        local b = New("TextButton", parent, {
-            Size = UDim2.fromOffset(26, 26), Position = UDim2.new(1, -(offset + 26), 0.5, -13),
-            BackgroundColor3 = bg or C.off, AutoButtonColor = false, Text = text,
-            TextColor3 = C.text, Font = Enum.Font.GothamBlack, TextSize = 12, ZIndex = 45,
-        })
-        Corner(b, 7)
-        return b
-    end
-
-    AddRow = function(e)
-        local row = New("Frame", RList, {
-            Size = UDim2.new(1, -6, 0, 56), BackgroundColor3 = C.card, BorderSizePixel = 0,
-            LayoutOrder = e.id, ZIndex = 42,
-        })
-        Corner(row, 9)
-        Stroke(row, KIND_COLOR[e.kind] or C.orange, 1, 0.55)
-        Rec.Rows[e.id] = row
-
-        local runnable = e.kind == "remote" or e.kind == "prompt" or e.kind == "click"
-        local nBtn = (e.kind == "remote" and 5) or (runnable and 4) or (e.kind == "waypoint" and 3) or 1
-        local bw = nBtn * 26 + (nBtn - 1) * 3
-
-        New("TextLabel", row, {
-            Size = UDim2.fromOffset(26, 56), Position = UDim2.fromOffset(4, 0), BackgroundTransparency = 1,
-            Text = KIND_ICON[e.kind] or "•", TextSize = 16, ZIndex = 44,
-        })
-        local tw = UDim2.new(1, -(34 + bw + 8), 0, 15)
-        local function TL(y, h, text, size, color, font)
-            New("TextLabel", row, {
-                Size = UDim2.new(tw.X.Scale, tw.X.Offset, 0, h), Position = UDim2.fromOffset(32, y),
-                BackgroundTransparency = 1, Text = text, TextColor3 = color, Font = font,
-                TextSize = size, TextXAlignment = Enum.TextXAlignment.Left,
-                TextTruncate = Enum.TextTruncate.AtEnd, ZIndex = 44,
-            })
-        end
-        TL(5, 15, e.title, 10, C.text, Enum.Font.GothamBold)
-        TL(21, 14, (e.sub and e.sub ~= "") and e.sub or "(no args)", 9, C.muted, Enum.Font.Gotham)
-        TL(36, 14, ("+%.1fs  @%s"):format(e.t, V3S(e.pos)), 8, C.flame, Enum.Font.GothamSemibold)
-
-        local off = 6
-        local function Next() local o = off off = off + 29 return o end
-
-        local del = RowBtn(row, "✖", Next(), C.off)
-        del.MouseButton1Click:Connect(function() RemoveEntry(e.id) end)
-
-        if e.kind == "remote" then
-            local mute = RowBtn(row, "⛔", Next(), C.off)
-            mute.MouseButton1Click:Connect(function()
-                Rec.Muted[e.key] = true
-                for i = #Rec.Log, 1, -1 do
-                    local o = Rec.Log[i]
-                    if o.kind == "remote" and o.key == e.key then RemoveEntry(o.id) end
-                end
-                Notify("⛔ Muted: " .. tostring(e.key))
-            end)
-        end
-        if runnable or e.kind == "waypoint" then
-            local add = RowBtn(row, "➕", Next(), C.purple)
-            add.MouseButton1Click:Connect(function() AddToLibrary(e) end)
-        end
-        if runnable then
-            local loop = RowBtn(row, "🔁", Next(), Rec.Loops[e.id] and C.orange or C.off)
-            loop.MouseButton1Click:Connect(function()
-                if Rec.Loops[e.id] then Rec.Loops[e.id] = nil else Rec.Loops[e.id] = true end
-                loop.BackgroundColor3 = Rec.Loops[e.id] and C.orange or C.off
-                Notify(Rec.Loops[e.id] and "🔁 Marked — turn LOOP on to run it" or "Unmarked")
-            end)
-        end
-        if runnable or e.kind == "waypoint" then
-            local run = RowBtn(row, "▶", Next(), C.slime)
-            run.TextColor3 = C.black
-            run.MouseButton1Click:Connect(function()
-                task.spawn(function() Flash(run, RunEntry(e)) end)
-            end)
-        end
-
-        if Rec.Recording then
-            task.defer(function()
-                if RList.Parent then RList.CanvasPosition = Vector2.new(0, RList.AbsoluteCanvasSize.Y) end
-            end)
-        end
-    end
-
-    ------------------------------------------------------------
-    -- CONTROLS
-    ------------------------------------------------------------
-    SetRecording = function(on, fromLib)
-        Rec.Recording = on == true
-        if Rec.Recording and #Rec.Log == 0 then Rec.Start = os.clock() end
-        if not fromLib and LibObjs.Rec then pcall(function() LibObjs.Rec:Set(Rec.Recording, true) end) end
-        RefreshStatus()
-    end
-    SetLoop = function(on, fromLib)
-        Rec.LoopOn = on == true
-        if Rec.LoopOn then StartLoop() end
-        if not fromLib and LibObjs.Loop then pcall(function() LibObjs.Loop:Set(Rec.LoopOn, true) end) end
-        RefreshStatus()
-    end
-    SetTpFirst = function(on, fromLib)
-        Rec.TpFirst = on == true
-        if not fromLib and LibObjs.Tp then pcall(function() LibObjs.Tp:Set(Rec.TpFirst, true) end) end
-        RefreshStatus()
-    end
-
-    BRec.MouseButton1Click:Connect(function() SetRecording(not Rec.Recording) end)
-    BClear.MouseButton1Click:Connect(function()
-        for id, row in pairs(Rec.Rows) do row:Destroy() end
-        Rec.Rows, Rec.Log, Rec.Loops, Rec.NextId, Rec.Start = {}, {}, {}, 1, os.clock()
-        RefreshStatus()
-        Notify("🗑 Cleared")
-    end)
-    BMark.MouseButton1Click:Connect(function()
-        local pos = MyPos()
-        if not pos then Notify("⚠ character not found") return end
-        local n = 0
-        for _, e in ipairs(Rec.Log) do if e.kind == "waypoint" then n += 1 end end
-        AddEntry({kind = "waypoint", title = "Waypoint #" .. (n + 1), sub = V3S(pos), pos = pos})
-    end)
-    BLog.MouseButton1Click:Connect(function()
-        local ok = CopyText(BuildLog())
-        Notify(ok and "✅ Log copied — paste it to Claude" or "⚠ clipboard not supported (use SAVE FILE)")
-    end)
-    BScript.MouseButton1Click:Connect(function()
-        local ok = CopyText(BuildScript())
-        Notify(ok and "✅ Replay script copied" or "⚠ clipboard not supported (use SAVE FILE)")
-    end)
-    BSave.MouseButton1Click:Connect(function()
-        local base = ("%s_%d"):format(tostring(game.PlaceId), os.time())
-        local ok1 = SaveFile(BuildLog(), base .. ".txt")
-        local ok2 = SaveFile(BuildScript(), base .. ".lua")
-        Notify((ok1 and ok2) and ("💾 Saved in " .. FOLDER .. "/") or "⚠ writefile not supported")
-    end)
-    BUnmute.MouseButton1Click:Connect(function()
-        Rec.Muted, Rec.Rate = {}, {}
-        Notify("🔊 All remotes unmuted")
-    end)
-    BTp.MouseButton1Click:Connect(function() SetTpFirst(not Rec.TpFirst) end)
-    BLoop.MouseButton1Click:Connect(function() SetLoop(not Rec.LoopOn) end)
-    RClose.MouseButton1Click:Connect(function() SetRWOpen(false) end)
-
-    -- floating 🎥 button (always available, even after Lib.Clear())
-    local RecBtn = New("TextButton", ScreenGui, {
-        Name = "RecorderToggle", Size = UDim2.fromOffset(40, 40), Position = UDim2.new(0.07, 7, 0.18, 64),
-        BackgroundColor3 = C.panel, AutoButtonColor = false, Text = "🎥", TextSize = 20,
-        Font = Enum.Font.GothamBlack, Visible = false, ZIndex = 30,
-    })
-    Corner(RecBtn, 20)
-    local RecBtnStroke = Stroke(RecBtn, C.slime, 1.6, 0.1)
-    Draggable(RecBtn, RecBtn)
-    RecBtn.MouseButton1Click:Connect(function() SetRWOpen(not RW.Visible) end)
-    task.spawn(function()
-        repeat task.wait(0.2) until Toggle.Visible or not Rec.Alive
-        if Rec.Alive then RecBtn.Visible = true end
-    end)
-
-    Track(RunService.Heartbeat:Connect(function()
-        local mix = (math.sin(os.clock() * 4) + 1) / 2
-        if Rec.Recording then
-            RWStroke.Color = C.red:Lerp(C.orange, mix)
-            RecBtnStroke.Color = C.red:Lerp(C.orange, mix)
-        else
-            RWStroke.Color = C.slime
-            RecBtnStroke.Color = C.slime
-        end
-    end))
-
-    ------------------------------------------------------------
-    -- MAIN MENU ROWS
-    ------------------------------------------------------------
-    local function AddRecorder()
-        AddSection("RECORDER")
-        AddButtonFeature({Name = "Open Recorder Window", Icon = "🎥", Text = "OPEN", Callback = function() SetRWOpen(true) end})
-        LibObjs.Rec = AddToggleFeature({Name = "Record Actions", Icon = "🔴", Default = Rec.Recording,
-            Callback = function(v) SetRecording(v, true) end})
-        LibObjs.Loop = AddToggleFeature({Name = "Loop Marked Actions", Icon = "🔁", Default = Rec.LoopOn,
-            Callback = function(v) SetLoop(v, true) end})
-        AddSlider({Name = "Loop Delay", Min = 50, Max = 2000, Step = 50, Suffix = " ms",
-            Default = math.floor(Rec.LoopDelay * 1000), Callback = function(v) Rec.LoopDelay = v / 1000 end})
-        LibObjs.Tp = AddToggleFeature({Name = "TP to action spot first", Icon = "📍", Default = Rec.TpFirst,
-            Callback = function(v) SetTpFirst(v, true) end})
-        AddToggleFeature({Name = "Instant Prompts (no hold)", Icon = "⚡", Default = InstantOn,
-            Callback = function(v) SetInstant(v) end})
-    end
-
-    local function Destroy()
-        Rec.Alive = false
-        Rec.Recording, Rec.LoopOn = false, false
-        pcall(SetInstant, false)
-        if genv.__LP10_REC_HANDLER == OnRemote then genv.__LP10_REC_HANDLER = nil end
-    end
-
-    InstallHook()
-    HookGame()
-    RefreshStatus()
-
-    return {AddRecorder = AddRecorder, Destroy = Destroy, Open = function() SetRWOpen(true) end, Rec = Rec}
-end
-
-local Recorder = BuildRecorder()
-Library.AddRecorder = Recorder.AddRecorder
-Library.OpenRecorder = Recorder.Open
-Library.Recorder = Recorder.Rec
-
-do
-    local _OrigDestroy = Library.Destroy
-    function Library.Destroy()
-        pcall(Recorder.Destroy)
-        _OrigDestroy()
-    end
-end
-
-----------------------------------------------------------------
--- 🍬 AUTO CANDY + 🚪 AUTO KNOCK  (Escape Cops For Luckyblocks - Halloween event)
--- Route recorded by LP10 Recorder: teleports to each spot, fires the real remote.
-----------------------------------------------------------------
-local function BuildHalloweenAuto()
+local function BuildHalloweenEvent()
     local Players = game:GetService("Players")
     local RS = game:GetService("ReplicatedStorage")
     local lp = Players.LocalPlayer
 
-    -- {candyId, x, y, z}
-    local CANDY = {
-        {107, -326.3, 26.5, -7244.8},
-        {112, -328.7, 26.5, -7267.9},
-        {119, -314.3, 26.5, -7296},
-        {122, -317.1, 26.5, -7324.2},
-        {137, -331.7, 26.5, -7394.1},
-        {141, -326.8, 26.5, -7407},
-        {139, -328.3, 26.5, -7417.6},
-        {145, -337.9, 26.5, -7425.2},
-        {142, -348.7, 26.5, -7419.6},
-        {136, -362.7, 26.2, -7412.1},
-        {143, -376.5, 26.1, -7405.8},
-        {140, -381.2, 26.1, -7397.9},
-        {146, -389, 26.1, -7392.7},
-        {157, -391.8, 26.1, -7397.9},
-        {155, -396, 26.1, -7420.5},
-        {156, -401.8, 26.5, -7428.2},
-        {163, -405.5, 26.5, -7434.5},
-        {161, -417.4, 26.5, -7428.5},
-        {172, -427.7, 26.5, -7416.9},
-        {158, -421, 26.3, -7354.7},
-        {177, -424.5, 26.5, -7346.6},
-        {194, -425.4, 26.5, -7297.9},
+    -- candy ids seen in the game (used even if the candy model is not loaded on your screen)
+    local KNOWN_CANDY_IDS = {107, 112, 119, 122, 137, 141, 139, 145, 142, 136, 143, 140, 146,
+        157, 155, 156, 163, 161, 172, 158, 177, 194}
+    -- houses seen in the game: {name, x, z}  -> remote string "name@x,z"
+    local KNOWN_HOUSES = {
+        {"House1", -339, -7309},
+        {"House4", -417, -7376},
+        {"House5", -451, -7374},
+        {"HalloweenGhostHouse", -411, -7312},
     }
-    -- {"HouseName@x,z", x, y, z}
-    local HOUSES = {
-        {"House1@-339,-7309", -330.8, 26.5, -7303.1},
-        {"House5@-451,-7374", -443.3, 26.5, -7381.4},
-        {"House4@-417,-7376", -423.1, 26.5, -7372.6},
-        {"HalloweenGhostHouse@-411,-7312", -419.2, 27.4, -7311.5},
-    }
+    local GROUND_Y = 27
 
-    local S = {candy = false, knock = false, cDelay = 0.3, kDelay = 2.0, running = false, alive = true, origin = nil}
+    local S = {
+        collect = false, knock = false, tp = true,
+        cInterval = 1.0, kDelay = 1.5,
+        alive = true, cRunning = false, kRunning = false,
+        ids = {}, houses = {}, houseOrder = {},
+        candyList = {}, lastScan = 0,
+    }
+    for _, id in ipairs(KNOWN_CANDY_IDS) do S.ids[id] = true end
 
     local function Root()
         local ch = lp.Character
@@ -2274,87 +1339,271 @@ local function BuildHalloweenAuto()
     end
     local function GetRemote(name)
         local ok, r = pcall(function()
-            return RS:WaitForChild("Remotes", 3):WaitForChild("Halloween", 3):WaitForChild(name, 3)
+            local rem = RS:FindFirstChild("Remotes")
+            local folder = rem and rem:FindFirstChild("Halloween")
+            return (folder and folder:FindFirstChild(name)) or RS:FindFirstChild(name, true)
         end)
         return ok and r or nil
     end
 
-    local function Worker()
-        if S.running then return end
-        S.running = true
-        local r0 = Root()
-        S.origin = r0 and r0.CFrame
-        task.spawn(function()
-            while S.alive and (S.candy or S.knock) do
-                if S.candy then
-                    local remote = GetRemote("Collect")
-                    if remote then
-                        for _, c in ipairs(CANDY) do
-                            if not (S.candy and S.alive) then break end
-                            Go(c[2], c[3], c[4])
-                            pcall(remote.FireServer, remote, c[1])
-                            task.wait(S.cDelay)
-                        end
-                    else
-                        task.wait(1)
-                    end
+    ------------------------------------------------------------
+    -- CANDY
+    ------------------------------------------------------------
+    local function IsCandyName(n)
+        local l = n:lower()
+        return l:find("candy", 1, true) ~= nil and not l:find("candies", 1, true) and not l:find("folder", 1, true)
+    end
+
+    local function ScanCandy()
+        local found, seen, n = {}, {}, 0
+        for _, d in ipairs(workspace:GetDescendants()) do
+            n += 1
+            if n % 600 == 0 then task.wait() end
+            if (d:IsA("BasePart") or d:IsA("Model")) and IsCandyName(d.Name) then
+                local top, cur = d, d.Parent
+                while cur and cur ~= workspace and (cur:IsA("Model") or cur:IsA("BasePart")) and IsCandyName(cur.Name) do
+                    top = cur
+                    cur = cur.Parent
                 end
-                if S.knock then
-                    local remote = GetRemote("TrickOrTreat")
-                    if remote then
-                        for _, h in ipairs(HOUSES) do
-                            if not (S.knock and S.alive) then break end
-                            Go(h[2], h[3], h[4])
-                            task.wait(0.15)
-                            pcall(remote.FireServer, remote, h[1])
-                            task.wait(S.kDelay)
-                        end
-                    else
-                        task.wait(1)
-                    end
+                if not seen[top] then
+                    seen[top] = true
+                    found[#found + 1] = top
                 end
-                task.wait(0.2)
             end
-            local r1 = Root()
-            if S.origin and r1 then r1.CFrame = S.origin end
-            S.running = false
+        end
+        S.candyList = found
+    end
+
+    local function FindId(inst)
+        local cur = inst
+        for _ = 0, 3 do
+            if not cur or cur == workspace then break end
+            local num = tonumber(cur.Name)
+            if num then return num end
+            local ok, attrs = pcall(function() return cur:GetAttributes() end)
+            if ok then
+                for k, v in pairs(attrs) do
+                    if type(v) == "number" then
+                        local lk = tostring(k):lower()
+                        if lk:find("id", 1, true) or lk == "index" or lk == "num" then return v end
+                    end
+                end
+            end
+            for _, ch in ipairs(cur:GetChildren()) do
+                if (ch:IsA("IntValue") or ch:IsA("NumberValue")) and ch.Name:lower():find("id", 1, true) then
+                    return ch.Value
+                end
+            end
+            cur = cur.Parent
+        end
+        return nil
+    end
+
+    local function CollectOne(c)
+        local id = FindId(c)
+        if id then S.ids[id] = true end
+
+        local prompt = c:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if prompt and fireproximityprompt then pcall(fireproximityprompt, prompt) end
+        local cd = c:FindFirstChildWhichIsA("ClickDetector", true)
+        if cd and fireclickdetector then pcall(fireclickdetector, cd) end
+
+        local part = c:IsA("BasePart") and c or c:FindFirstChildWhichIsA("BasePart", true)
+        local r = Root()
+        if part and r and firetouchinterest then
+            pcall(firetouchinterest, r, part, 0)
+            pcall(firetouchinterest, r, part, 1)
+        end
+    end
+
+    local function CollectCycle()
+        if os.clock() - S.lastScan > 3 then
+            S.lastScan = os.clock()
+            ScanCandy()
+        end
+        for _, c in ipairs(S.candyList) do
+            if c.Parent then pcall(CollectOne, c) end
+        end
+        local remote = GetRemote("Collect")
+        if remote then
+            for id in pairs(S.ids) do pcall(remote.FireServer, remote, id) end
+        end
+    end
+
+    local function CollectWorker()
+        if S.cRunning then return end
+        S.cRunning = true
+        task.spawn(function()
+            while S.alive and S.collect do
+                local ok, err = pcall(CollectCycle)
+                if not ok then warn("[LP10 HALLOWEEN] collect error: " .. tostring(err)) end
+                task.wait(S.cInterval)
+            end
+            S.cRunning = false
         end)
     end
 
+    ------------------------------------------------------------
+    -- HOUSES
+    ------------------------------------------------------------
+    local function AddHouse(name, x, z, strs)
+        if S.houses[name] then return end
+        S.houses[name] = {name = name, x = x, z = z, strs = strs}
+        S.houseOrder[#S.houseOrder + 1] = name
+    end
+    for _, h in ipairs(KNOWN_HOUSES) do
+        AddHouse(h[1], h[2], h[3], {("%s@%d,%d"):format(h[1], h[2], h[3])})
+    end
+
+    local function IsHouseName(n)
+        return n:match("^%a*House%d*$") ~= nil
+    end
+
+    local function ScanHouses()
+        local n = 0
+        for _, d in ipairs(workspace:GetDescendants()) do
+            n += 1
+            if n % 600 == 0 then task.wait() end
+            if (d:IsA("Model") or d:IsA("BasePart")) and IsHouseName(d.Name) and not S.houses[d.Name] then
+                local nested, cur = false, d.Parent
+                while cur and cur ~= workspace do
+                    if cur:IsA("Model") and IsHouseName(cur.Name) then nested = true break end
+                    cur = cur.Parent
+                end
+                if not nested then
+                    local ok, pos = pcall(function()
+                        return d:IsA("Model") and d:GetPivot().Position or d.Position
+                    end)
+                    if ok and pos then
+                        local fx, fz = math.floor(pos.X), math.floor(pos.Z)
+                        local rx, rz = math.floor(pos.X + 0.5), math.floor(pos.Z + 0.5)
+                        local strs = {("%s@%d,%d"):format(d.Name, fx, fz)}
+                        if rx ~= fx or rz ~= fz then
+                            strs[2] = ("%s@%d,%d"):format(d.Name, rx, rz)
+                        end
+                        AddHouse(d.Name, fx, fz, strs)
+                    end
+                end
+            end
+        end
+    end
+
+    local function KnockCycle()
+        ScanHouses()
+        local remote = GetRemote("TrickOrTreat")
+        if not remote then task.wait(1) return end
+        local origin = Root() and Root().CFrame
+        for _, name in ipairs(S.houseOrder) do
+            if not (S.knock and S.alive) then break end
+            local h = S.houses[name]
+            if S.tp then
+                Go(h.x, GROUND_Y, h.z)
+                task.wait(0.25)
+            end
+            for _, str in ipairs(h.strs) do pcall(remote.FireServer, remote, str) end
+            task.wait(S.kDelay)
+        end
+        if S.tp and origin and Root() and not S.knock then Root().CFrame = origin end
+    end
+
+    local function KnockWorker()
+        if S.kRunning then return end
+        S.kRunning = true
+        task.spawn(function()
+            local r0 = Root()
+            local origin = r0 and r0.CFrame
+            while S.alive and S.knock do
+                local ok, err = pcall(KnockCycle)
+                if not ok then warn("[LP10 HALLOWEEN] knock error: " .. tostring(err)) task.wait(1) end
+                task.wait(0.2)
+            end
+            local r1 = Root()
+            if S.tp and origin and r1 then r1.CFrame = origin end
+            S.kRunning = false
+        end)
+    end
+
+    ------------------------------------------------------------
+    -- DEBUG INFO (copy and send it if something does not work)
+    ------------------------------------------------------------
+    local function Dump()
+        pcall(ScanCandy)
+        pcall(ScanHouses)
+        local L = {"== LP10 HALLOWEEN DEBUG ==", ("PlaceId: %s"):format(tostring(game.PlaceId))}
+        L[#L + 1] = ("Candy objects found: %d"):format(#S.candyList)
+        for i, c in ipairs(S.candyList) do
+            if i > 25 then break end
+            local attrs = {}
+            local ok, a = pcall(function() return c:GetAttributes() end)
+            if ok then for k, v in pairs(a) do attrs[#attrs + 1] = tostring(k) .. "=" .. tostring(v) end end
+            local kids = {}
+            for j, ch in ipairs(c:GetChildren()) do
+                if j > 8 then break end
+                kids[#kids + 1] = ch.Name .. ":" .. ch.ClassName
+            end
+            L[#L + 1] = ("  %s [%s] id=%s attrs{%s} kids{%s}"):format(
+                c:GetFullName(), c.ClassName, tostring(FindId(c)), table.concat(attrs, ","), table.concat(kids, ","))
+        end
+        L[#L + 1] = ("Houses known: %d"):format(#S.houseOrder)
+        for _, name in ipairs(S.houseOrder) do
+            local h = S.houses[name]
+            L[#L + 1] = ("  %s -> %s"):format(name, table.concat(h.strs, " | "))
+        end
+        local ok, folder = pcall(function() return RS.Remotes.Halloween end)
+        if ok and folder then
+            L[#L + 1] = "Remotes.Halloween:"
+            for _, r in ipairs(folder:GetChildren()) do L[#L + 1] = ("  %s [%s]"):format(r.Name, r.ClassName) end
+        end
+        local text = table.concat(L, "\n")
+        print(text)
+        local fn = setclipboard or toclipboard
+        if fn then pcall(fn, text) end
+    end
+
+    ------------------------------------------------------------
+    -- MENU ROWS
+    ------------------------------------------------------------
     local function AddRows()
-        AddSection("HALLOWEEN AUTO")
-        AddToggleFeature({Name = "Auto Candy", Icon = "🍬", Default = false, Callback = function(v)
-            S.candy = v
-            if v then Worker() end
+        AddSection("HALLOWEEN EVENT")
+        AddToggleFeature({Name = "Instant Collect Candy", Icon = "🍬", Default = false, Callback = function(v)
+            S.collect = v
+            if v then CollectWorker() end
         end})
         AddToggleFeature({Name = "Auto Knock (Trick or Treat)", Icon = "🚪", Default = false, Callback = function(v)
             S.knock = v
-            if v then Worker() end
+            if v then KnockWorker() end
         end})
-        AddSlider({Name = "Candy Delay", Min = 50, Max = 1500, Step = 50, Suffix = " ms", Default = 300,
-            Callback = function(v) S.cDelay = v / 1000 end})
-        AddSlider({Name = "Knock Delay", Min = 500, Max = 5000, Step = 250, Suffix = " ms", Default = 2000,
+        AddToggleFeature({Name = "Teleport to Houses", Icon = "📍", Default = true, Callback = function(v)
+            S.tp = v
+        end})
+        AddSlider({Name = "Collect Interval", Min = 100, Max = 3000, Step = 100, Suffix = " ms", Default = 1000,
+            Callback = function(v) S.cInterval = v / 1000 end})
+        AddSlider({Name = "Knock Delay", Min = 300, Max = 5000, Step = 100, Suffix = " ms", Default = 1500,
             Callback = function(v) S.kDelay = v / 1000 end})
+        if Config.Debug then
+            AddButtonFeature({Name = "Copy Debug Info", Icon = "🧪", Text = "COPY", Callback = Dump})
+        end
     end
 
-    return {AddRows = AddRows, Destroy = function() S.alive = false S.candy = false S.knock = false end}
+    return {
+        AddRows = AddRows,
+        Dump = Dump,
+        Destroy = function() S.alive = false S.collect = false S.knock = false end,
+    }
 end
 
-local HalloweenAuto = BuildHalloweenAuto()
-Library.AddHalloweenAuto = HalloweenAuto.AddRows
+local HalloweenEvent = BuildHalloweenEvent()
+Library.AddHalloweenEvent = HalloweenEvent.AddRows
+Library.DumpDebug = HalloweenEvent.Dump
 do
     local _Prev = Library.Destroy
     function Library.Destroy()
-        pcall(HalloweenAuto.Destroy)
+        pcall(HalloweenEvent.Destroy)
         _Prev()
     end
 end
-if Config.HalloweenAuto ~= false then
-    HalloweenAuto.AddRows()
-end
-
-if Config.Recorder ~= false then
-    Recorder.AddRecorder()
+if Config.HalloweenEvent ~= false then
+    HalloweenEvent.AddRows()
 end
 
 _G.LP10HalloweenLibrary = Library
