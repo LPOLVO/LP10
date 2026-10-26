@@ -1297,8 +1297,9 @@ end
 
 ----------------------------------------------------------------
 -- 🎃 HALLOWEEN EVENT  (Escape Cops For Luckyblocks)
---   🍬 Instant Collect Candy : fires Collect for every candy (no teleport, no tween)
---   🚪 Auto Knock            : Trick or Treat on every house, knocks again for a 2nd try
+--   🍬 Instant Collect Candy : touches every candy (no movement)
+--   🌀 Tween Collect Candy   : fast tween to each candy, then touches it
+--   🚪 Auto Knock            : Trick or Treat on every house (fast tween between houses)
 ----------------------------------------------------------------
 local function BuildHalloweenEvent()
     local Players = game:GetService("Players")
@@ -1341,11 +1342,11 @@ local function BuildHalloweenEvent()
         HalloweenGhostHouse = true, FrankesteinHouse = true}
 
     local S = {
-        collect = false, scan = true, tpCollect = false,
+        collect = false, tween = false,
         knock = false, tp = true, extra = true,
-        cInterval = 1.0, maxId = 700, reps = 2, repGap = 0.6, kDelay = 1.2,
+        speed = 500, cInterval = 1.0, reps = 2, repGap = 0.6, kDelay = 1.2,
         alive = true, cRunning = false, tRunning = false, kRunning = false,
-        candyList = {}, lastScan = 0, lastBrute = 0,
+        candyList = {}, lastScan = 0, hintShown = false,
         houseList = {}, extraSeen = {},
     }
     for _, h in ipairs(HOUSES) do
@@ -1356,13 +1357,36 @@ local function BuildHalloweenEvent()
         local ch = lp.Character
         return ch and ch:FindFirstChild("HumanoidRootPart")
     end
-    local function Go(x, y, z)
+
+    -- fast Tween (replaces teleport): speed in studs/second, noclip while moving
+    local function TweenTo(pos, speed)
         local r = Root()
-        if r then
-            r.CFrame = CFrame.new(x, y, z)
-            r.AssemblyLinearVelocity = Vector3.zero
+        if not r then return false end
+        speed = math.max(speed or S.speed, 50)
+        local dist = (r.Position - pos).Magnitude
+        if dist < 1 then return true end
+        local dur = math.clamp(dist / speed, 0.03, 2)
+        local parts = {}
+        for _, d in ipairs(r.Parent:GetDescendants()) do
+            if d:IsA("BasePart") then parts[#parts + 1] = d end
         end
+        local noclip = RunService.Stepped:Connect(function()
+            for _, p in ipairs(parts) do p.CanCollide = false end
+        end)
+        r.AssemblyLinearVelocity = Vector3.zero
+        local tw = TweenService:Create(r, TweenInfo.new(dur, Enum.EasingStyle.Linear),
+            {CFrame = CFrame.new(pos) * r.CFrame.Rotation})
+        local done = false
+        local cn = tw.Completed:Connect(function() done = true end)
+        tw:Play()
+        local t0 = os.clock()
+        while not done and os.clock() - t0 < dur + 0.5 do task.wait() end
+        cn:Disconnect()
+        noclip:Disconnect()
+        r.AssemblyLinearVelocity = Vector3.zero
+        return true
     end
+
     local function GetRemote(name)
         local ok, r = pcall(function()
             local rem = RS:FindFirstChild("Remotes")
@@ -1373,7 +1397,7 @@ local function BuildHalloweenEvent()
     end
 
     ------------------------------------------------------------
-    -- CANDY
+    -- CANDY  (candies are LOCAL models in Workspace.HalloweenCandiesLocal, no id)
     ------------------------------------------------------------
     local function IsCandyName(n)
         local l = n:lower()
@@ -1382,7 +1406,9 @@ local function BuildHalloweenEvent()
 
     local function ScanCandy()
         local found, seen, n = {}, {}, 0
-        for _, d in ipairs(workspace:GetDescendants()) do
+        local folder = workspace:FindFirstChild("HalloweenCandiesLocal")
+        local pool = folder and folder:GetDescendants() or workspace:GetDescendants()
+        for _, d in ipairs(pool) do
             n += 1
             if n % 600 == 0 then task.wait() end
             if (d:IsA("BasePart") or d:IsA("Model")) and IsCandyName(d.Name) then
@@ -1430,34 +1456,51 @@ local function BuildHalloweenEvent()
         return c:IsA("BasePart") and c or c:FindFirstChildWhichIsA("BasePart", true)
     end
 
-    local function CollectOne(c, remote)
-        local id = FindId(c)
-        if id and remote then pcall(remote.FireServer, remote, id) end
+    -- touch EVERY part of the candy (not just one), plus prompt / click if any
+    local function TouchCandy(c)
+        local r = Root()
+        if not r then return end
+        local parts = {}
+        if c:IsA("BasePart") then parts[1] = c end
+        for _, d in ipairs(c:GetDescendants()) do
+            if d:IsA("BasePart") then parts[#parts + 1] = d end
+        end
+        if firetouchinterest then
+            for _, p in ipairs(parts) do
+                pcall(firetouchinterest, r, p, 0)
+                pcall(firetouchinterest, r, p, 1)
+            end
+        end
         local prompt = c:FindFirstChildWhichIsA("ProximityPrompt", true)
         if prompt and fireproximityprompt then pcall(fireproximityprompt, prompt) end
         local cd = c:FindFirstChildWhichIsA("ClickDetector", true)
         if cd and fireclickdetector then pcall(fireclickdetector, cd) end
-        local part, r = PartOf(c), Root()
-        if part and r and firetouchinterest then
-            pcall(firetouchinterest, r, part, 0)
-            pcall(firetouchinterest, r, part, 1)
-        end
     end
 
-    local function CollectCycle()
-        if os.clock() - S.lastScan > 3 then ScanCandy() end
-        local remote = GetRemote("Collect")
+    local function CountGone()
+        local gone = 0
         for _, c in ipairs(S.candyList) do
-            if c.Parent then pcall(CollectOne, c, remote) end
+            if not c.Parent then gone += 1 end
         end
-        -- fire every possible candy id (invalid ids are ignored by the game)
-        if S.scan and remote and os.clock() - S.lastBrute >= math.max(S.cInterval, 2) then
-            S.lastBrute = os.clock()
-            for id = 1, S.maxId do
-                if not (S.collect and S.alive) then break end
-                pcall(remote.FireServer, remote, id)
-                if id % 50 == 0 then task.wait() end
-            end
+        return gone
+    end
+
+    -- ⚡ INSTANT: no movement, touches every candy at once
+    local function CollectCycle()
+        ScanCandy()
+        if not Root() then return end
+        local total = #S.candyList
+        for i, c in ipairs(S.candyList) do
+            if not (S.collect and S.alive) then return end
+            if c.Parent then pcall(TouchCandy, c) end
+            if i % 20 == 0 then task.wait() end
+        end
+        task.wait(0.25)
+        local gone = CountGone()
+        print(("[LP10 HALLOWEEN] instant collect: %d / %d candies collected"):format(gone, total))
+        if gone == 0 and total > 0 and not S.hintShown then
+            S.hintShown = true
+            warn("[LP10 HALLOWEEN] touch did not collect anything -> turn ON 'Tween Collect Candy' (it flies next to each candy)")
         end
     end
 
@@ -1474,34 +1517,44 @@ local function BuildHalloweenEvent()
         end)
     end
 
-    -- backup mode: fly to each candy it can see and collect it there
-    local function TpCollectWorker()
+    -- 🌀 TWEEN COLLECT: fast tween to the nearest candy each time, then touch it
+    local function TweenCollectWorker()
         if S.tRunning then return end
         S.tRunning = true
         task.spawn(function()
             local r0 = Root()
-            local origin = r0 and r0.CFrame
-            while S.alive and S.tpCollect do
+            local origin = r0 and r0.Position
+            while S.alive and S.tween do
                 local ok, err = pcall(function()
-                    if os.clock() - S.lastScan > 3 then ScanCandy() end
-                    local remote = GetRemote("Collect")
+                    ScanCandy()
+                    local remaining = {}
                     for _, c in ipairs(S.candyList) do
-                        if not (S.tpCollect and S.alive) then break end
                         local part = c.Parent and PartOf(c)
-                        if part then
-                            local p = part.Position
-                            Go(p.X, p.Y + 3, p.Z)
-                            task.wait(0.08)
-                            CollectOne(c, remote)
-                            task.wait(0.05)
+                        if part then remaining[#remaining + 1] = {c = c, part = part} end
+                    end
+                    if #remaining == 0 then task.wait(0.5) return end
+                    while #remaining > 0 and S.tween and S.alive do
+                        local r = Root()
+                        if not r then break end
+                        local bestI, bestD = 1, math.huge
+                        for i, e in ipairs(remaining) do
+                            if e.part.Parent then
+                                local d = (e.part.Position - r.Position).Magnitude
+                                if d < bestD then bestI, bestD = i, d end
+                            end
+                        end
+                        local e = table.remove(remaining, bestI)
+                        if e.part.Parent then
+                            TweenTo(e.part.Position, S.speed)
+                            TouchCandy(e.c)
+                            task.wait(0.04)
                         end
                     end
                 end)
-                if not ok then warn("[LP10 HALLOWEEN] tp-collect error: " .. tostring(err)) end
-                task.wait(0.5)
+                if not ok then warn("[LP10 HALLOWEEN] tween-collect error: " .. tostring(err)) task.wait(1) end
+                task.wait(0.2)
             end
-            local r1 = Root()
-            if origin and r1 then r1.CFrame = origin end
+            if origin then TweenTo(origin, S.speed) end
             S.tRunning = false
         end)
     end
@@ -1545,8 +1598,8 @@ local function BuildHalloweenEvent()
         for _, h in ipairs(S.houseList) do
             if not (S.knock and S.alive) then break end
             if S.tp then
-                Go(h.x, h.y, h.z)
-                task.wait(0.35)
+                TweenTo(Vector3.new(h.x, h.y, h.z), S.speed)
+                task.wait(0.1)
             end
             -- knock, then knock again (first knock sometimes gives nothing)
             for _ = 1, S.reps do
@@ -1563,14 +1616,13 @@ local function BuildHalloweenEvent()
         S.kRunning = true
         task.spawn(function()
             local r0 = Root()
-            local origin = r0 and r0.CFrame
+            local origin = r0 and r0.Position
             while S.alive and S.knock do
                 local ok, err = pcall(KnockCycle)
                 if not ok then warn("[LP10 HALLOWEEN] knock error: " .. tostring(err)) task.wait(1) end
                 task.wait(0.2)
             end
-            local r1 = Root()
-            if S.tp and origin and r1 then r1.CFrame = origin end
+            if S.tp and origin then TweenTo(origin, S.speed) end
             S.kRunning = false
         end)
     end
@@ -1581,6 +1633,9 @@ local function BuildHalloweenEvent()
     local function Dump()
         pcall(ScanCandy)
         local L = {"== LP10 HALLOWEEN DEBUG ==", ("PlaceId: %s"):format(tostring(game.PlaceId))}
+        L[#L + 1] = ("firetouchinterest: %s | fireproximityprompt: %s"):format(
+            tostring(firetouchinterest ~= nil), tostring(fireproximityprompt ~= nil))
+        L[#L + 1] = ("HalloweenCandiesLocal folder: %s"):format(tostring(workspace:FindFirstChild("HalloweenCandiesLocal") ~= nil))
         L[#L + 1] = ("Candy objects found: %d"):format(#S.candyList)
         for i, c in ipairs(S.candyList) do
             if i > 25 then break end
@@ -1614,29 +1669,27 @@ local function BuildHalloweenEvent()
         AddSection("HALLOWEEN EVENT")
         AddToggleFeature({Name = "Instant Collect Candy", Icon = "🍬", Default = false, Callback = function(v)
             S.collect = v
+            S.hintShown = false
             if v then CollectWorker() end
         end})
-        AddToggleFeature({Name = "Scan All Candy IDs", Icon = "🔢", Default = true, Callback = function(v)
-            S.scan = v
-        end})
-        AddToggleFeature({Name = "Teleport Collect (backup)", Icon = "🧲", Default = false, Callback = function(v)
-            S.tpCollect = v
-            if v then TpCollectWorker() end
+        AddToggleFeature({Name = "Tween Collect Candy", Icon = "🌀", Default = false, Callback = function(v)
+            S.tween = v
+            if v then TweenCollectWorker() end
         end})
         AddToggleFeature({Name = "Auto Knock (Trick or Treat)", Icon = "🚪", Default = false, Callback = function(v)
             S.knock = v
             if v then KnockWorker() end
         end})
-        AddToggleFeature({Name = "Teleport to Houses", Icon = "📍", Default = true, Callback = function(v)
+        AddToggleFeature({Name = "Tween to Houses", Icon = "📍", Default = true, Callback = function(v)
             S.tp = v
         end})
         AddToggleFeature({Name = "Find Extra Houses", Icon = "🏚️", Default = true, Callback = function(v)
             S.extra = v
         end})
+        AddSlider({Name = "Tween Speed", Min = 100, Max = 1500, Step = 50, Suffix = " st/s", Default = 500,
+            Callback = function(v) S.speed = v end})
         AddSlider({Name = "Collect Interval", Min = 500, Max = 5000, Step = 100, Suffix = " ms", Default = 1000,
             Callback = function(v) S.cInterval = v / 1000 end})
-        AddSlider({Name = "Max Candy ID", Min = 100, Max = 1500, Step = 50, Default = 700,
-            Callback = function(v) S.maxId = v end})
         AddSlider({Name = "Knocks per House", Min = 1, Max = 5, Step = 1, Default = 2,
             Callback = function(v) S.reps = v end})
         AddSlider({Name = "Knock Delay", Min = 300, Max = 5000, Step = 100, Suffix = " ms", Default = 1200,
@@ -1649,7 +1702,7 @@ local function BuildHalloweenEvent()
     return {
         AddRows = AddRows,
         Dump = Dump,
-        Destroy = function() S.alive = false S.collect = false S.knock = false S.tpCollect = false end,
+        Destroy = function() S.alive = false S.collect = false S.knock = false S.tween = false end,
     }
 end
 
